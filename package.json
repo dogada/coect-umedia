@@ -1,0 +1,53 @@
+{
+  "name": "coect-umedia",
+  "version": "0.1.1",
+  "description": "Universal media for Coect communication platform (blogs, comments, communities, etc.)",
+  "main": "server/index.js",
+  "browser": "client/index.js",
+  "browserify": {
+    "transform": [
+      "brfs",
+      "riotify"
+    ]
+  },
+  "browserify-shim": {},
+  "scripts": {
+    "test": "mocha",
+    "build": "changelog"
+  },
+  "keywords": [
+    "coect",
+    "umedia",
+    "media",
+    "blog",
+    "comments"
+  ],
+  "author": "Dmytro V. Dogadailo <dvd@dogada.org>",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "coect": "~0.1.1",
+    "debug": "~2.2.0",
+    "escape-html": "~1.0.2",
+    "html-tag": "~0.2.1",
+    "linkify-it": "~1.2.0",
+    "lodash": "^3.10.1",
+    "moment": "~2.10.3",
+    "object-apply": "~1.0.1",
+    "object-assign": "~4.0.1",
+    "riot": "~2.3.11",
+    "tflow": "^0.3.1",
+    "wpml": "^0.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dogada/coect-umedia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dogada/coect-umedia/issues"
+  },
+  "homepage": "http://www.coect.net/",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {}
+}
