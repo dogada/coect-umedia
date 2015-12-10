@@ -11,7 +11,7 @@ var OWNER = 'dvd@dogada.org'
 
 var Channel = require('./models').Channel
 
-function retrieve(req, res) {
+function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.params)
   tflow([
     function() {
@@ -19,7 +19,7 @@ function retrieve(req, res) {
       if (p.id) Channel.findById(p.id, this)
       else Channel.findOne({url: p.username + '/' + p.cslug}, this)
     }
-  ], req.app.janus(req, res));
+  ], req.app.janus(req, res, next))
 }
 
 function parseMeta(text, done) {

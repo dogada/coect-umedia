@@ -220,7 +220,7 @@ function fillUsers(entries, cache, done) {
   ], done);
 }
 
-function retrieve(req, res) {
+function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
   var thread = !!req.query.thread
   tflow([
@@ -242,7 +242,7 @@ function retrieve(req, res) {
     function(entries) {
       this.next(thread ? entries: entries[0])
     },
-  ], req.app.janus(req, res))
+  ], req.app.janus(req, res, next))
 }
 
 
