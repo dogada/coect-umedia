@@ -19,13 +19,17 @@ function adminRequired(req, res, next) {
   else next(401, coect.HttpError('Admin required'))
 }
 
+// return named slug with regular expression
+function slug(param) {
+  return '/:' + param + '([a-z]+[a-z0-9-]{2,})'
+}
 /**
    Short urls for channels and entries with slugs.
 */
 function slugRoutes(r) {
-  r.get('/:username/:cslug', channel.retrieve)
-  r.get('/:username/:cslug/:eslug', entry.retrieve)
-  r.get('/:username/:cslug/e/:id', entry.retrieve)
+  r.get(slug('username') + slug('cslug'), channel.retrieve)
+  r.get(slug('username') + slug('cslug') + slug('eslug'), entry.retrieve)
+  r.get(slug('username') + slug('cslug') + '/e/:id', entry.retrieve)
 }
 
 module.exports = function(r) {
