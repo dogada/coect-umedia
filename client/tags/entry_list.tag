@@ -36,11 +36,12 @@
    self.ancestor = opts.ancestor
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
    self.items = opts.items || []
-   self.query = {
+   self.hasMore = false
+   self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
-   }
-   self.hasMore = false
+   })
+
 
 
    function getThreadId(entry) {
@@ -52,19 +53,22 @@
      else return {cursor: self.items[self.items.length - 1].id}
    }
 
+   function initQuery(query) {
+     if (opts.type) query.type = opts.type
+     else if (opts.owner) query.user_id = opts.owner
+     else if (self.ancestor) query.thread_id = getThreadId(self.ancestor)
+     else if (opts.list) query.list_id = opts.list
+     else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
+     return query
+   }
+
+   function getQuery(append) {
+     return (append ? $.extend(getCursor(), self.query) : self.query)
+   }
+
    function load(append) {
-     debug('load append=', append, 'opts=', self.opts)
-     var query = self.query
-     if (append) query = $.extend(getCursor(), query)
-
-     // opts.list can be set in umedia-details after loading channel by slug
-     if (opts.type) self.query.type = opts.type
-     else if (opts.owner) self.query.user_id = opts.owner
-     else if (self.ancestor) self.query.thread_id = getThreadId(self.ancestor)
-     else if (opts.list) self.query.list_id = opts.list
-     else if (opts.username && opts.cslug) self.query.list_url = opts.username + '/' + opts.cslug
-
-     var url = Site.umedia.url.entry('') + '?' + $.param(query)
+     debug('load append=', append)
+     var url = Site.umedia.url.entry('') + '?' + $.param(getQuery(append))
      $.getJSON(url, function(data) {
        self.update({
          hasMore: (data.length >= self.query.count),
@@ -104,6 +108,7 @@
    }
 
    toggleComments() {
+     debug('toggle', self.query)
      if (!self.query.thread_id) {
        delete self.query.topic_id
        self.query.thread_id = getThreadId(self.ancestor)
@@ -111,6 +116,7 @@
        delete self.query.thread_id
        self.query.topic_id = self.ancestor.topic_id || self.ancestor.id
      }
+     debug('after', self.query)
      load()
    }
 
