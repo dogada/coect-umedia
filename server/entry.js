@@ -93,7 +93,9 @@ function saveNewEntry(req, list, parent, meta, done) {
         name: req.body.name || '',
         text: req.body.text,
         slug: meta.slug,
-        url: Entry.makeUrl(req.user, list, meta.slug),
+        // custom urls are allowed for posts only (they have not null list and
+        // comments doesn't 
+        url: list && Entry.makeUrl(req.user, list, meta.slug),
         user_id: req.user.id,
         list_id: listId,
         visible: true,
@@ -193,7 +195,7 @@ function update(req, res) {
         name: req.body.name,
         text: req.body.text,
         slug: meta.slug,
-        url: entry.url || Entry.makeUrl(req.user, list, meta.slug),
+        url: entry.url || list && Entry.makeUrl(req.user, list, meta.slug),
         edited: new Date()
       }, this)
     },
