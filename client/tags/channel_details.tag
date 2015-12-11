@@ -1,7 +1,7 @@
 <umedia-channel-details>
   <div class="umedia-channel-details">
     <umedia-channel if={ channel } channel={ channel }></umedia-channel>
-    <umedia-entry-editor if={ canPost } list="{ channelId }"></umedia-entry-editor>
+    <umedia-entry-editor if={ channelId && canPost } list="{ channelId }"></umedia-entry-editor>
     <umedia-entry-list list={ opts.id } username={ opts.username } 
       cslug={ opts.cslug }></umedia-entries>
   </div>
