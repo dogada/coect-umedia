@@ -133,6 +133,9 @@ function create(req, res) {
       }
       else this.next({id: id})
     },
+    function(id) {
+      Entry.get(id, this)
+    }
   ], coect.json.response(res))
 }
 
@@ -201,7 +204,7 @@ function update(req, res) {
     },
     function(id) {
       debug('updated', id)
-      this.next({id: id})
+      Entry.get(id, this)
     },
   ], coect.json.response(res))
 }

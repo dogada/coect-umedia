@@ -53,7 +53,7 @@ function create(req, res) {
       }, ownerId, this)
     },
     function(id) {
-      this.next({id: id})
+      Channel.get(id, this)
     },
   ], coect.json.response(res))
 }
@@ -78,7 +78,7 @@ function update(req, res) {
       Channel.update(channel.id, data, this)
     },
     function(id) {
-      this.next({id: id})
+      Channel.get(id, this)
     },
   ], coect.json.response(res))
 }
