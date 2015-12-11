@@ -1,11 +1,11 @@
 <umedia-channel>
   <div class="umedia-channel">
-    <h3>{ opts.channel.name }</h3>
+    <h3>{ channel.name }</h3>
     <p>
-      <umedia-wpml doc={ doc }></umedia-wpml>
+      <umedia-wpml text={ channel.text }></umedia-wpml>
     </p>
     <ul class="list-inline" if={ Site.user && Site.user.admin }>
-      <li><a href="{ Site.umedia.url.channel(opts.channel.id, 'edit') }">edit</a></li>
+      <li><a href="{ Site.umedia.url.channel(channel.id, 'edit') }">edit</a></li>
     </ul>
   </div>
 
@@ -15,8 +15,8 @@
    debug('channel init', self.opts)
 
    function rebuild() {
-     self.doc = self.wpml.doc(self.opts.channel.text || '')
-     debug('channel.rebuild', self.opts.channel, self.doc)
+     debug('channel.rebuild', self.opts.channel)
+     self.channel = self.opts.channel
      self.update()
    }
 
