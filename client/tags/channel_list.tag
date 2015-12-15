@@ -9,12 +9,12 @@
 
   <script>
    var self = this
+   self.items = opts.items || []
    this.mixin('coect-context', 'umedia-context')
    debug('channels', self.url.channel())
    function init(query) {
      $.getJSON(self.url.channel() + '?' + $.param(query), function(data) {
-       self.items = data
-       self.update()
+       self.update({items: data})
      }).fail(this.failHandler)
    }
 
