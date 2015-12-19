@@ -2,7 +2,7 @@
   <div class="umedia-entry-details">
     <ul class="list-unstyled">
       <li each={ e, i in opts.thread }>
-        <umedia-entry entry={ e } compacted={ i < parent.opts.thread.length - 1}></umedia-entry>
+        <umedia-entry entry={ e } detail={ e == entry }></umedia-entry>
       </li>
     </ul>
     <p if={ opts.entry.type == 'reply' }>View 

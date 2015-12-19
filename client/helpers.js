@@ -7,14 +7,14 @@ var _wpml = require('wpml')
 var debug = require('debug')('umedia:helpers')
 
 exports.getAge = function(date) {
-  return moment(date || 0).fromNow()
+  return (date ? moment(date || 0).fromNow() : '')
 }
 
 var WPML_OPTS = {
   javascript: false,
   plugins: require('./plugins'),
   //linkPlugin: 'oembed',
-  whitelist: 'iframe p div h3 h4 a code pre br hr img ul ol li dl dt dd small em b i strong span sub sup cite abbr section aside',
+  whitelist: 'iframe p div h2 h3 h4 a code pre br hr img ul ol li dl dt dd small em b i strong span sub sup cite abbr section aside',
   idTest: /^wp[\w]+/,
   classTest: /^(wp-[\w-]+|lead|small)/
 }

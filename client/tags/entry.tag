@@ -1,6 +1,5 @@
 <umedia-entry>
-  <div class="umedia-entry media {opts.compacted ? 'umedia-compacted' : ''}"
-       onclick={ expand }>
+  <div id="e{entry.id}" class="umedia-entry media {opts.compacted ? 'umedia-compacted' : ''}">
     
     <h2 if={ doc.meta.title }>{ doc.meta.title }</h2>
 
@@ -20,7 +19,7 @@
             <a href={ url.channel(entry.list_id) }>wrote</a>
           </span>
           <span if={ entry.type == 'comment' || entry.type == 'reply' }>
-            <a href={ url.entry(entry) }>{ actionName(entry) }</a>
+            <a href={ url.entry(entry.parent_id) }>{ actionName(entry) }</a>
           </span>
 
           <a href={ url.entry(entry) } title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
@@ -28,18 +27,16 @@
       </div>
       <umedia-wpml doc={ doc }></umedia-wpml>
       <div class="umedia-actions">
-        <span>
-          <a href="{ url.entry(entry) }">{ commentsLabel(entry) }</a>
-          <span  if={ canChange } >· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
-        </span>
-
+        <span if={ opts.detail }>{ commentsLabel(entry) }</span>
+        <a if={ !opts.detail} href="{ url.entry(entry) }">{ commentsLabel(entry) }</a>
+        <span if={ canChange }>· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
       </div>
     </div>
   </div>
 
   <script>
    var self = this
-   self.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   self.mixin('coect-context', 'umedia-context')
    self.canChange = Site.umedia.canChangeEntry(self.opts.entry)
    debug('entry', this.opts)
 
@@ -61,7 +58,8 @@
 
    commentsLabel(entry) {
      if (entry.type == 'reply') return 'Reply'
-     else return (entry.type == 'post' ? 'Comments' : 'Replies') + ' (' + entry.comment_count + ')'
+     else return (entry.type == 'post' ? 'Comments' : 'Replies') + 
+                                ' (' + (entry.comment_count || 0) + ')'
    }
 
    actionName(entry) {
@@ -70,11 +68,12 @@
      else if (entry.type === 'reply') return 'replied'
    }
 
-   function refresh() {
-     self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
-     self.doc = self.wpml.doc(self.entry.text || '')
+   self.rebuild = function() {
+     self.update({
+       entry: self.opts.entry || self.opts.state && self.opts.state.entry,
+       doc: self.wpml.doc(self.entry.text || '')
+     })
    }
-   this.on('update', refresh)
-   refresh()
+   self.on('mount', self.rebuild)
   </script>
 </umedia-entry>

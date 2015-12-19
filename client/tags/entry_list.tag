@@ -1,5 +1,5 @@
 <umedia-entry-list>
-  <div if={ items.length } class="umedia-entries">
+  <div if={ items.length } class="umedia-entry-list">
     
     <div if={ ancestor } class="umedia-entries-header clearfix">
       <ul class="nav nav-pills pull-right">
@@ -17,17 +17,20 @@
       </div>
 
     </div>
+
+
+    <div>
+      <ul class="list-unstyled">
+        <li each={e in items}>
+          <umedia-entry entry={ e } />
+        </li>
+      </ul>
+
+      <a if={ hasMore } href="#" onclick={ more }>Load more</a>
+    </div>
+
   </div>
 
-  <div>
-    <ul class="list-unstyled">
-      <li each={e in items}>
-        <umedia-entry entry={ e }></umedia-entry>
-      </li>
-    </ul>
-
-    <a if={ hasMore } href="#" onclick={ more }>Load more</a>
-  </div>
 
   <script>
    var debug = require('debug')('umedia:entry_list')

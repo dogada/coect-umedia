@@ -1,0 +1,4 @@
+{
+  "asi": true, // optional semicolons
+  "expr": true, // value.should.be.ok
+}

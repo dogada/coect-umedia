@@ -17,9 +17,7 @@ function details(ctx) {
     var entry = thread[thread.length - 1]
     Site.mount(ui.make('umedia-entry-details',
                        {thread: thread,
-                        entry: entry,
-                        now: new Date(),
-                        state: ctx.state}), title(entry))
+                        entry: entry}), title(entry))
   }
   
   if (ctx.state.thread) {

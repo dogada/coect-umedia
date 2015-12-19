@@ -1,10 +1,10 @@
 <umedia-channel-details>
-  <div class="umedia-channel-details">
+  <div class="umedia-channel-detail">
     <umedia-channel if={ channel } channel={ channel }></umedia-channel>
-    <umedia-entry-editor if={ channelId && canPost } list="{ channelId }"></umedia-entry-editor>
+    <umedia-entry-editor if={ channelId && canPost } list="{ channelId }" />
     <umedia-entry-list list={ opts.id } username={ opts.username } 
-      cslug={ opts.cslug }></umedia-entries>
-  </div>
+      cslug={ opts.cslug } />
+    </div>
 
   <script>
    var self = this

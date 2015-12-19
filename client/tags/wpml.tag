@@ -1,4 +1,4 @@
-<umedia-wpml class="umedia-wpml">
+<umedia-wpml class="wpml">
 
   <script>
    var self = this
