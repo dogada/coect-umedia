@@ -6,7 +6,8 @@
   "browser": "client/index.js",
   "browserify": {
     "transform": [
-      "riotify"
+      "riotify",
+      ["babelify"]
     ]
   },
   "browserify-shim": {},

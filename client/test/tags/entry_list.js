@@ -27,8 +27,6 @@ describe(TAG, function() {
       expect(tag.items[0]).property('id', 'e1')
       expect(tag.items[1]).property('id', 'e2')
       expect(tag.hasMore).to.be.false
-      // child tags are updated after 'updated' event is sent
-      //process.nextTick(env.tryIt(checkHtml, done))
       checkHtml()
     }, done))
   })

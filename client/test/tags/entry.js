@@ -24,12 +24,13 @@ describe('umedia-entry', function() {
   })
 
   it('should render single link tag', function() {
+    var link = 'http://www.gnu.org'
     var entry = {
       id: 'e3', 
-      text: 'a: gnu.org\n.href: http://www.gnu.org'
+      text: `a: gnu.org\n.href: ${link}`
     }
     var tag = env.mount('umedia-entry', {entry: entry})
-    $('.umedia-entry .wpml a', tag.root).should.have.attr('href', 'http://www.gnu.org')
+    $('.umedia-entry .wpml a', tag.root).should.have.attr('href', link)
     $('.umedia-entry .wpml a', tag.root).should.have.text('gnu.org')
   })
   
