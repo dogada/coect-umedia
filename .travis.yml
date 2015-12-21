@@ -1,0 +1,28 @@
+language: node_js
+
+node_js:
+   - "4.2"
+
+before_install:
+  - npm install -g karma karma-mocha karma-chai-plugins karma-mocha-reporter karma-coverage
+  - npm install -g phantomjs karma-phantomjs-launcher karma-firefox-launcher karma-chrome-launcher 
+  - npm install -g karma-browserify riotify babel@5.8 babelify browserify-istanbul
+
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+script:
+  npm test
+
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - node_modules
+    - $(npm config get prefix)/lib/node_modules
+    - $(npm config get prefix)/bin
+
