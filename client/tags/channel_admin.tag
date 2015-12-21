@@ -22,18 +22,18 @@
 
   </div>
 
-  <script>
+  <script type="es6">
    var self = this
    this.mixin('coect-context', 'umedia-context', 'coect-site-context')
 
-   reload() {
+   self.reload = function() {
      $.getJSON(self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id), function(data) {
        self.items = data
        self.update()
      })
    }
 
-   remove(e) {
+   self.remove = function(e) {
      self.sendJson('DELETE', self.url.channel(e.item.id), {})
       .done(function() {
        self.reload() 

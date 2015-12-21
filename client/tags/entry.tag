@@ -39,29 +39,29 @@
    self.canChange = Site.umedia.canChangeEntry(self.opts.entry)
    debug('entry', this.opts)
 
-   displayName(user) {
+   self.displayName = function(user) {
      return user.username || user.name || user.id
    }
 
-   expand(e) {
+   self.expand = function(e) {
      var div = $(e.target).parents('.umedia-entry')[0] || $(e.target)
      if (!$(div).hasClass('umedia-compacted')) return true // use default hadler
      $(div).removeClass('umedia-compacted')
      return false
    }
 
-   fullDate(d) {
+   self.fullDate = function(d) {
      //debug('fullDate', typeof d, d, d.toLocaleString(), new Date().toLocaleString())
      return d && new Date(d).toLocaleString() || d
    }
 
-   commentsLabel(entry) {
+   self.commentsLabel = function(entry) {
      if (entry.type == 'reply') return 'Reply'
      else return (entry.type == 'post' ? 'Comments' : 'Replies') + 
                                 ' (' + (entry.comment_count || 0) + ')'
    }
 
-   actionName(entry) {
+   self.actionName = function(entry) {
      if (entry.type === 'post') return ''
      else if (entry.type === 'comment') return 'commented'
      else if (entry.type === 'reply') return 'replied'

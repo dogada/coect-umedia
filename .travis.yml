@@ -6,7 +6,7 @@ node_js:
 before_install:
   - npm install -g karma mocha karma-mocha karma-mocha-reporter karma-chai-plugins karma-coverage 
   - npm install -g phantomjs karma-phantomjs-launcher karma-firefox-launcher karma-chrome-launcher 
-  - npm install -g browserify karma-browserify riot riotify babel@5.8 babelify@6.0.2 browserify-istanbul
+  - npm install -g browserify karma-browserify riot riotify babel@5.8 babelify@6.3 browserify-istanbul
 
 before_script:
   - export DISPLAY=:99.0

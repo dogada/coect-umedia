@@ -80,37 +80,37 @@
      }).fail(self.failHandler)
    }
 
-   last() {
+   self.last = function() {
      self.query.order = 'last'
      load()
    }
 
-   first() {
+   self.first = function() {
      self.query.order = 'first'
      load()
    }
 
-   top() {
+   self.top = function() {
      self.query.order = 'top'
      load()
    }
 
-   more() {
+   self.more = function() {
      debug("more entries.length=", self.items.length);
      load(true)
    }
 
-   commentsTitle() {
+   self.commentsTitle = function() {
      if (self.ancestor.type != 'post') return 'Replies'
      else if (self.query.topic_id) return 'With replies'
      else return 'Comments'
    }
 
-   commentsHint() {
+   self.commentsHint = function() {
      return (self.query.thread_id ? 'With replies' : 'Comments only')
    }
 
-   toggleComments() {
+   self.toggleComments = function() {
      debug('toggle', self.query)
      if (!self.query.thread_id) {
        delete self.query.topic_id

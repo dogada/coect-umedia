@@ -29,28 +29,28 @@
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
    self.entry = self.opts.entry || {}
 
-   entryType() {
+   self.entryType = function() {
      if (self.opts.list) return 'post'
      else if (self.opts.ancestor) return (self.opts.ancestor.type == 'post' ?
      'comment' : 'reply')
      else return 'message'
    }
 
-   expand(e) {
+   self.expand = function(e) {
      self.content.style.height = '300px'
      self.expanded = true
    }
 
-   edit(e) {
+   self.edit = function(e) {
      self.text = e.target.value
    }
 
-   cancel(e) {
+   self.cancel = function(e) {
      if (Site.page.len) Site.page.back()
      else Site.page.show('/')
    }
 
-   entryName(text) {
+   self.entryName = function(text) {
      var title
      try {
        title = self.wpml.doc(text).meta.title
@@ -60,7 +60,7 @@
      return title || text && text.slice(0, 30) || ''
    }
 
-   publish(e) {
+   self.publish = function(e) {
      e.preventDefault()
      console.log('Publish', this.text, self.opts)
      self.poutJson(
@@ -77,7 +77,7 @@
      })
    }
 
-   load(id) {
+   self.load = function(id) {
      $.getJSON(self.url.entry(id), function(data) {
        self.entry = data
        self.text = data.text

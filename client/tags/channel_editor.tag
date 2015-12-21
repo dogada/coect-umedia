@@ -25,12 +25,12 @@
    this.mixin('coect-context', 'umedia-context', 'coect-site-context')
    debug('channel editor', self.opts)
 
-   cancel(e) {
+   self.cancel = function(e) {
      if (Site.page.len) Site.page.back()
      else Site.page.show('/')
    }
 
-   save(e) {
+   self.save = function(e) {
      debug('save name', self.cname, self)
      e.preventDefault()
      self.poutJson(
@@ -45,7 +45,7 @@
      })
    }
 
-   load(id) {
+   self.load = function(id) {
      $.getJSON(self.url.channel(id), function(data) {
        self.name.value = data.name
        self.text.value = data.text
