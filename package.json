@@ -21,7 +21,7 @@
     "watch": "nodemon -w ./client -e js,tag --exec npm run build",
     "tdd": "npm run watch & karma start --browsers=Chrome --no-single-run",
     "coverage": "npm run test && firefox build/coverage/lcov-report/index.html",
-    "coversall": "coveralls build/coverage/lcov.info"
+    "coveralls": "cat ./build/coverage/lcov.info | coveralls"
   },
   "keywords": [
     "coect",
@@ -62,7 +62,6 @@
     "brfs": "~1.4.1",
     "browserify-istanbul": "~0.2.1",
     "coect-site": "~0.1.4",
-    "coveralls": "~2.11.6",
     "jquery": "~2.1.4",
     "page": "~1.6.4",
     "riot": "~2.3.12",

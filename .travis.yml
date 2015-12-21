@@ -4,7 +4,7 @@ node_js:
    - "4.2"
 
 before_install:
-  - npm install -g karma mocha karma-mocha karma-mocha-reporter karma-chai-plugins karma-coverage 
+  - npm install -g karma mocha karma-mocha karma-mocha-reporter karma-chai-plugins karma-coverage coveralls
   - npm install -g karma-phantomjs-launcher karma-firefox-launcher karma-chrome-launcher 
   - npm install -g browserify karma-browserify
 
