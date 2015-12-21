@@ -27,8 +27,7 @@
       </div>
       <umedia-wpml doc={ doc }></umedia-wpml>
       <div class="umedia-actions">
-        <span if={ opts.detail }>{ commentsLabel(entry) }</span>
-        <a if={ !opts.detail} href="{ url.entry(entry) }">{ commentsLabel(entry) }</a>
+       <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
         <span if={ canChange }>· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
       </div>
     </div>
