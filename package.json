@@ -58,9 +58,11 @@
   "devDependencies": {
     "babel-core": "^5.8.0",
     "babelify": "~6.3.0",
+    "brfs": "~1.4.1",
     "browserify-istanbul": "~0.2.1",
     "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
+    "page": "~1.6.4",
     "riot": "~2.3.12",
     "riotify": "~0.1.2"
   }
