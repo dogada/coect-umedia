@@ -16,7 +16,7 @@ script:
   npm test
 
 after_success:
-  - npm run coversall
+  - npm run coveralls
 
 branches:
   only:
