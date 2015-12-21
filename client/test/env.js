@@ -28,7 +28,7 @@ exports.logRequests = function(count) {
 }
 
 exports.mount = function(tagName, opts) {
-  debug('mount', tagName, opts)
+  //debug('mount', tagName, opts)
   return ui.make(tagName, opts, $('<div>').appendTo(document.body))
 }
 
