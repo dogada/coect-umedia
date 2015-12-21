@@ -14,14 +14,13 @@
   },
   "browserify-shim": {},
   "scripts": {
+    "build": "riot client/tags build/tags",
     "test": "npm run test:client",
-    "pretest": "npm run build:test",
+    "pretest": "npm run build",
     "test:client": "karma start --single-run",
-    "build:test": "browserify client/test/main.js > build/test/main.js",
-    "build:tags": "riot client/tags build/tags",
-    "build": "npm run build:test",
-    "watch": "nodemon -w ./client -e js,tag --exec npm run build:tags",
-    "tdd": "npm run watch & karma start --browsers=Chrome --no-single-run"
+    "watch": "nodemon -w ./client -e js,tag --exec npm run build",
+    "tdd": "npm run watch & karma start --browsers=Chrome --no-single-run",
+    "coverage": "npm run test && firefox build/coverage/lcov-report/index.html"
   },
   "keywords": [
     "coect",
