@@ -7,7 +7,9 @@
   "browserify": {
     "transform": [
       "riotify",
-      ["babelify"]
+      [
+        "babelify"
+      ]
     ]
   },
   "browserify-shim": {},
@@ -16,9 +18,10 @@
     "pretest": "npm run build:test",
     "test:client": "karma start --single-run",
     "build:test": "browserify client/test/main.js > build/test/main.js",
+    "build:tags": "riot client/tags build/tags",
     "build": "npm run build:test",
-    "watch": "nodemon -w ./client -e js,tag --exec npm run build:test",
-    "tdd": "npm run watch & karma start --reporters=mocha --browsers=Chrome --singleRun=false"
+    "watch": "nodemon -w ./client -e js,tag --exec npm run build:tags",
+    "tdd": "npm run watch & karma start --browsers=Chrome --no-single-run"
   },
   "keywords": [
     "coect",
@@ -54,8 +57,19 @@
     "test": "test"
   },
   "devDependencies": {
+    "browserify": "~12.0.1",
+    "browserify-istanbul": "~0.2.1",
     "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
-    "riot": "~2.3.11"
+    "karma": "~0.13.15",
+    "karma-browserify": "~4.4.2",
+    "karma-chai-plugins": "~0.6.1",
+    "karma-coverage": "~0.5.3",
+    "karma-mocha": "~0.2.1",
+    "karma-mocha-reporter": "~1.1.3",
+    "karma-spec-reporter": "0.0.23",
+    "mocha": "~2.3.4",
+    "riot": "~2.3.11",
+    "riotify": "~0.1.2"
   }
 }

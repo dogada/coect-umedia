@@ -1,3 +1,5 @@
+// make riot available for tags from build/tags/*.js
+window.riot = require('riot')
 // load testing environment
 window.env = require('./env')
 // configure fake app for testing
@@ -5,19 +7,19 @@ require('./config/app')
 
 
 // load custom  tags
-require('../tags/raw.tag')
-require('../tags/wpml.tag')
+require('../../build/tags/raw.js')
+require('../../build/tags/wpml.js')
+require('../../build/tags/channel.js')
+require('../../build/tags/channel_list.js')
+require('../../build/tags/channel_details.js')
 
-require('../tags/channel.tag')
-require('../tags/channel_list.tag')
-require('../tags/channel_details.tag')
-require('../tags/channel_admin.tag')
-require('../tags/channel_editor.tag')
+// have issues with riotify when browserify run from Karma
+require('../../build/tags/channel_admin.js')
+require('../../build/tags/channel_editor.js')
 
-require('../tags/entry.tag')
-require('../tags/entry_list.tag')
-require('../tags/entry_details.tag')
-require('../tags/entry_editor.tag')
-
+require('../../build/tags/entry.js')
+require('../../build/tags/entry_list.js')
+require('../../build/tags/entry_details.js')
+require('../../build/tags/entry_editor.js')
 
 require('./index')  //include all tests

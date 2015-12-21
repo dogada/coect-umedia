@@ -10,14 +10,14 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'chai', 'chai-jquery', 'sinon-chai', 'chai-as-promised'],
+    frameworks: ['browserify', 'mocha', 'chai', 'chai-jquery', 'sinon-chai', 'chai-as-promised'],
 
 
     // list of files / patterns to load in the browser
     files: [
       'node_modules/jquery/dist/jquery.js',
       'node_modules/coect-site/dist/site.js',
-      'build/test/main.js'
+      'client/test/main.js'
     ],
 
 
@@ -29,14 +29,40 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'client/**/*.js': [ 'browserify']
     },
 
+    browserify: {
+      debug: true,
+      transform: [
+        ['riotify', {type: 'es6', extension: '.tag'}],
+        ['babelify'],
+        ['browserify-istanbul']
+      ],
+      extensions: ['.js', '.tag'],
+      postFilter: function(id, file, pkg) {
+        if (pkg && pkg.name === 'coect-umedia') {
+          // don't apply Browserify transformations from package.json
+          // https://github.com/nikku/karma-browserify/issues/130#issuecomment-120036815
+          pkg.browserify.transform = [];
+        }
+        return true;
+      }
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['mocha'],
+    reporters: ['mocha', 'coverage'],
 
+
+    coverageReporter: {
+      dir: 'build/coverage',
+      reporters: [
+        {type: 'text-summary'},
+        { type: 'lcov', subdir: './'}
+      ]
+    },
 
     // web server port
     port: 9876,
@@ -57,12 +83,12 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],//'PhantomJS', 
+    browsers: ['Chrome'],
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: true,
 
     // Concurrency level
     // how many browser should be started simultanous
