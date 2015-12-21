@@ -4,9 +4,9 @@ node_js:
    - "4.2"
 
 before_install:
-  - npm install -g karma karma-mocha karma-chai-plugins karma-mocha-reporter karma-coverage
+  - npm install -g karma mocha karma-mocha karma-mocha-reporter karma-chai-plugins karma-coverage 
   - npm install -g phantomjs karma-phantomjs-launcher karma-firefox-launcher karma-chrome-launcher 
-  - npm install -g karma-browserify riotify babel@5.8 babelify browserify-istanbul
+  - npm install -g browserify karma-browserify riot riotify babel@5.8 babelify@6.0.2 browserify-istanbul
 
 before_script:
   - export DISPLAY=:99.0
@@ -25,4 +25,14 @@ cache:
     - node_modules
     - $(npm config get prefix)/lib/node_modules
     - $(npm config get prefix)/bin
+
+# https://docs.travis-ci.com/user/languages/javascript-with-nodejs#Node.js-v4-(or-io.js-v3)-compiler-requirements
+env:
+  - CXX=g++-4.8
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 
