@@ -16,7 +16,7 @@
      $.getJSON(url + '?' + $.param(query), function(data) {
        self.items = data
        self.update()
-     }).fail(this.failHandler)
+     }).fail(self.failHandler)
    }
 
    init({list: self.opts.list})

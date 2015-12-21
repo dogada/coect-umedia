@@ -50,7 +50,7 @@
        self.name.value = data.name
        self.text.value = data.text
        self.update()
-     }).fail(this.failHandler).complete(function() {
+     }).fail(self.failHandler).complete(function() {
      })
    }
 

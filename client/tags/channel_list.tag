@@ -14,7 +14,7 @@
    function init(query) {
      $.getJSON(self.url.channel() + '?' + $.param(query), function(data) {
        self.update({items: data})
-     }).fail(this.failHandler)
+     }).fail(self.failHandler)
    }
    
    init({owner: self.opts.owner})

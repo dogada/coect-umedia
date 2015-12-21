@@ -23,7 +23,7 @@
      var url = self.url.channel(
        opts.id ? opts.id : {url: opts.username + '/' + opts.cslug})
      debug('init url', url)
-     $.getJSON(url, setChannel).fail(this.failHandler)
+     $.getJSON(url, setChannel).fail(self.failHandler)
    }
    init(this.opts)
   </script>
