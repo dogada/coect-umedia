@@ -27,7 +27,7 @@ describe(TAG, function() {
     $('#eID1 h2', tag.root).should.have.text('Hello world!')
     $('#eID1 p', tag.root).should.contain('See more')
     $('#eID1 p a', tag.root).should.have.attr('href', 'http://www.coect.net')
-    $('#eID1 .umedia-actions span ', tag.root).should.have.text('Comments (2)')
+    $('#eID1 .umedia-actions a.active', tag.root).should.have.text('Comments (2)')
     done()
   })
 
