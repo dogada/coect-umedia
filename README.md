@@ -1,5 +1,9 @@
 # Universal media for Coect communication platform
 
+[![Build Status](https://travis-ci.org/dogada/coect-umedia.svg)](https://travis-ci.org/dogada/coect-umedia)
+[![Coverage Status](https://coveralls.io/repos/dogada/coect-umedia/badge.svg?branch=master&service=github)](https://coveralls.io/github/dogada/coect-umedia?branch=master)
+
+
 This Coect application provides Channel and Entry concepts for the web-site. On base of `coect-umedia` you can build a blog (see [dogada.org](https://dogada.org) for an example), community web-site like Reddit or Digg or just add comments to your existing web-site like you do with Disqus or Muut.
 
 Application is designed to work in sharded database environment to achieve great scalability. Most of queries are executed inside parent shard only (query isolation). 
