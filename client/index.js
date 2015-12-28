@@ -11,7 +11,7 @@ var routes = require('./routes')
    @param {Site} site
 */
 function init(opts) {
-  debug('init', opts)
+  debug('umedia init', opts)
   riot.mixin('umedia-context', $.extend(require('./helpers'), {
     url: opts.url,
   }))

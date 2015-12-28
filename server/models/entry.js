@@ -1,14 +1,23 @@
 'use strict';
 
-var objectAssign = require('object-assign')
 var debug = require('debug')('auth:user')
-var Model = require('coect').orm.Model
+var Entity = require('./entity')
 
-function Entry(props) {
-  objectAssign(this, props)
+class Entry extends Entity {
+
+  constructor(props) {
+    super(props)
+  }
+
+  toString() {
+    return this.name || this.id
+  }
+
 }
 
-Model.extend(Entry)
+//Entity.extend(Entry)
+
+Entry.MODEL = 'entry'
 
 Entry.inputs = {
   slug: {
@@ -80,13 +89,5 @@ Entry.makeUrl = function(user, list, slug) {
   else return null
 }
 
-Entry.prototype.toString = function() {
-  return this.name || this.id
-}
-
-Entry.prototype.publicData = function() {
-  return {id: this.id,
-          name: this.name}
-}
 
 module.exports = Entry

@@ -1,25 +1,25 @@
 <umedia-entry>
   <div id="e{entry.id}" class="umedia-entry media {opts.compacted ? 'umedia-compacted' : ''}">
     
-    <h2 if={ doc.meta.title }>{ doc.meta.title }</h2>
+    <h2 if={ doc && doc.meta.title }>{ doc.meta.title }</h2>
 
     <div class="media-left">
       <a href="#">
         <img class="media-object" width="32" height="32" 
-             title={ entry.user.name }
-             src={ entry.user.avatar || Site.config.avatar(32) } alt="">
+             title={ entry.owner.name }
+             src={ entry.owner.avatar || Site.config.avatar(32) } alt="">
       </a>
     </div>
 
     <div class="media-body">
       <div>
-        <a href="#">{ displayName(entry.user) }</a> 
+        <a href="#">{ displayName(entry.owner) }</a> 
         <span class="umedia-meta small">
           <span if={ entry.type == 'post'}>
-            <a href={ url.channel(entry.list_id) }>wrote</a>
+            <a href={ url.channel(entry.list) }>wrote</a>
           </span>
           <span if={ entry.type == 'comment' || entry.type == 'reply' }>
-            <a href={ url.entry(entry.parent_id) }>{ actionName(entry) }</a>
+            <a href={ url.entry(entry.parent) }>{ actionName(entry) }</a>
           </span>
 
           <a href={ url.entry(entry) } title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
@@ -36,8 +36,7 @@
   <script>
    var self = this
    self.mixin('coect-context', 'umedia-context')
-   self.canChange = Site.umedia.canChangeEntry(self.opts.entry)
-   debug('entry', this.opts)
+   debug('entry', this.opts, 'url=', self.url)
 
    self.displayName = function(user) {
      return user.username || user.name || user.id
@@ -58,7 +57,7 @@
    self.commentsLabel = function(entry) {
      if (entry.type == 'reply') return 'Reply'
      else return (entry.type == 'post' ? 'Comments' : 'Replies') + 
-                                ' (' + (entry.comment_count || 0) + ')'
+                                ' (' + (entry.child_count || 0) + ')'
    }
 
    self.actionName = function(entry) {
@@ -68,9 +67,11 @@
    }
 
    self.rebuild = function() {
+     var entry = self.opts.entry || self.opts.state && self.opts.state.entry
      self.update({
-       entry: self.opts.entry || self.opts.state && self.opts.state.entry,
-       doc: self.wpml.doc(self.entry.text || '')
+       entry: entry,
+       doc: self.wpml.doc(entry.text || ''),
+       canChange: Site.umedia.canChangeEntry(entry)
      })
    }
    self.on('mount', self.rebuild)

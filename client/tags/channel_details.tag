@@ -1,7 +1,7 @@
 <umedia-channel-details>
   <div class="umedia-channel-detail">
     <umedia-channel if={ channel } channel={ channel }></umedia-channel>
-    <umedia-entry-editor if={ channelId && canPost } list="{ channelId }" />
+    <umedia-entry-editor if={ channel && canPost } ancestor="{ channel }" />
     <umedia-entry-list list={ opts.id } username={ opts.username } 
       cslug={ opts.cslug } />
     </div>
@@ -10,13 +10,11 @@
    var self = this
    debug('channel_details', this.opts)
    this.mixin('coect-context', 'umedia-context')
-   this.channelId = opts.id
 
    function setChannel(c) {
      debug('setChannel', c)
      if (c.id) self.update({channel: c,
-                            canPost: Site.umedia.canPost(c),
-                            channelId: c.id})
+                            canPost: Site.umedia.canPost(c)})
    }
 
    function init(opts) {

@@ -1,15 +1,47 @@
 'use strict';
 
-var objectAssign = require('object-assign')
 var debug = require('debug')('umedia:channel')
-var Model = require('coect').orm.Model
+var Entity = require('./entity')
 
-function Channel(props) {
-  if (!(this instanceof Channel)) return new Channel(props)
-  objectAssign(this, props)
+class Channel extends Entity {
+
+  constructor(props) {
+    super(props)
+  }
+
+  getModerators() {
+    return this.data.moderators || []
+  }
+
+  hasModerator(user) {
+    return this.getModerators().indexOf(user.id) > -1
+  }
+
 }
 
-Model.extend(Channel)
+//Entity.extend(Channel)
+
+Channel.MODEL = 'channel'
+Channel.TYPE = 'channel'
+Channel.listFields = ['id', 'type', 'name', 'url']
+Channel.detailFields = Channel.listFields.concat(['text'])
+
+Channel.makeUrl = function(user, slug) {
+  return user.username && slug ? user.username + '/' + slug : null
+}
+
+
+// user roles inside channel (used to control access to channel entries)
+Object.assign(Channel, {
+  // 0 means default undefined access
+  ADMIN: 10,  // site-wide or this channel admin 
+  MODERATOR: 20, // site-wide or channel moderator
+  TAG: 30, // users tagged with an accessTag by channel owner (Friends, Family, etc)
+  MEMBER: 40,  // site-wide member or a channel member
+  FOLLOWER: 50, // channel follower (subscriber)
+  USER: 60,   // logged in user (in most cases a human)
+  VISITOR: 70 //any visitor of site including spider
+})
 
 Channel.inputs = {
   name: {
@@ -37,21 +69,6 @@ Channel.inputs = {
     }
   }
 }
-
-
-Channel.makeUrl = function(user, slug) {
-  return user.username && slug ? user.username + '/' + slug : null
-}
-
-Channel.prototype.toString = function() {
-  return this.name
-}
-
-Channel.prototype.publicData = function() {
-  return {id: this.id,
-          name: this.name}
-}
-
 
 
 module.exports = Channel

@@ -13,7 +13,7 @@
    this.mixin('coect-context', 'umedia-context')
    function init(query) {
      $.getJSON(self.url.channel() + '?' + $.param(query), function(data) {
-       self.update({items: data})
+       self.update({items: data.items})
      }).fail(self.failHandler)
    }
    

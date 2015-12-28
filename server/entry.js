@@ -9,8 +9,12 @@ var ENTRIES_LIST = 'entries'
 var MAX_PAGE_SIZE = 20
 var OWNER = 'dvd@dogada.org'
 
-var Entry = require('./models').Entry
+var Entity = require('./models').Entity
 var Channel = require('./models').Channel
+var Entry = require('./models').Entry
+
+
+
 var wpml = require('wpml')
 
 function getSchema(req) {
@@ -27,15 +31,15 @@ function checkListParent(req, done) {
   tflow([
     function() {
       if (!req.body.list) this.next(null)
-      Channel.findById(req.body.list, this)
+      Channel.get(req.body.list, this)
     },
     function(list) {
       if (!req.body.parent) this.next(list, null)
-      else Entry.findById(req.body.topic, this.join(list))
+      else Entry.get(req.body.topic, this.join(list))
     },
     function(list, topic, parent) {
-      if (topic && list && topic.list_id !== list.id) return this.fail('Topic doesn\'t belongs to list: ' + topic.id)
-      if (parent && list && parent.list_id !== list.id) return this.fail('Parent doesn\'t belongs to list: ' + parent.id)
+      if (topic && list && topic.list !== list.id) return this.fail('Topic doesn\'t belongs to list: ' + topic.id)
+      if (parent && list && parent.list !== list.id) return this.fail('Parent doesn\'t belongs to list: ' + parent.id)
       this.next(list, topic, parent)
     },
   ], done);
@@ -59,52 +63,49 @@ function parseMeta(text, done) {
 function checkNewEntry(req, done) {
   tflow([
     function() {
-      if (req.body.parent && req.body.list) return this.fail(400, 'Both list and parent are sent.')
-      else if (req.body.list) Channel.findById(req.body.list, this)
-      else if (req.body.parent) Entry.findById(req.body.parent, this.join(null))
-      else this.fail(400, 'Parent or list must be provided')
+      Entity.get(req.body.parent, this)
     },
-    function(list, parent) {
-      debug('checkEA list=', list, parent)
-      if (!list && !parent) return this.fail('List or parent are required.')
-      if (!parent && list.owner_id !== req.user.id) return this.fail('Not owner of list')
-      parseMeta(req.body.text || '', this.join(list, parent))
+    function(parent) {
+      debug('checkNE list=', list, parent)
+      if (parent.type === 'channel') return this.next(parent, parent)
+      else return Channel.get(parent.list, this.join(parent))
     },
-  ], done);
+    function(parent, list) {
+      if (list.owner !== req.user.id) return this.fail('Not owner of the list')
+      parseMeta(req.body.text || '', this.join(parent, list))
+    },
+  ], done)
 }
 
-function saveNewEntry(req, list, parent, meta, done) {
+
+
+function saveNewEntry(req, parent, list, meta, done) {
+  debug('saveNewEntry', list, parent)
   tflow([
     function() {
-      // top-level entries of lists (posts) store on list's shard, comments
-      // store on topic's shard
-      var listId = list && list.id || parent.list_id
       var type = 'post'
       var topicId, threadId
-      if (parent) {
-        topicId = parent.topic_id || parent.id
-        if (!parent.thread_id || parent.thread_id === parent.topic_id) threadId = parent.id
-        else threadId = parent.thread_id
-        
-        type = (parent.thread_id ? 'reply' : 'comment')
+      if (parent.type !== 'channel') {
+        topicId = parent.topic || parent.id
+        if (!parent.thread || parent.thread === parent.topic) threadId = parent.id
+        else threadId = parent.thread
+        type = (parent.thread ? 'reply' : 'comment')
       }
       //Fix made a transaction
       Entry.create({
-        name: req.body.name || '',
-        text: req.body.text,
-        slug: meta.slug,
-        // custom urls are allowed for posts only (they have not null list and
-        // comments doesn't 
-        url: list && Entry.makeUrl(req.user, list, meta.slug),
-        user_id: req.user.id,
-        list_id: listId,
-        visible: true,
+        model: Entry.MODEL,
         type: type,
-        parent_id: parent && parent.id,
-        topic_id: topicId,
-        thread_id: threadId,
-        repost_id: null
-      }, listId, this.join(threadId))
+        name: meta.name || Entity.parseName(req.body.text),
+        text: req.body.text,
+        // custom urls are allowed for posts only
+        url: type === 'post' ? Entry.makeUrl(req.user, list, meta.slug) : null,
+        owner: req.user.id,
+        list: list.id,
+        access: req.security.getNewEntryAccess(req.user, {type: type}, list),
+        parent: parent.id,
+        topic: topicId,
+        thread: threadId
+      }, list.id, this.join(threadId))
     }
   ], done);
 }
@@ -118,15 +119,15 @@ function create(req, res) {
     function() {
       checkNewEntry(req, this)
     },
-    function(list, parent, meta) {
-      saveNewEntry(req, list, parent, meta, this)
+    function(parent, list, meta) {
+      saveNewEntry(req, parent, list, meta, this)
     },
     function(threadId, id) {
       debug('created entry', id, 'threadId=', threadId)
       if (threadId) {
         Entry.table(threadId)
           .update({
-            comment_count: Entry.raw('comment_count + 1'),
+            child_count: Entry.raw('child_count + 1'),
             rating: Entry.raw('rating + 1')
           })
           .where({id: threadId}).asCallback(this.send({id: id}))
@@ -139,65 +140,36 @@ function create(req, res) {
   ], coect.json.response(res))
 }
 
-function isDocAuthor(doc, user) {
-  return !!(user && user.id === doc.user_id)
-}
-
-function getForChange(req, done) {
-  tflow([
-    function() {
-      Entry.get(req.params.id, this)
-    },
-    function(doc) {
-      if (!isDocAuthor(doc, req.user)) return this.fail('Author required')
-      else return this.next(doc)
-    }
-  ], done)
-  
-}
-
 function entryWhere(req) {
   if (req.params.id) return {id: req.params.id}
   else return {url: [req.params.username, req.params.cslug, req.params.eslug].join('/')}
 }
 
-function getForRead(req, id, done) {
-  if (!done) {
-    done = id
-    id = null
-  }
-  debug('getForRead', id, req.params)
-  tflow([
-    function() {
-      Entry.get(id ? {id: id} : entryWhere(req), this)
-    },
-    function(doc) {
-      if (doc.visible === null && !isDocAuthor(doc, req.user)) return this.fail(403, 'Forbidden')
-      else return this.next(doc)
-    }
+
+function getEntryAndChannel(where, done) {
+  let flow = tflow([
+    () => Entry.get(where, flow),
+    (entry) => Channel.get(entry.list, flow.join(entry))
   ], done)
-  
 }
 
 function update(req, res) {
   debug('update', req.body)
-  tflow([
+  var flow = tflow([
     function() {
-      getForChange(req, this)
+      getEntryAndChannel(entryWhere(req), flow)
     },
-    function(entry, meta) {
-      var schema = entry.topic_id ? Entry.comment : Entry.post
+    function(entry, channel) {
+      if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
+      var schema = entry.topic ? Entry.comment : Entry.post
+      //FIX: use next fail() for errors as well
       if (coect.json.invalid(req, res, schema)) return
-      else Channel.get(entry.list_id, this.join(entry))
-    },
-    function(entry, list) {
-      parseMeta(req.body.text || '', this.join(entry, list))
+      parseMeta(req.body.text || '', this.join(entry, channel))
     },
     function(entry, list, meta) {
       Entry.update(entry.id, {
-        name: req.body.name,
+        name: Entity.parseName(req.body.text),
         text: req.body.text,
-        slug: meta.slug,
         url: entry.url || list && Entry.makeUrl(req.user, list, meta.slug),
         edited: new Date()
       }, this)
@@ -212,37 +184,36 @@ function update(req, res) {
 function fillUsers(entries, cache, done) {
   tflow([
     function() {
-      cache.getUsers(_.unique(_.map(entries, 'user_id')), this)
+      cache.getUsers(Array.from(new Set(entries.map(e => e.owner))), this)
     },
     function(users) {
       debug('found users', _.size(users), users)
-      this.next(_.map(entries, function(e) {
-        e.user = users[e.user_id] || {id: e.user_id}
-        delete e.user_id
-        return e
-      }))
-    },
-  ], done);
+      for (let e of entries) e.owner = users[e.owner] || {id: e.owner}
+      this.next(entries)
+    }
+  ], done)
 }
 
 function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
   var thread = !!req.query.thread
-  tflow([
+  var flow = tflow([
     function() {
-      getForRead(req, this)
+      getEntryAndChannel(entryWhere(req), flow)
     },
-    function(entry) {
+    function(entry, channel) {
+      
       // load parent of reply to show a thread to refresh memory
       debug('loading parent for', entry)
-      if (thread && entry.type === 'reply') getForRead(req, entry.parent_id, this.join([entry]))
-      else this.next([entry])
+      if (thread && entry.type === 'reply') Entry.get(entry.parent, this.join(channel, [entry]))
+      else this.next(channel, [entry])
     },
-    function(chain, parent) {
-      this.next(parent ? [parent].concat(chain) : chain)
-    },
-    function(entries) {
-      fillUsers(entries, req.app.userCache, this)
+    function(channel, chain, parent) {
+      if (parent) chain = [parent].concat(chain)
+      for (let entry of chain) {
+        if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
+      }
+      fillUsers(chain, req.app.userCache, this)
     },
     function(entries) {
       this.next(thread ? entries: entries[0])
@@ -254,15 +225,10 @@ function retrieve(req, res, next) {
 
 function remove(req, res) {
   debug('remove params', req.params, req.oid)
-  tflow([
-    function() {
-      getForChange(req.params.id, this)
-    },
-    function(doc) {
-      debug('remove', doc)
-      if (!doc) return this.fail('Invalid id')
-      else Entry.remove(doc.id, this)
-    },
+  var flow = tflow([
+    () => getEntryAndChannel(entryWhere(req), flow),
+    (entry, channel) => req.security.canUserRemove(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
+    (entry) => Entry.remove(entry.id, flow)
   ], coect.json.response(res))
 }
 
@@ -282,13 +248,13 @@ function listWhere(req, done) {
   tflow([
     function() {
       //list_url
-      var where = firstItem(req.query, ['user_id', 'list_id', 'list_url', 'topic_id', 'thread_id'])
+      var where = firstItem(req.query, ['owner', 'list', 'list_url', 'topic', 'thread'])
+      // FIX: switch to timeline
       if (!Object.keys(where).length) where = {type: 'post'}
-      //if (!Object.keys(where).length) return this.fail(400, 'An entry filter is required.')
+      if (!Object.keys(where).length) return this.fail(400, 'An entry filter is required.')
       
       // show top-level entries (posts) only
-      if (where.user_id || where.list_id || where.list_url) where.type = 'post'
-      where.visible = true
+      if (where.owner || where.list || where.list_url) where.type = 'post'
       this.next(where)
     }
   ], done)
@@ -303,20 +269,19 @@ function listOrder(req) {
 
 /**
    Ensures that current user can access the list.
-   Returns new where without list_url bu with list_id.
+   Returns new where without list_url but with list.
 */
 function checkList(req, where, done) {
-  tflow([
+  var flow = tflow([
     function() {
-      if (where.list_id) Channel.findOne({id: where.list_id}, this)
-      else Channel.findOne({url: where.list_url}, this)
+      Channel.get(where.list ? where.list : {url: where.list_url}, flow)
     },
     function(channel) {
       debug('checkList', channel)
-      if (!channel) return this.fail(404, 'Channel isn\'t found.')
-      else if (!channel.visible && !(req.user && req.user.isAdmin())) return this.fail(403, 'Access denied')
-      this.next(_.extend(_.omit(where, 'list_url'), {list_id: channel.id}))
-    },
+      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Forbidden')
+      this.next(_.extend(_.omit(where, 'list_url'), {list: channel.id}),
+                req.security.getUserAccessInsideChannel(req.user, channel))
+    }
   ], done);
 }
 
@@ -326,12 +291,14 @@ function list(req, res) {
       listWhere(req, this)
     },
     function(where) {
-      if (where.list_id || where.list_url) checkList(req, where, this)
+      if (where.list || where.list_url) checkList(req, where, this)
       else this.next(where)
     },
-    function(where) {
-      var q = Entry.table(where.topic_id || where.parent_id || where.list_id)
+    function(where, access) {
+      var q = Entry.table(where.topic || where.parent || where.list)
       q = q.where(where)
+      // show only entries for given access level
+      if (access && access > Channel.ADMIN) q = q.where('access', '>=', access)
       if (req.query.cursor) {
         if (req.query.order === 'first') q = q.andWhere('id', '>', req.query.cursor)
         else if (req.query.order === 'last') q = q.andWhere('id', '<', req.query.cursor)
@@ -343,6 +310,9 @@ function list(req, res) {
     },
     function(entries) {
       fillUsers(entries, req.app.userCache, this)
+    },
+    function(entries) {
+      this.next({items: entries})
     },
   ], coect.json.response(res))
 }

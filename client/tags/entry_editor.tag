@@ -5,15 +5,14 @@
     <div class="form-group">
       <textarea rows="1" name="content" class="form-control"
                 placeholder="Type your { entryType() } here"
-                enabled={ !loading }
                 onfocus={ expand }
-                onkeyup={ edit }>{ entry.text || '' }</textarea>
+        onkeyup={ edit }></textarea>
     </div>
 
-    <div  if={ expanded } class="form-inline form-group clearfix">
+    <div if={ expanded } class="form-inline form-group clearfix">
       
       <div class="form-group pull-right">
-          <button disabled={ !content.value } type="submit" class="btn btn-success">Publish</button>
+          <button disabled={ !text } type="submit" class="btn btn-success">Publish</button>
           <button if={ !opts.thread } type="button" class="btn btn-danger"
                   onclick={ cancel }>Cancel</button>
       </div>
@@ -42,6 +41,7 @@
    }
 
    self.edit = function(e) {
+     console.log('edit', e.target, e.target.value)
      self.text = e.target.value
    }
 
@@ -69,7 +69,7 @@
         text: self.content.value,
         name: self.entryName(self.content.value),
         parent: self.opts.ancestor && self.opts.ancestor.id,
-        list: self.opts.list}
+        list: self.opts.list && self.opts.list.id}
      ).done(function(doc) {
        console.log('done', doc)
        self.text = self.content.value = ''
@@ -81,6 +81,7 @@
      $.getJSON(self.url.entry(id), function(data) {
        self.entry = data
        self.text = data.text
+       self.content.value = data.text
        self.update()
      })
    }

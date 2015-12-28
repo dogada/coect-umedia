@@ -6,6 +6,12 @@ var path = require('path')
 var coect = require('coect')
 var umedia = require('../../')
 
+
+// http://riotjs.com/forum/#!/using:debugging-troubleshooting/have-you-tried-riotut
+// riot.util.tmpl.errorHandler = function(err) { 
+//   console.error('Error in a riot template during test:', err) 
+// }
+
 // init tags mixins
 coect.mixins.register()
 
@@ -62,11 +68,16 @@ function umediaUrls(base) {
   }
 }
 
+Site.config = {
+  avatar: function(size) {
+    return '/_static/img/avatar_' + (size || 32) + '.png'
+  }
+}
+
 Site.umedia = require('../../app')
 Site.umedia.url = umediaUrls(urlBuilder('/', urlIdTranslator))
 
 umedia.init({route: page, url: Site.umedia.url, slug: true, newspaper: false})
-
 
 var debugModule = require('debug')
 debugModule.log = console.info.bind(console)

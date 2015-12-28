@@ -28,7 +28,7 @@
 
    self.reload = function() {
      $.getJSON(self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id), function(data) {
-       self.items = data
+       self.items = data.items
        self.update()
      })
    }

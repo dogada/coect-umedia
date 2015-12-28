@@ -12,12 +12,12 @@ var POST = {
   type: 'post',
   name: 'Test name',
   text: '!title: Hello world!\nSee more: http://www.coect.net',
-  comment_count: COMMENTS.length
+  child_count: COMMENTS.length
 }
 
 describe(TAG, function() {
   before(function() {
-    env.fakeGET('/e?order=last&count=10&thread_id=ID1', COMMENTS)
+    env.fakeGET('/e?order=last&count=10&thread=ID1', COMMENTS)
   })
 
   it('should show post with comments', function(done) {

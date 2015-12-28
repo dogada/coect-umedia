@@ -7,7 +7,7 @@ var ui = require('coect').ui
 // catch all AJAX requests and replace with stubs
 exports.server = function() {
   var server = sinon.fakeServer.create({
-    autoRespond: true
+    respondImmediately: true
   })
 
   server.xhr.useFilters = true
@@ -46,10 +46,13 @@ exports.fakeGET = function(url, response) {
 */
 exports.tryIt = function(fn, done) {
   return function() {
+    console.log('tryIt')
     try {
       fn()
+      console.log('tryIt done=', done)
       done()
     } catch (e) {
+      console.log('tryIt error', e)
       done(e)
     }
   }

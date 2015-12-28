@@ -6,7 +6,7 @@
       </li>
     </ul>
     <p if={ opts.entry.type == 'reply' }>View 
-      <a href={ url.entry(opts.entry.thread_id) }>all replies</a> in the thread.
+      <a href={ url.entry(opts.entry.thread) }>all replies</a> in the thread.
     </p>
 
     <umedia-entry-editor if={ canComment } ancestor="{ opts.entry }"></umedia-entry-editor>

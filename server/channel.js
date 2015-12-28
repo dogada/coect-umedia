@@ -5,18 +5,17 @@ var tflow = require('tflow')
 var coect = require('coect')
 var _ = require('lodash')
 var wpml = require('wpml')
-
-var CHANNEL_LIST = 'channels'
-var OWNER = 'dvd@dogada.org'
-
 var Channel = require('./models').Channel
+
+const MAX_PAGE_SIZE = 10
+
 
 function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.params)
   tflow([
     function() {
       var p = req.params
-      if (p.id) Channel.findById(p.id, this)
+      if (p.id) Channel.get(p.id, this)
       else Channel.findOne({url: p.username + '/' + p.cslug}, this)
     }
   ], req.app.janus(req, res, next))
@@ -28,7 +27,7 @@ function parseMeta(text, done) {
       this.next(wpml.meta(text))
     },
     function(meta) {
-      meta = _.pick(meta, 'slug')
+      meta = _.pick(meta, 'slug', 'name')
       Channel.validate(meta, Channel.inputs, this.send(meta))
     },
   ], done);
@@ -37,20 +36,21 @@ function parseMeta(text, done) {
 function create(req, res) {
   debug('create', req.body)
   if (coect.json.invalid(req, res, Channel.inputs)) return
-  var data = req.body, ownerId = req.user.id
+  var data = req.body, owner = req.user
   tflow([
     function() {
       parseMeta(data.text || '', this)
     },
     function(meta) {
       Channel.create({
-        name: data.name,
+        model: Channel.MODEL,
+        type: Channel.TYPE,
+        name: data.name || meta.name || Channel.parseName(data.text),
         text: data.text,
-        slug: meta.slug,
         url: Channel.makeUrl(req.user, meta.slug),
-        owner_id: ownerId,
-        visible: true
-      }, ownerId, this)
+        owner: owner.id,
+        access: Channel.VISITOR
+      }, owner.id, this)
     },
     function(id) {
       Channel.get(id, this)
@@ -65,14 +65,13 @@ function update(req, res) {
   tflow([
     function() {
       if (!_.size(data)) return this.fail('No data')
-      Channel.findById(req.params.id, this)
+      Channel.get(req.params.id, this)
     },
     function(channel) {
-      if (channel.owner_id !== req.user.id) this.fail(403, 'Owner required')
+      if (channel.owner !== req.user.id) this.fail(403, 'Owner required')
       else parseMeta(data.text || '', this.join(channel))
     },
     function(channel, meta) {
-      if (meta.slug) data.slug = meta.slug
       //FIX: use actual channel user
       if (!channel.url) data.url = Channel.makeUrl(req.user, meta.slug)
       Channel.update(channel.id, data, this)
@@ -87,10 +86,10 @@ function remove(req, res) {
   debug('remove params', req.params, req.oid)
   tflow([
     function() {
-      Channel.findById(req.params.id, this)
+      Channel.get(req.params.id, this)
     },
     function(channel) {
-      if (channel.owner_id !== req.user.id) return this.fail(403, 'Owner required')
+      if (channel.owner !== req.user.id) return this.fail(403, 'Owner required')
       else return this.next(channel)
     },
     function(channel) {
@@ -101,14 +100,19 @@ function remove(req, res) {
 
 function list(req, res) {
   var where = {visible: true}
-  if (req.query.owner) where.owner_id = req.query.owner
+
   debug('list', where)
   tflow([
     function() {
-      Channel.find({
-        where: where,
-        modelize: false
-      }, this)
+      var q = Channel.table(req.query.owner).select(Channel.listFields)
+      if (req.query.owner) q.where('owner', req.query.owner)
+      var access = req.security.getUserAccess(req.user)
+      q = q.where('access', '>', access)
+      q = q.limit(Math.min(MAX_PAGE_SIZE, parseInt(req.query.count, 10)))
+      q.asCallback(this)
+    },
+    function(channels) {
+      this.next({items: channels})
     }
   ], coect.json.response(res))
 }

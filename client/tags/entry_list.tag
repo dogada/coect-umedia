@@ -11,9 +11,8 @@
       <div>
         <h4 class="umedia-comments-title">
           { commentsTitle() }
-          <a if={ ancestor.best_comment_count } href="#"><span class="badge">{ ancestor.best_comment_count } best</span></a>
         </h4>
-        <a if={ ancestor.type == 'post' } onclick={ toggleComments }>{ commentsHint() }</a>
+        <a if={ ancestor && ancestor.type == 'post' } onclick={ toggleComments }>{ commentsHint() }</a>
       </div>
 
     </div>
@@ -48,7 +47,7 @@
 
 
    function getThreadId(entry) {
-     return (entry.type == 'reply' ? entry.thread_id : entry.id)
+     return (entry.type == 'reply' ? entry.thread : entry.id)
    }
 
    function getCursor() {
@@ -58,9 +57,9 @@
 
    function initQuery(query) {
      if (opts.type) query.type = opts.type
-     else if (opts.owner) query.user_id = opts.owner
-     else if (self.ancestor) query.thread_id = getThreadId(self.ancestor)
-     else if (opts.list) query.list_id = opts.list
+     else if (opts.owner) query.owner = opts.owner
+     else if (self.ancestor) query.thread = getThreadId(self.ancestor)
+     else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
      return query
    }
@@ -73,9 +72,10 @@
      debug('load append=', append)
      var url = Site.umedia.url.entry('') + '?' + $.param(getQuery(append))
      $.getJSON(url, function(data) {
+       debug('loaded data', data && data.length)
        self.update({
          hasMore: (data.length >= self.query.count),
-         items: (append ? self.items.concat(data) : data)
+         items: (append ? self.items.concat(data.items) : data.items)
        })
      }).fail(self.failHandler)
    }
@@ -101,23 +101,23 @@
    }
 
    self.commentsTitle = function() {
-     if (self.ancestor.type != 'post') return 'Replies'
-     else if (self.query.topic_id) return 'With replies'
+     if (self.ancestor && self.ancestor.type != 'post') return 'Replies'
+     else if (self.query.topic) return 'With replies'
      else return 'Comments'
    }
 
    self.commentsHint = function() {
-     return (self.query.thread_id ? 'With replies' : 'Comments only')
+     return (self.query.thread ? 'With replies' : 'Comments only')
    }
 
    self.toggleComments = function() {
      debug('toggle', self.query)
-     if (!self.query.thread_id) {
-       delete self.query.topic_id
-       self.query.thread_id = getThreadId(self.ancestor)
+     if (!self.query.thread) {
+       delete self.query.topic
+       self.query.thread = getThreadId(self.ancestor)
      } else {
-       delete self.query.thread_id
-       self.query.topic_id = self.ancestor.topic_id || self.ancestor.id
+       delete self.query.thread
+       self.query.topic = self.ancestor.topic || self.ancestor.id
      }
      debug('after', self.query)
      load()
