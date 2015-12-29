@@ -4,10 +4,11 @@ var debug = require('debug')('umedia:channel')
 var tflow = require('tflow')
 var coect = require('coect')
 var _ = require('lodash')
-var wpml = require('wpml')
+
 var Channel = require('./models').Channel
 
-const MAX_PAGE_SIZE = 10
+const MAX_PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 
 function retrieve(req, res, next) {
@@ -21,35 +22,23 @@ function retrieve(req, res, next) {
   ], req.app.janus(req, res, next))
 }
 
-function parseMeta(text, done) {
-  tflow([
-    function() {
-      this.next(wpml.meta(text))
-    },
-    function(meta) {
-      meta = _.pick(meta, 'slug', 'name')
-      Channel.validate(meta, Channel.inputs, this.send(meta))
-    },
-  ], done);
-}
-
 function create(req, res) {
   debug('create', req.body)
-  if (coect.json.invalid(req, res, Channel.inputs)) return
-  var data = req.body, owner = req.user
+  var owner = req.user
   tflow([
     function() {
-      parseMeta(data.text || '', this)
+      Channel.validate(req.body, {}, this)
     },
-    function(meta) {
+    function(doc, data) {
       Channel.create({
         model: Channel.MODEL,
         type: Channel.TYPE,
-        name: data.name || meta.name || Channel.parseName(data.text),
+        name: data.name,
         text: data.text,
-        url: Channel.makeUrl(req.user, meta.slug),
+        url: Channel.makeUrl(req.user.username, data.slug),
         owner: owner.id,
-        access: Channel.VISITOR
+        access: Channel.VISITOR,
+        data: {slug: data.slug}
       }, owner.id, this)
     },
     function(id) {
@@ -60,21 +49,20 @@ function create(req, res) {
 
 function update(req, res) {
   debug('update', req.body)
-  if (coect.json.invalid(req, res, Channel.inputs)) return
-  var data = _.pick(req.body, 'name', 'text')
   tflow([
     function() {
-      if (!_.size(data)) return this.fail('No data')
       Channel.get(req.params.id, this)
     },
     function(channel) {
+      debug('Updating', channel)
       if (channel.owner !== req.user.id) this.fail(403, 'Owner required')
-      else parseMeta(data.text || '', this.join(channel))
+      else Channel.validate(req.body, {}, this.join(channel))
     },
-    function(channel, meta) {
+    function(channel, doc, data) {
       //FIX: use actual channel user
-      if (!channel.url) data.url = Channel.makeUrl(req.user, meta.slug)
-      Channel.update(channel.id, data, this)
+      var update = _.pick(data, 'name', 'text')
+      if (!channel.url) update.url = Channel.makeUrl(req.user.username, data.slug)
+      Channel.update(channel.id, update, this)
     },
     function(id) {
       Channel.get(id, this)
@@ -98,17 +86,21 @@ function remove(req, res) {
   ], coect.json.response(res))
 }
 
-function list(req, res) {
-  var where = {visible: true}
 
-  debug('list', where)
+function pageSize(req) {
+  return Math.min(MAX_PAGE_SIZE, PAGE_SIZE || parseInt(req.query.count, 10))
+}
+
+function list(req, res) {
+  debug('list', req.query)
   tflow([
     function() {
-      var q = Channel.table(req.query.owner).select(Channel.listFields)
-      if (req.query.owner) q.where('owner', req.query.owner)
+      var q = Channel.table(req.query.owner).select(Channel.listFields).where('type', 'channel')
+      if (req.query.owner) q = q.where({owner: req.query.owner})
       var access = req.security.getUserAccess(req.user)
-      q = q.where('access', '>', access)
-      q = q.limit(Math.min(MAX_PAGE_SIZE, parseInt(req.query.count, 10)))
+      debug('access', access)
+      q = q.where('access', '>=', access)
+      q = q.limit(pageSize(req))
       q.asCallback(this)
     },
     function(channels) {

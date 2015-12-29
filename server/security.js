@@ -4,6 +4,7 @@
    Default access policy for umedia.
    Can be exended in each project.
 */
+var debug = require('debug')('umedia:security')
 var Entity = require('./models').Entity
 var Channel = require('./models').Channel
 
@@ -19,7 +20,8 @@ class UmediaAccessPolicy {
     }, opts || {})
   }
 
-  accessForChannelOnly(user, channel) {
+  accessInsideChannel(user, channel) {
+    if (!user) return Channel.VISITOR
     if (channel.owner === user.id) return Channel.ADMIN
     if (channel.hasModerator(user)) return Channel.MODERATOR
     if (channel.hasMember(user)) return Channel.MEMBER
@@ -37,7 +39,7 @@ class UmediaAccessPolicy {
 
   // access level in a channel
   getUserAccessInsideChannel(user, channel) {
-    return Math.min(this.getUserAccess(user), this.accessForChannelOnly(user, channel))
+    return Math.min(this.getUserAccess(user), this.accessInsideChannel(user, channel))
   }
 
   getUserAccessTags(owner) {
@@ -69,7 +71,7 @@ class UmediaAccessPolicy {
   }
 
   canUserView(user, entry, channel) {
-    //var role = channel && channel.getUserAccess(user)
+    debug('CanUserView', entry.access, user && user.id, (entry.access >= Entity.VISITOR))
     if (user && user.isAdmin()) return true // admins should have access always
     if (!entry.access || entry.access < Channel.ADMIN) return false // only admins can access such entries
     if (!user) return (entry.access >= Entity.VISITOR)

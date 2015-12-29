@@ -17,12 +17,6 @@ var Entry = require('./models').Entry
 
 var wpml = require('wpml')
 
-function getSchema(req) {
-  if (req.body.repost) return Entry.repost
-  else if (req.body.topic) return Entry.comment
-  else return Entry.post
-}
-
 /**
    Load list and parent and check that they match each other.
 */
@@ -48,17 +42,6 @@ function checkListParent(req, done) {
 function isAuthorized() {
 }
 
-function parseMeta(text, done) {
-  tflow([
-    function() {
-      this.next(wpml.meta(text))
-    },
-    function(meta) {
-      meta = _.pick(meta, 'slug')
-      Entry.validate(meta, Entry.inputs, this.send(meta))
-    },
-  ], done);
-}
 
 function checkNewEntry(req, done) {
   tflow([
@@ -72,14 +55,19 @@ function checkNewEntry(req, done) {
     },
     function(parent, list) {
       if (list.owner !== req.user.id) return this.fail('Not owner of the list')
-      parseMeta(req.body.text || '', this.join(parent, list))
+      Entry.validate(req.body,
+                     {schema: Entry.getTypeSchema(parent.type === 'channel' ? 'post' : 'comment')},
+                     this.join(parent, list))
     },
   ], done)
 }
 
 
+function makeVersion() {
+  return new Date().toISOString()
+}
 
-function saveNewEntry(req, parent, list, meta, done) {
+function saveNewEntry(req, parent, list, doc, data, done) {
   debug('saveNewEntry', list, parent)
   tflow([
     function() {
@@ -95,47 +83,58 @@ function saveNewEntry(req, parent, list, meta, done) {
       Entry.create({
         model: Entry.MODEL,
         type: type,
-        name: meta.name || Entity.parseName(req.body.text),
+        name: data.name,
         text: req.body.text,
         // custom urls are allowed for posts only
-        url: type === 'post' ? Entry.makeUrl(req.user, list, meta.slug) : null,
+        url: type === 'post' ? Entry.makeUrl(list.url, data.slug) : null,
         owner: req.user.id,
         list: list.id,
+        version: makeVersion(),
         access: req.security.getNewEntryAccess(req.user, {type: type}, list),
         parent: parent.id,
         topic: topicId,
         thread: threadId
-      }, list.id, this.join(threadId))
+      }, list.id, this)
     }
   ], done);
 }
 
+function updateCounters(entry, done) {
+  var query;
+  if (entry.thread) {
+    // update comment's reply count
+    query = Entry.table(entry.thread).update({
+      child_count: Entry.raw('child_count + 1'),
+      rating: Entry.raw('rating + 1')
+    }).where({id: entry.thread})
+  }
+  else {
+    // update channels' post count
+    query = Entry.table(entry.parent).update({
+      child_count: Entry.raw('child_count + 1'),
+      version: entry.version
+    }).where({id: entry.parent})
+  }
+  return query.asCallback(done)
+}
+
 function create(req, res) {
-  debug('create user=', req.user.id, req.body, getSchema(req))
-  if (coect.json.invalid(req, res, getSchema(req))) return
+  debug('create user=', req.user.id)
   //FIX: load and verify ids and access rights
   // name can defined for entries without topic only 
-  tflow([
+  var flow = tflow([
     function() {
-      checkNewEntry(req, this)
+      checkNewEntry(req, flow)
     },
-    function(parent, list, meta) {
-      saveNewEntry(req, parent, list, meta, this)
-    },
-    function(threadId, id) {
-      debug('created entry', id, 'threadId=', threadId)
-      if (threadId) {
-        Entry.table(threadId)
-          .update({
-            child_count: Entry.raw('child_count + 1'),
-            rating: Entry.raw('rating + 1')
-          })
-          .where({id: threadId}).asCallback(this.send({id: id}))
-      }
-      else this.next({id: id})
+    function(parent, list, doc, data) {
+      saveNewEntry(req, parent, list, doc, data, flow)
     },
     function(id) {
-      Entry.get(id, this)
+      Entry.get(id, flow)
+    },
+    function(entry) {
+      debug('created entry', entry)
+      updateCounters(entry, flow.send(entry))
     }
   ], coect.json.response(res))
 }
@@ -161,17 +160,15 @@ function update(req, res) {
     },
     function(entry, channel) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
-      var schema = entry.topic ? Entry.comment : Entry.post
-      //FIX: use next fail() for errors as well
-      if (coect.json.invalid(req, res, schema)) return
-      parseMeta(req.body.text || '', this.join(entry, channel))
+      Entry.validate(req.body, {schema: Entry.getTypeSchema(entry.type)}, this.join(entry, channel))
     },
-    function(entry, list, meta) {
+    function(entry, list, doc, data) {
       Entry.update(entry.id, {
-        name: Entity.parseName(req.body.text),
-        text: req.body.text,
-        url: entry.url || list && Entry.makeUrl(req.user, list, meta.slug),
-        edited: new Date()
+        name: data.name,
+        head: doc.head,
+        text: doc.text,
+        url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || null,
+        version: makeVersion()
       }, this)
     },
     function(id) {

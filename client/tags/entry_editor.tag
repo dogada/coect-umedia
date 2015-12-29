@@ -29,10 +29,11 @@
    self.entry = self.opts.entry || {}
 
    self.entryType = function() {
-     if (self.opts.list) return 'post'
-     else if (self.opts.ancestor) return (self.opts.ancestor.type == 'post' ?
-     'comment' : 'reply')
-     else return 'message'
+     switch(self.opts.ancestor.type) {
+       case 'channel': return 'post'
+       case 'post': return 'comment'
+       default: return 'reply'
+     }
    }
 
    self.expand = function(e) {
@@ -41,23 +42,12 @@
    }
 
    self.edit = function(e) {
-     console.log('edit', e.target, e.target.value)
      self.text = e.target.value
    }
 
    self.cancel = function(e) {
      if (Site.page.len) Site.page.back()
      else Site.page.show('/')
-   }
-
-   self.entryName = function(text) {
-     var title
-     try {
-       title = self.wpml.doc(text).meta.title
-     } catch (e) {
-       console.error('entryName', e, text)
-     }
-     return title || text && text.slice(0, 30) || ''
    }
 
    self.publish = function(e) {
@@ -67,7 +57,6 @@
        self.url.entry(),
        {id: self.opts.id,
         text: self.content.value,
-        name: self.entryName(self.content.value),
         parent: self.opts.ancestor && self.opts.ancestor.id,
         list: self.opts.list && self.opts.list.id}
      ).done(function(doc) {

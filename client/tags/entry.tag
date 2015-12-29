@@ -1,7 +1,7 @@
 <umedia-entry>
   <div id="e{entry.id}" class="umedia-entry media {opts.compacted ? 'umedia-compacted' : ''}">
     
-    <h2 if={ doc && doc.meta.title }>{ doc.meta.title }</h2>
+    <h2 if={ title }>{ title }</h2>
 
     <div class="media-left">
       <a href="#">
@@ -68,9 +68,11 @@
 
    self.rebuild = function() {
      var entry = self.opts.entry || self.opts.state && self.opts.state.entry
+     var doc = self.wpml.doc(entry.text || '')
      self.update({
        entry: entry,
-       doc: self.wpml.doc(entry.text || ''),
+       doc: doc,
+       title: doc.meta.title || doc.meta.name,
        canChange: Site.umedia.canChangeEntry(entry)
      })
    }
