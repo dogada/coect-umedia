@@ -95,7 +95,9 @@ function list(req, res) {
   debug('list', req.query)
   tflow([
     function() {
-      var q = Channel.table(req.query.owner).select(Channel.listFields).where('type', 'channel')
+      var q = Channel.table(req.query.owner)
+        .select(Channel.listFields)
+        .where('type', 'channel')
       if (req.query.owner) q = q.where({owner: req.query.owner})
       var access = req.security.getUserAccess(req.user)
       debug('access', access)

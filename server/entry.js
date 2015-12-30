@@ -42,16 +42,20 @@ function checkListParent(req, done) {
 function isAuthorized() {
 }
 
+function makeVersion() {
+  return new Date().toISOString()
+}
+
 
 function checkNewEntry(req, done) {
   tflow([
     function() {
-      Entity.get(req.body.parent, this)
+      Entity.get(req.body.parent, {select: '*'}, this)
     },
     function(parent) {
       debug('checkNE list=', list, parent)
       if (parent.type === 'channel') return this.next(parent, parent)
-      else return Channel.get(parent.list, this.join(parent))
+      else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
     function(parent, list) {
       if (list.owner !== req.user.id) return this.fail('Not owner of the list')
@@ -63,9 +67,6 @@ function checkNewEntry(req, done) {
 }
 
 
-function makeVersion() {
-  return new Date().toISOString()
-}
 
 function saveNewEntry(req, parent, list, doc, data, done) {
   debug('saveNewEntry', list, parent)
@@ -148,7 +149,7 @@ function entryWhere(req) {
 function getEntryAndChannel(where, done) {
   let flow = tflow([
     () => Entry.get(where, flow),
-    (entry) => Channel.get(entry.list, flow.join(entry))
+    (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry))
   ], done)
 }
 
@@ -271,7 +272,7 @@ function listOrder(req) {
 function checkList(req, where, done) {
   var flow = tflow([
     function() {
-      Channel.get(where.list ? where.list : {url: where.list_url}, flow)
+      Channel.get(where.list ? where.list : {url: where.list_url}, {select: '*'}, flow)
     },
     function(channel) {
       debug('checkList', channel)
@@ -293,6 +294,7 @@ function list(req, res) {
     },
     function(where, access) {
       var q = Entry.table(where.topic || where.parent || where.list)
+      q = q.select(Entry.listFields)
       q = q.where(where)
       // show only entries for given access level
       if (access && access > Channel.ADMIN) q = q.where('access', '>=', access)
