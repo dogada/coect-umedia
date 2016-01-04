@@ -13,6 +13,16 @@ class UserStore extends Store {
 
 const store = new UserStore()
 
-exports.detail = ui.showTag('umedia-profile', function(ctx, done) {
-  store.load(ctx, (err, data) => done(err, {user: data}))
-})
+exports.detail = function(ctx) {
+  ui.mount(ctx, 'umedia-profile', {
+    load: function(ctx, done) {
+      store.load(ctx, (err, data) => done(err, {user: data}))
+    }
+  })
+
+  ui.mount(ctx, 'umedia-channel-list', {
+    target: 'sidebar',
+    data: {owner: Site.user.id}
+  })
+
+}
