@@ -6,5 +6,6 @@ module.exports = {
   models: require('./models'),
   entry: require('./entry'),
   channel: require('./channel'),
+  user: require('./user'),
   security: require('./security')
 }

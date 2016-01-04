@@ -5,6 +5,7 @@ var coect = require('coect')
 
 var entry = require('./entry')
 var channel = require('./channel')
+var user = require('./user')
 
 function loginRequired(req, res, next) {
   debug('loginRequired', req.isAuthenticated())
@@ -27,6 +28,7 @@ function slug(param) {
    Short urls for channels and entries with slugs.
 */
 function slugRoutes(r) {
+  r.get(slug('username'), user.retrieve)
   r.get(slug('username') + slug('cslug'), channel.retrieve)
   r.get(slug('username') + slug('cslug') + slug('eslug'), entry.retrieve)
   r.get(slug('username') + slug('cslug') + '/e/:id', entry.retrieve)
@@ -50,6 +52,9 @@ module.exports = function(r) {
     .get(channel.retrieve)
     .put(loginRequired, channel.update)
     .delete(loginRequired, channel.remove)
+
+  r.route('/u/:id')
+    .get(user.retrieve)
 
   slugRoutes(r)
   return r

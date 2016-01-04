@@ -36,18 +36,19 @@ function urlBuilder(base, translator) {
 }
 
 /**
-   Append prefix to base path if first argument isn't objet with custom url.
+   Append prefix to base path if first argument isn't object with custom url (or
+   username).
 */
 function prefixOrUrl(base, prefix) {
   return function(obj) {
-      var args = Array.prototype.slice.apply(arguments)
-      if (!obj || !obj.url) args.unshift(prefix)
-      return base.apply(base, args)
+    var args = Array.prototype.slice.apply(arguments)
+    if (!obj || (!obj.url && !obj.username)) args.unshift(prefix)
+    return base.apply(base, args)
   }
 }
 
 function urlIdTranslator(obj) {
-  var value = obj.url || obj.id || obj
+  var value = obj.url || obj.username || obj.id || obj
   // coerce numbers to string automatically
   if (typeof value === 'number') value = value.toString(10)
   if (typeof value !== 'string') console.error(

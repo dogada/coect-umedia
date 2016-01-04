@@ -17,7 +17,7 @@
     </table>
 
     <div>
-      <a class="btn btn-primary" role="button" href="{ url.channel() }/new/">New</a>
+      <a class="btn btn-primary" role="button" href="{ url.channel('_/new') }">New</a>
     </div>
 
   </div>

@@ -37,7 +37,8 @@ module.exports = function(config) {
       transform: [
         ['riotify', {type: 'es6', extension: '.tag'}],
         ['babelify'],
-        ['browserify-istanbul']
+        // https://github.com/karma-runner/karma-coverage/issues/157
+        ['browserify-istanbul', {instrumenterConfig: {embedSource: true}}]
       ],
       extensions: ['.js', '.tag'],
       postFilter: function(id, file, pkg) {

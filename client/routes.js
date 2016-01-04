@@ -3,17 +3,18 @@
 var handlers = require('./handlers')
 
 function baseRoutes(route, url) {
-  route(url.entry('new'), handlers.entry.edit)
   route(url.entry(':id', 'edit'), handlers.entry.edit)
   route(url.entry(':parent', 'new'), handlers.entry.edit)
   route(url.entry(':id'), handlers.entry.details)
 
   route(url.channel(':list', 'entry'), handlers.entry.edit)
 
-  route(url.channel('new'), handlers.channel.edit)
-  route(url.channel('admin'), handlers.channel.admin)
+  route(url.channel('_/new'), handlers.channel.edit)
+  route(url.channel('_/admin'), handlers.channel.admin)
   route(url.channel(':id'), handlers.channel.details)
   route(url.channel(':id', 'edit'), handlers.channel.edit)
+  route(url.user(':id'), handlers.user.detail)
+
 }
 
 /**
@@ -21,6 +22,7 @@ function baseRoutes(route, url) {
    Can be mounted to any root, for example /club/dvd/blog/hello-world.
 */
 function slugRoutes(route, prefix) {
+  route(prefix(':username'), handlers.user.detail)
   route(prefix(':username/:cslug'), handlers.channel.details)
   route(prefix(':username/:cslug/:eslug'), handlers.entry.details)
   route(prefix(':username/:cslug/e/:id'), handlers.entry.details)
@@ -34,9 +36,9 @@ function slugRoutes(route, prefix) {
 */
 function newspaperRoutes(route, prefix) {
   // user pages
-  route(prefix('u/:username/:cslug'), handlers.channel.details)
-  route(prefix('u/:username/:cslug/:eslug'), handlers.entry.details)
-  route(prefix('u/:username/:cslug/e/:id'), handlers.entry.details)
+  route(prefix('~/:username/:cslug'), handlers.channel.details)
+  route(prefix('~/:username/:cslug/:eslug'), handlers.entry.details)
+  route(prefix('~/:username/:cslug/e/:id'), handlers.entry.details)
   // default user pages
   route(prefix(':cslug'), handlers.channel.details)
   route(prefix(':cslug/:eslug'), handlers.entry.details)

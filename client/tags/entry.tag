@@ -1,19 +1,20 @@
-<umedia-entry>
-  <div id="e{entry.id}" class="umedia-entry media {opts.compacted ? 'umedia-compacted' : ''}">
+<umedia-entry class="umedia-entry">
+  <div id="e{entry.id}" class="media {opts.compacted ? 'umedia-compacted' : ''}">
     
     <h2 if={ title }>{ title }</h2>
 
     <div class="media-left">
-      <a href="#">
+      <a href={ url.user(entry.owner) }>
         <img class="media-object" width="32" height="32" 
-             title={ entry.owner.name }
+             title={ entry.owner.name || entry.owner.id }
              src={ entry.owner.avatar || Site.config.avatar(32) } alt="">
       </a>
     </div>
 
     <div class="media-body">
       <div>
-        <a href="#">{ displayName(entry.owner) }</a> 
+        <a class="umedia-display-name" href="{ url.user(entry.owner) }"
+           title="{ entry.owner.username || entry.owner.id}">{ displayName(entry.owner) }</a> 
         <span class="umedia-meta small">
           <span if={ entry.type == 'post'}>
             <a href={ url.channel(entry.list) }>wrote</a>

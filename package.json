@@ -7,21 +7,24 @@
   "browserify": {
     "transform": [
       "riotify",
-      [
-        "babelify"
-      ]
+      "babelify",
+      "browserify-versionify",
+      "browserify-shim"
     ]
   },
   "browserify-shim": {},
   "scripts": {
     "build": "riot --type=es6 client/tags build/tags",
+    "watch:tags": "riot --type=es6 client/tags build/tags",
     "test": "npm run test:client",
     "pretest": "npm run build",
     "test:client": "karma start --single-run",
-    "watch": "nodemon -w ./client -e js,tag --exec npm run build",
+    "watch": "nodemon -d 5 -V -w client/ -e \"js tag\" --exec \"npm run build\"",
     "tdd": "npm run watch & karma start --browsers=Chrome --no-single-run",
     "coverage": "npm run test && firefox build/coverage/lcov-report/index.html",
-    "coveralls": "cat ./build/coverage/lcov.info | coveralls"
+    "coveralls": "cat ./build/coverage/lcov.info | coveralls",
+    "lint": "jshint server/ client/",
+    "validate": "npm ls"
   },
   "keywords": [
     "coect",
@@ -59,16 +62,22 @@
     "test": "test"
   },
   "devDependencies": {
-    "wpml": "0.x",
-    "coect": "0.x",
     "babel-core": "^5.8.0",
     "babelify": "~6.3.0",
     "brfs": "~1.4.1",
     "browserify-istanbul": "~0.2.1",
+    "coect": "0.x",
     "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
     "page": "~1.6.4",
+    "precommit-hook": "latest",
     "riot": "~2.3.12",
-    "riotify": "~0.1.2"
-  }
+    "riotify": "~0.1.2",
+    "wpml": "0.x"
+  },
+  "pre-commit": [
+    "lint",
+    "build",
+    "test"
+  ]
 }

@@ -5,7 +5,7 @@ var debug = require('debug')('umedia:env')
 var ui = require('coect').ui
 
 // catch all AJAX requests and replace with stubs
-exports.server = function() {
+exports.server = (function() {
   var server = sinon.fakeServer.create({
     respondImmediately: true
   })
@@ -16,7 +16,7 @@ exports.server = function() {
     return false // true will send real network request
   })
   return server
-}()
+})()
 
 
 exports.logRequests = function(count) {

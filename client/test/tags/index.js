@@ -9,4 +9,6 @@ require('./entry')
 require('./entry_detail')
 require('./entry_list')
 
+require('./profile')
+
 

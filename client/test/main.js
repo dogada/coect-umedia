@@ -21,5 +21,6 @@ require('../../build/tags/entry.js')
 require('../../build/tags/entry_list.js')
 require('../../build/tags/entry_details.js')
 require('../../build/tags/entry_editor.js')
+require('../../build/tags/profile.js')
 
 require('./index')  //include all tests

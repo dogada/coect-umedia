@@ -53,7 +53,7 @@ function checkNewEntry(req, done) {
       Entity.get(req.body.parent, {select: '*'}, this)
     },
     function(parent) {
-      debug('checkNE list=', list, parent)
+      debug('checkNE list=', parent)
       if (parent.type === 'channel') return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
