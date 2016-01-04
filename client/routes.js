@@ -1,6 +1,7 @@
 'use strict';
 
 var handlers = require('./handlers')
+var slug = require('coect').routes.slug
 
 function baseRoutes(route, url) {
   route(url.entry(':id', 'edit'), handlers.entry.edit)
@@ -22,10 +23,10 @@ function baseRoutes(route, url) {
    Can be mounted to any root, for example /club/dvd/blog/hello-world.
 */
 function slugRoutes(route, prefix) {
-  route(prefix(':username'), handlers.user.detail)
-  route(prefix(':username/:cslug'), handlers.channel.details)
-  route(prefix(':username/:cslug/:eslug'), handlers.entry.details)
-  route(prefix(':username/:cslug/e/:id'), handlers.entry.details)
+  route(prefix(slug('username')), handlers.user.detail)
+  route(prefix(slug('username') + slug('cslug')), handlers.channel.details)
+  route(prefix(slug('username') + slug('cslug') + slug('eslug')), handlers.entry.details)
+  route(prefix(slug('username') + slug('cslug') + '/e/:id'), handlers.entry.details)
 }
 
 /**

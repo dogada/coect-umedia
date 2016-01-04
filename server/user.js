@@ -10,7 +10,7 @@ exports.retrieve = function(req, res, next) {
     function() {
       var p = req.params
       if (p.id) req.env.User.get(p.id, this)
-      else req.env.User.findOne({username: p.username}, this)
+      else req.env.User.get({username: p.username}, this)
     }
   ], req.app.janus(req, res, next))
 }

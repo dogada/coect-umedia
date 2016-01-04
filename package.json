@@ -48,7 +48,8 @@
   },
   "peerDependencies": {
     "wpml": "0.x",
-    "coect": "0.x"
+    "coect": "0.x",
+    "riot": "2.3.x"
   },
   "repository": {
     "type": "git",

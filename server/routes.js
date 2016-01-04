@@ -2,7 +2,7 @@
 
 var debug = require('debug')('umedia:router')
 var coect = require('coect')
-
+var slug = coect.routes.slug
 var entry = require('./entry')
 var channel = require('./channel')
 var user = require('./user')
@@ -20,10 +20,6 @@ function adminRequired(req, res, next) {
   else next(401, coect.HttpError('Admin required'))
 }
 
-// return named slug with regular expression
-function slug(param) {
-  return '/:' + param + '([a-z]+[a-z0-9-]{2,})'
-}
 /**
    Short urls for channels and entries with slugs.
 */
