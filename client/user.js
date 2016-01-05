@@ -1,28 +1,37 @@
 'use strict';
 
 var debug = require('debug')('umedia:profile')
+var tflow = require('tflow')
 
 var {ui, Store} = require('coect')
 
 class UserStore extends Store {
 
-  load(ctx, done) {
-    this.get(ctx.path, done)
+  ownChannels(user, done) {
+    this.get(Site.umedia.url.channel(), {owner: user.id}, done)
   }
 }
 
 const store = new UserStore()
 
+function mountTag(tag, data, target) {
+  var d = {}
+  d[target || 'main'] = {tag: tag, data: data}
+  Site.mount(d, data.name)
+}
+
 exports.detail = function(ctx) {
-  ui.mount(ctx, 'umedia-profile', {
-    load: function(ctx, done) {
-      store.load(ctx, (err, data) => done(err, {user: data}))
-    }
-  })
-
-  ui.mount(ctx, 'umedia-channel-list', {
-    target: 'sidebar',
-    data: {owner: Site.user.id}
-  })
-
+  
+  var flow = tflow([
+    function() {
+      ui.getData(ctx, 'user', next => store.get(ctx.path, next), flow)
+    },
+    function(user) {
+      mountTag('umedia-profile', {user: user})
+      ui.getData(ctx, 'channels', next => store.ownChannels(user, next), flow)
+    },
+    function(data) {
+      mountTag('umedia-channel-list', data, 'sidebar')
+    },
+  ])
 }
