@@ -19,7 +19,6 @@
        self.update({items: data.items})
      }).fail(self.failHandler)
    }
-   
-   init({owner: self.opts.owner})
+   if (!opts.items) init({owner: self.opts.owner})
   </script>
 </umedia-channel-list>
