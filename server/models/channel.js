@@ -17,6 +17,10 @@ class Channel extends Entity {
     return this.getModerators().indexOf(user.id) > -1
   }
 
+  hasMember(user) {
+    return false
+  }
+
 }
 
 Channel.MODEL = 'channel'
