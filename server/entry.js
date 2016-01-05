@@ -58,7 +58,7 @@ function checkNewEntry(req, done) {
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
     function(parent, list) {
-      if (list.owner !== req.user.id) return this.fail('Not owner of the list')
+      if (parent.type === 'channel' && parent.owner !== req.user.id) return this.fail('Not owner of the list')
       Entry.validate(req.body,
                      {schema: Entry.getTypeSchema(parent.type === 'channel' ? 'post' : 'comment')},
                      this.join(parent, list))
