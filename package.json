@@ -72,7 +72,7 @@
     "jquery": "~2.1.4",
     "page": "~1.6.4",
     "precommit-hook": "latest",
-    "riot": "~2.3.12",
+    "riot": "2.3.x",
     "riotify": "~0.1.2",
     "wpml": "0.x"
   },
