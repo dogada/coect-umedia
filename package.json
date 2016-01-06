@@ -67,6 +67,8 @@
     "babelify": "~6.3.0",
     "brfs": "~1.4.1",
     "browserify-istanbul": "~0.2.1",
+    "browserify-versionify": "latest",
+    "browserify-shim": "latest",
     "coect": "0.x",
     "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
