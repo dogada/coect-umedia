@@ -4,7 +4,7 @@
    this.mixin('coect-context', 'umedia-context', 'coect-site-context')
    
    function refresh(data) {
-     self.root.innerHTML = self.opts.html
+     self.root.innerHTML = self.opts.html || ''
    }
 
    this.on('update', refresh)

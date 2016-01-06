@@ -6,15 +6,18 @@ var ui = require('coect').ui
 function details(ctx) {
   debug('details', ctx)
   Site.mount(ui.make('umedia-channel-details', ctx.params))
+  Site.checkMount('umedia-raw', {}, 'sidebar')
 }
 
 function edit(ctx) {
   debug('channel.edit')
   Site.mount(ui.make('umedia-channel-editor', ctx.params), 'Channel / Editor')
+  Site.checkMount('umedia-raw', {}, 'sidebar')
 }
 
 function admin(ctx) {
   Site.mount(ui.make('umedia-channel-admin', ctx.params), 'Channel / Admin')
+  Site.checkMount('umedia-raw', {}, 'sidebar')
 }
 
 
