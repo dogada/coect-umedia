@@ -14,12 +14,6 @@ class UserStore extends Store {
 
 const store = new UserStore()
 
-function mountTag(tag, data, target) {
-  var d = {}
-  d[target || 'main'] = {tag: tag, data: data}
-  Site.mount(d, data.name)
-}
-
 exports.detail = function(ctx) {
   
   var flow = tflow([
@@ -27,11 +21,11 @@ exports.detail = function(ctx) {
       ui.getData(ctx, 'user', next => store.get(ctx.path, next), flow)
     },
     function(user) {
-      mountTag('umedia-profile', {user: user})
+      Site.mountTag('umedia-profile', {user: user}, {title: user.name})
       ui.getData(ctx, 'channels', next => store.ownChannels(user, next), flow)
     },
     function(data) {
-      mountTag('umedia-channel-list', data, 'sidebar')
+      Site.mountTag('umedia-channel-list', data, {target: 'sidebar'})
     },
   ])
 }
