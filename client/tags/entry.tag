@@ -14,7 +14,7 @@
     <div class="media-body">
       <div>
         <a class="umedia-display-name" href="{ url.user(entry.owner) }"
-           title="{ entry.owner.username || entry.owner.id}">{ displayName(entry.owner) }</a> 
+           title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         <span class="umedia-meta small">
           <span if={ entry.type == 'post'}>
             <a href={ url.channel(entry.list) }>wrote</a>
@@ -24,6 +24,7 @@
           </span>
 
           <a href={ url.entry(entry) } title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
+          <span if={ entry.access < 70 } class="restricted" title="Access is restricted. A moderator action is required.">restricted</span>
         </span>
       </div>
       <umedia-wpml doc={ doc }></umedia-wpml>
@@ -40,7 +41,7 @@
    debug('entry', this.opts, 'url=', self.url)
 
    self.displayName = function(user) {
-     return user.username || user.name || user.id
+     return user.name || user.username || user.id
    }
 
    self.expand = function(e) {
@@ -79,4 +80,8 @@
    }
    self.on('mount', self.rebuild)
   </script>
+
+  <style scoped>
+    .restricted { color: grey }
+  </style>
 </umedia-entry>
