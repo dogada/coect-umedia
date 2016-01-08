@@ -289,15 +289,27 @@ function list(req, res) {
       listWhere(req, this)
     },
     function(where) {
-      if (where.list || where.list_url) checkList(req, where, this)
+      if (where.thread || where.topic) Entry.get(where.thread || where.topic, this.join(where))
       else this.next(where)
     },
+    function(where, parent) {
+      var q = (parent ? parent.list : where.list || where.list_url && {url: where.list_url})
+      if (q) Channel.get(q, {select: '*'}, this.join(where))
+      else this.next(where)
+    },
+    function(where, channel) {
+      if (where.list_url) where = _.extend(_.omit(where, 'list_url'), {list: channel.id})
+      if(channel && !req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'No access to the channel')
+      this.next(where, channel ? req.security.getUserAccessInsideChannel(req.user, channel) : req.security.getUserAccess(req.user))
+    },
     function(where, access) {
-      var q = Entry.table(where.topic || where.parent || where.list)
+      debug(`list where=${where} access=${access}`)
+      if (access === undefined) return this.fail(403, 'Access mode is undefined')
+      var q = Entry.table(where.list)
       q = q.select(Entry.listFields)
       q = q.where(where)
       // show only entries for given access level
-      if (access && access > Channel.ADMIN) q = q.where('access', '>=', access)
+      if (access > Channel.ADMIN) q = q.where('access', '>=', access)
       if (req.query.cursor) {
         if (req.query.order === 'first') q = q.andWhere('id', '>', req.query.cursor)
         else if (req.query.order === 'last') q = q.andWhere('id', '<', req.query.cursor)
