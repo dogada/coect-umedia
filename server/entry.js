@@ -69,35 +69,32 @@ function checkNewEntry(req, done) {
 
 
 function saveNewEntry(req, parent, list, doc, data, done) {
-  debug('saveNewEntry', list, parent)
-  tflow([
-    function() {
-      var type = 'post'
-      var topicId, threadId
-      if (parent.type !== 'channel') {
-        topicId = parent.topic || parent.id
-        if (!parent.thread || parent.thread === parent.topic) threadId = parent.id
-        else threadId = parent.thread
-        type = (parent.thread ? 'reply' : 'comment')
-      }
-      //Fix made a transaction
-      Entry.create({
-        model: Entry.MODEL,
-        type: type,
-        name: data.name,
-        text: req.body.text,
-        // custom urls are allowed for posts only
-        url: type === 'post' ? Entry.makeUrl(list.url, data.slug) : null,
-        owner: req.user.id,
-        list: list.id,
-        version: makeVersion(),
-        access: req.security.getNewEntryAccess(req.user, {type: type}, list),
-        parent: parent.id,
-        topic: topicId,
-        thread: threadId
-      }, list.id, this)
-    }
-  ], done);
+  var type = 'post'
+  var topicId, threadId
+  if (parent.type !== 'channel') {
+    topicId = parent.topic || parent.id
+    if (!parent.thread || parent.thread === parent.topic) threadId = parent.id
+    else threadId = parent.thread
+    type = (parent.thread ? 'reply' : 'comment')
+  }
+  //Fix made a transaction
+  var access = req.security.getNewEntryAccess(req.user, {type: type}, list)
+  debug(`saveNewEntry type=${type} access=${access}`, req.user.id, list.name, parent.name, data.name)
+  Entry.create({
+    model: Entry.MODEL,
+    type: type,
+    name: data.name,
+    text: req.body.text,
+    // custom urls are allowed for posts only
+    url: type === 'post' ? Entry.makeUrl(list.url, data.slug) : null,
+    owner: req.user.id,
+    list: list.id,
+    version: makeVersion(),
+    access: access,
+    parent: parent.id,
+    topic: topicId,
+    thread: threadId
+  }, list.id, done)
 }
 
 function updateCounters(entry, done) {
