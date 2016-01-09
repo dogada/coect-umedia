@@ -99,11 +99,8 @@ class UmediaAccessPolicy {
   canUserView(user, entry, channel) {
     debug(`canUserView id=${entry.id} access=${entry.access}, owner=${entry.owner}, user=${user && user.id}`)
     if (user && user.isAdmin()) return true // admins should have access always
-    debug('0')
     if (!entry.access || entry.access < Channel.ADMIN) return false // only admins can access such entries
-    debug('1')
     if (!user) return (entry.access >= Entity.VISITOR)
-    debug('2')
     if (entry.owner === user.id) return true
     if (entry.access >= Entity.USER) return true
 
