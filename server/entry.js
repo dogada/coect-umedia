@@ -86,8 +86,9 @@ function saveNewEntry(req, parent, list, doc, data, done) {
     name: data.name,
     text: req.body.text,
     // custom urls are allowed for posts only
-    url: type === 'post' ? Entry.makeUrl(list.url, data.slug) : null,
+    url: (type === 'post' ? Entry.makeUrl(list.url, data.slug) : null),
     owner: req.user.id,
+    recipient: (parent.model === 'entry' ? parent.owner: null),
     list: list.id,
     version: makeVersion(),
     access: access,
@@ -280,6 +281,15 @@ function checkList(req, where, done) {
   ], done);
 }
 
+/**
+   Show entries allowed for user, created by himself or wrote to her.
+*/
+function filterByAccess(q, user, access) {
+  if (!user) return q.where('access', '>=', access)
+  return q.whereRaw('\("access\" >= ? OR (\"access\" > ? AND (\"owner\" = ? OR \"recipient\" = ?)))',
+                    [access, Entity.ADMIN, user.id, user.id])
+}
+
 function list(req, res) {
   tflow([
     function() {
@@ -305,8 +315,8 @@ function list(req, res) {
       var q = Entry.table(where.list)
       q = q.select(Entry.listFields)
       q = q.where(where)
-      // show only entries for given access level
-      if (access > Channel.ADMIN) q = q.where('access', '>=', access)
+      // if user isn't an admin in a channel filter by access
+      if (access > Channel.ADMIN) q = filterByAccess(q, req.user, access)
       if (req.query.cursor) {
         if (req.query.order === 'first') q = q.andWhere('id', '>', req.query.cursor)
         else if (req.query.order === 'last') q = q.andWhere('id', '<', req.query.cursor)
@@ -314,6 +324,7 @@ function list(req, res) {
       q = q.orderBy.apply(q, listOrder(req))
       if (req.query.offset) q = q.offset(parseInt(req.query.offset, 10))
       q = q.limit(Math.min(MAX_PAGE_SIZE, parseInt(req.query.count, 10)))
+      debug('list SQL', q.toString().slice(-130))
       q.asCallback(this)
     },
     function(entries) {

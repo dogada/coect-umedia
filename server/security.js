@@ -108,7 +108,7 @@ class UmediaAccessPolicy {
     if (entry.access >= Entity.USER) return true
 
     // User should see replies for own entries
-    if (entry.to === user.id && entry.access >= Entity.MODERATOR) return true
+    if (entry.recipient === user.id && entry.access >= Entity.MODERATOR) return true
     if (entry.access >= this.getUserAccess(user, channel)) return true
     return false
   }
