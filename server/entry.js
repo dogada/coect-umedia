@@ -192,32 +192,38 @@ function fillUsers(entries, cache, done) {
 
 function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
-  var thread = !!req.query.thread
   var flow = tflow([
     function() {
-      getEntryAndChannel(entryWhere(req), flow)
+      Entry.get(entryWhere(req), flow)
     },
-    function(entry, channel) {
-      
-      // load parent of reply to show a thread to refresh memory
-      debug('loading parent for', entry)
-      if (thread && entry.type === 'reply') Entry.get(entry.parent, this.join(channel, [entry]))
-      else this.next(channel, [entry])
+    function(entry) {
+      var ids = Array.from(new Set([entry.list, entry.parent, entry.thread, entry.topic])).filter(v => v)
+      var fields = Entry.listFields.filter(v => (v !== 'text'))
+      debug('ids', ids)
+      Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry))
     },
-    function(channel, chain, parent) {
-      if (parent) chain = [parent].concat(chain)
-      for (let entry of chain) {
-        if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
+    function(entry, related) {
+      fillUsers(related, req.app.userCache, flow.join(entry))
+    },
+    function(entry, related) {
+      debug(`related.length=${related.length}`)
+      // replace ids with related objects
+      let relatedMap = {}
+      for (let e of related) relatedMap[e.id] = e
+      let channel = relatedMap[entry.list]
+      debug('relatedMap', relatedMap)
+      debug('channel', channel)
+      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
+      for (let field of ['list', 'parent', 'thread', 'topic']) {
+        let relatedObj  = relatedMap[entry[field]]
+        if (relatedObj && relatedObj !== channel &&
+            !req.security.canUserView(req.user, relatedObj, channel)) return flow.fail(403, 'Forbidden')
+        entry[field] =  relatedObj || {id: entry[field]}
       }
-      fillUsers(chain, req.app.userCache, this)
-    },
-    function(entries) {
-      this.next(thread ? entries: entries[0])
-    },
+      flow.next(entry)
+    }
   ], req.app.janus(req, res, next))
 }
-
-
 
 function remove(req, res) {
   debug('remove params', req.params, req.oid)
@@ -263,23 +269,6 @@ function listOrder(req) {
 }
 
 
-/**
-   Ensures that current user can access the list.
-   Returns new where without list_url but with list.
-*/
-function checkList(req, where, done) {
-  var flow = tflow([
-    function() {
-      Channel.get(where.list ? where.list : {url: where.list_url}, {select: '*'}, flow)
-    },
-    function(channel) {
-      debug('checkList', channel)
-      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Forbidden')
-      this.next(_.extend(_.omit(where, 'list_url'), {list: channel.id}),
-                req.security.getUserAccessInsideChannel(req.user, channel))
-    }
-  ], done);
-}
 
 /**
    Show entries allowed for user, created by himself or wrote to her.

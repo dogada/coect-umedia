@@ -1,10 +1,15 @@
 <umedia-entry-details>
   <div class="umedia-entry-details">
-    <ul class="list-unstyled">
-      <li each={ e, i in opts.thread }>
-        <umedia-entry entry={ e } detail={ e == entry }></umedia-entry>
-      </li>
-    </ul>
+    <h4>
+      <a href={ Site.umedia.url.channel(entry.list) }>{ entry.list.name }</a>
+    </h4>
+
+    <umedia-entry-name entry={ entry.topic } if={ entry.topic }/>
+    <umedia-entry-name entry={ entry.thread } if={ entry.type == 'reply' }/>
+    <umedia-entry-name entry={ entry.parent } 
+    if={ entry.type == 'reply' && entry.parent.id != entry.thread.id }/>
+    <umedia-entry entry={ entry } detail="1" />
+
     <p if={ opts.entry.type == 'reply' }>View 
       <a href={ url.entry(opts.entry.thread) }>all replies</a> in the thread.
     </p>

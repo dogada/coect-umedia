@@ -18,7 +18,11 @@ function retrieve(req, res, next) {
       var p = req.params
       if (p.id) Channel.get(p.id, this)
       else Channel.findOne({url: p.username + '/' + p.cslug}, this)
-    }
+    },
+    function(channel) {
+      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
+      this.next(channel)
+    },
   ], req.app.janus(req, res, next))
 }
 
