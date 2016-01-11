@@ -47,7 +47,7 @@
 
 
    function getThreadId(entry) {
-     return (entry.type == 'reply' ? entry.thread : entry.id)
+     return (entry.type == 'reply' ? entry.thread.id : entry.id)
    }
 
    function getCursor() {
@@ -117,7 +117,7 @@
        self.query.thread = getThreadId(self.ancestor)
      } else {
        delete self.query.thread
-       self.query.topic = self.ancestor.topic || self.ancestor.id
+       self.query.topic = self.ancestor.topic && self.ancestor.topic.id || self.ancestor.id
      }
      debug('after', self.query)
      load()

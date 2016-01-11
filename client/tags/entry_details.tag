@@ -4,10 +4,11 @@
       <a href={ Site.umedia.url.channel(entry.list) }>{ entry.list.name }</a>
     </h4>
 
-    <umedia-entry-name entry={ entry.topic } if={ entry.topic }/>
-    <umedia-entry-name entry={ entry.thread } if={ entry.type == 'reply' }/>
+    <umedia-entry-name entry={ entry.topic } if={ entry.topic } />
+    <umedia-entry-name entry={ entry.thread } if={ entry.type == 'reply' } />
     <umedia-entry-name entry={ entry.parent } 
-    if={ entry.type == 'reply' && entry.parent.id != entry.thread.id }/>
+    if={ entry.type == 'reply' && entry.parent.id != entry.thread.id } />
+
     <umedia-entry entry={ entry } detail="1" />
 
     <p if={ opts.entry.type == 'reply' }>View 

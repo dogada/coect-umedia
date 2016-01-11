@@ -215,10 +215,11 @@ function retrieve(req, res, next) {
       debug('channel', channel)
       if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
       for (let field of ['list', 'parent', 'thread', 'topic']) {
-        let relatedObj  = relatedMap[entry[field]]
+        let fieldValue = entry[field]
+        let relatedObj  = relatedMap[fieldValue]
         if (relatedObj && relatedObj !== channel &&
             !req.security.canUserView(req.user, relatedObj, channel)) return flow.fail(403, 'Forbidden')
-        entry[field] =  relatedObj || {id: entry[field]}
+        if (fieldValue) entry[field] =  relatedObj || {id: fieldValue}
       }
       flow.next(entry)
     }
