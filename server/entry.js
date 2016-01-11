@@ -191,7 +191,7 @@ function retrieve(req, res, next) {
       Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry))
     },
     function(entry, related) {
-      Entity.fillUsers(related, req.app.userCache, flow.join(entry))
+      Entity.fillUsers(related.concat(entry), req.app.userCache, flow.join(entry))
     },
     function(entry, related) {
       debug(`related.length=${related.length}`)
@@ -199,7 +199,6 @@ function retrieve(req, res, next) {
       let relatedMap = {}
       for (let e of related) relatedMap[e.id] = e
       let channel = relatedMap[entry.list]
-      debug('relatedMap', relatedMap)
       debug('channel', channel)
       if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
       for (let field of ['list', 'parent', 'thread', 'topic']) {
