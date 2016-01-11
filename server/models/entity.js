@@ -91,4 +91,17 @@ Entity.makeUrl = function(parentUrl, slug) {
   return (parentUrl && slug ? parentUrl + '/' + slug : null)
 }
 
+Entity.fillUsers = function(entries, cache, done) {
+  tflow([
+    function() {
+      cache.getUsers(Array.from(new Set(entries.map(e => e.owner))), this)
+    },
+    function(users) {
+      debug('found users', Object.keys(users))
+      for (let e of entries) e.owner = users[e.owner] || {id: e.owner}
+      this.next(entries)
+    }
+  ], done)
+}
+
 module.exports = Entity

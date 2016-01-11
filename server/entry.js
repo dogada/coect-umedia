@@ -177,18 +177,6 @@ function update(req, res) {
   ], coect.json.response(res))
 }
 
-function fillUsers(entries, cache, done) {
-  tflow([
-    function() {
-      cache.getUsers(Array.from(new Set(entries.map(e => e.owner))), this)
-    },
-    function(users) {
-      debug('found users', _.size(users), users)
-      for (let e of entries) e.owner = users[e.owner] || {id: e.owner}
-      this.next(entries)
-    }
-  ], done)
-}
 
 function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
@@ -203,7 +191,7 @@ function retrieve(req, res, next) {
       Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry))
     },
     function(entry, related) {
-      fillUsers(related, req.app.userCache, flow.join(entry))
+      Entity.fillUsers(related, req.app.userCache, flow.join(entry))
     },
     function(entry, related) {
       debug(`related.length=${related.length}`)
@@ -318,7 +306,7 @@ function list(req, res) {
       q.asCallback(this)
     },
     function(entries) {
-      fillUsers(entries, req.app.userCache, this)
+      Entity.fillUsers(entries, req.app.userCache, this)
     },
     function(entries) {
       this.next({items: entries})

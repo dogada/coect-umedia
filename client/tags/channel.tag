@@ -1,6 +1,10 @@
 <umedia-channel>
   <div class="umedia-channel">
-    <h3>{ channel.name }</h3>
+    <ol class="breadcrumb">
+      <li><a href={ Site.umedia.url.user(channel.owner) }>{ channel.owner.name }</a></li>
+      <li class="active">{ channel.name }</li>
+    </ol>
+
     <div class="wpml">
       <umedia-wpml text={ channel.text }></umedia-wpml>
     </div>

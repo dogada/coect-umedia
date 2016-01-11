@@ -5,6 +5,7 @@ var tflow = require('tflow')
 var coect = require('coect')
 var _ = require('lodash')
 
+var Entity = require('./models').Entity
 var Channel = require('./models').Channel
 
 const MAX_PAGE_SIZE = 20
@@ -18,6 +19,9 @@ function retrieve(req, res, next) {
       var p = req.params
       if (p.id) Channel.get(p.id, this)
       else Channel.findOne({url: p.username + '/' + p.cslug}, this)
+    },
+    function(channel) {
+      Entity.fillUsers([channel], req.app.userCache, this.send(channel))
     },
     function(channel) {
       if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')

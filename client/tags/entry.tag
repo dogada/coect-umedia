@@ -82,6 +82,7 @@
   </script>
 
   <style scoped>
-    .restricted { color: grey }
+   .restricted { color: grey }
+   h2 { margin-top: 0 }
   </style>
 </umedia-entry>

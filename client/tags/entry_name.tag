@@ -3,9 +3,9 @@
     
     <div class="media-left">
       <a href={ url.user(entry.owner) }>
-        <img class="media-object" width="32" height="32" 
+        <img class="media-object" width="24" height="24" 
              title={ entry.owner.name || entry.owner.username || entry.owner.id }
-        src={ entry.owner.avatar || Site.config.avatar(32) } alt="">
+        src={ entry.owner.avatar || Site.config.avatar(24) } alt="">
       </a>
     </div>
 

@@ -1,13 +1,12 @@
 <umedia-entry-details>
   <div class="umedia-entry-details">
-    <h4>
-      <a href={ Site.umedia.url.channel(entry.list) }>{ entry.list.name }</a>
-    </h4>
 
-    <umedia-entry-name entry={ entry.topic } if={ entry.topic } />
-    <umedia-entry-name entry={ entry.thread } if={ entry.type == 'reply' } />
-    <umedia-entry-name entry={ entry.parent } 
-    if={ entry.type == 'reply' && entry.parent.id != entry.thread.id } />
+    <ol class="breadcrumb">
+      <li><a href={ Site.umedia.url.user(entry.list.owner) }>{ entry.list.owner.name }</a></li>
+      <li><a href={ Site.umedia.url.channel(entry.list) }>{ entry.list.name }</a></li>
+      <li if={ entry.topic }><a 
+        href={ Site.umedia.url.entry(entry.parent) }>{ entry.parent.name }</a></li>
+    </ol>
 
     <umedia-entry entry={ entry } detail="1" />
 
@@ -25,6 +24,11 @@
 
   </div>
 
+  <style scoped>
+   .breadcrumb {
+     margin-bottom: 5px;
+   }
+  </style>
   <script>
    this.mixin('coect-context', 'umedia-context', 'coect-site-context')
    this.canComment = Site.umedia.canComment(this.opts.entry)
