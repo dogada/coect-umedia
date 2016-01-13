@@ -24,7 +24,8 @@
     "coverage": "npm run test && firefox build/coverage/lcov-report/index.html",
     "coveralls": "cat ./build/coverage/lcov.info | coveralls",
     "lint": "jshint server/ client/",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "check": "npm run lint && npm run test"
   },
   "keywords": [
     "coect",

@@ -1,6 +1,6 @@
 {
   "node": true,
-  "esversion": 6,      
+  "esnext": true,      
   "asi": true, // optional semicolons
   "expr": true // value.should.be.ok
 }
