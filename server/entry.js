@@ -178,6 +178,23 @@ function update(req, res) {
 }
 
 
+function moderate(req, res) {
+  debug('moderate', req.params)
+  var flow = tflow([
+    function() {
+      getEntryAndChannel(entryWhere(req), flow)
+    },
+    function(entry, channel) {
+      if (entry.access !== Entity.MODERATOR) return flow.fail(400, 'Entry is already moderated.')
+      if (!req.security.canUserModerate(req.user, entry, channel)) return flow.fail(403, 'Forbidden.')
+      var data = {
+        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Entity.ADMIN)
+      }
+      Entry.update(entry.id, data, this.send(data))
+    },
+  ], coect.json.response(res))
+}
+
 function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
   var flow = tflow([
@@ -318,5 +335,6 @@ module.exports = {
   retrieve: retrieve,
   update: update,
   remove: remove,
-  list: list
+  list: list,
+  moderate
 }

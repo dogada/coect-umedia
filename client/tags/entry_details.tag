@@ -20,7 +20,8 @@
     </h5>
 
     <umedia-entry-list if={ opts.entry.type != 'reply'} id="umedia-comments"
-                    ancestor={ opts.entry }></umedia-entry-list>
+                       store={ store }
+                       ancestor={ opts.entry }></umedia-entry-list>
 
   </div>
 
@@ -30,6 +31,7 @@
    }
   </style>
   <script>
+   this.store = this.opts.store
    this.mixin('coect-context', 'umedia-context', 'coect-site-context')
    this.canComment = Site.umedia.canComment(this.opts.entry)
   </script>

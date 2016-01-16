@@ -27,5 +27,5 @@ exports.detail = function(ctx) {
     function(data) {
       Site.mountTag('umedia-channel-list', data, {target: 'sidebar'})
     },
-  ])
+  ], Site.error)
 }

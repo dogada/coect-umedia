@@ -7,6 +7,9 @@ var {ui, Store} = require('coect')
 
 class EntryStore extends Store {
 
+  moderate(entry, accept, done) {
+    this.post(Site.umedia.url.entry(entry.id, (accept ? 'accept' : 'reject')), done)
+  }
 }
 
 const store = new EntryStore()
@@ -18,7 +21,7 @@ exports.details = function(ctx) {
     },
     function(entry) {
       Site.mountTag('umedia-entry-details', 
-                    {thread: [], entry: entry},
+                    {entry: entry, store: store},
                     {title: entry.name})
       Site.checkMount('umedia-channel-list', {owner: entry.owner.id}, {target: 'sidebar'})
     }

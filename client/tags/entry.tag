@@ -23,8 +23,18 @@
             <a href={ url.entry(entry.parent) }>{ actionName(entry) }</a>
           </span>
 
-          <a href={ url.entry(entry) } title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
-          <span if={ entry.access < 70 } class="restricted" title="Access is restricted. A moderator action is required.">restricted</span>
+          <a href={ url.entry(entry) } 
+            title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
+          
+          <span if={ entry.access == 20 } onclick={ moderate } class="restricted"
+          title="The entry is awaiting for moderation.">moderation</span>
+
+          <span if={ entry.access > 20 && entry.access < 70 } class="restricted"
+          title="Access to the entry is restricted ({ entry.access } level).">restricted</span>
+
+          <span if={ entry.access < 20 } class="restricted"
+                title="The entry was rejected by a moderator ({ entry.access } level).">rejected</span>
+
         </span>
       </div>
       <umedia-wpml doc={ doc }></umedia-wpml>
@@ -37,6 +47,7 @@
 
   <script>
    var self = this
+   self.store = self.opts.store
    self.mixin('coect-context', 'umedia-context')
    debug('entry', this.opts, 'url=', self.url)
 
@@ -68,6 +79,17 @@
      else if (entry.type === 'reply') return 'replied'
    }
 
+   self.moderate = function(e) {
+     if (!Site.umedia.canModerateEntry(e)) return
+     if (!(e.ctrlKey || e.altKey || e.metaKey)) return //ignore normal click
+     debug(`moderate access=${self.entry.access}, alt=${e.altKey},
+           meta=${e.metaKey}, ctrl=${e.ctrlKey}, name=${self.entry.name}`)
+     self.parent.store.moderate(self.entry, e.ctrlKey, function (err, data) {
+       if (err) return Site.error(err)
+       self.update({entry: $.extend(self.entry, data)})
+     })
+   }
+   
    self.rebuild = function() {
      var entry = self.opts.entry || self.opts.state && self.opts.state.entry
      var doc = self.wpml.doc(entry.text || '')
@@ -78,6 +100,8 @@
        canChange: Site.umedia.canChangeEntry(entry)
      })
    }
+
+   
    self.on('mount', self.rebuild)
   </script>
 

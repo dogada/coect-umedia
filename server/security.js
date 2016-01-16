@@ -127,6 +127,15 @@ class UmediaAccessPolicy {
     let userAccess = this.getUserAccess(user, channel)
     return (userAccess <= channel.access)
   }
+
+  canUserModerate(user, entry, channel) {
+    if (!user || user.id === entry.id) return false
+    if (user.isAdmin() || user.isModerator() || channel.owner === user.id) return true
+    // good users can moderate replies for own content
+    if (user.id === entry.recipient && !user.data.premoderate) return true
+    return false
+  }
+
 }
 
 module.exports = UmediaAccessPolicy
