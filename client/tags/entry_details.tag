@@ -32,7 +32,7 @@
   </style>
   <script>
    this.store = this.opts.store
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   this.mixin('coect-context', 'umedia-context')
    this.canComment = Site.umedia.canComment(this.opts.entry)
   </script>
 </umedia-entry-details>

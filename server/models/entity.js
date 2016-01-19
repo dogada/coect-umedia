@@ -20,18 +20,6 @@ class Entity extends Model {
 
 }
 
-// user roles inside channel (used to control access to channel entries)
-Object.assign(Entity, {
-  // 0 means default undefined access
-  ADMIN: 10,  // site-wide or this channel admin 
-  MODERATOR: 20, // site-wide or channel moderator
-  TAG: 30, // users tagged with an accessTag by channel owner (Friends, Family, etc)
-  MEMBER: 40,  // site-wide member or a channel member
-  FOLLOWER: 50, // channel follower (subscriber)
-  USER: 60,   // logged in user (in most cases a human)
-  VISITOR: 70 //any visitor of site including spider
-})
-
 Entity.schema = {
 
   name: {

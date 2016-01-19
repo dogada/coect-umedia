@@ -7,37 +7,38 @@
 var debug = require('debug')('umedia:security')
 var Entity = require('./models').Entity
 var Channel = require('./models').Channel
+var Access = require('coect').Access
 
-
-class UmediaAccessPolicy {
+class UmediaAccessPolicy extends Access {
   
   constructor(opts) {
+    super()
     this.opts = Object.assign({
       postmoderate: false,
       // entries available for everyone including search bots
-      defaultAccess: Channel.VISITOR,
+      defaultAccess: Access.EVERYONE,
       // guest entries available for all logged in users but not available for
       // visitors and search spider (so spam will not leak into search indexes)
-      // if you need classic premoderation set this value to Channel.MODERATOR 
-      guestAccess: Channel.USER
+      // if you need classic premoderation set this value to Access.MODERATOR 
+      guestAccess: Access.USER
     }, opts || {})
   }
 
   accessInsideChannel(user, channel) {
-    if (!user) return Channel.VISITOR
-    if (channel.owner === user.id) return Channel.ADMIN
-    if (channel.hasModerator(user)) return Channel.MODERATOR
-    if (channel.hasMember(user)) return Channel.MEMBER
-    return Channel.USER
+    if (!user) return Access.EVERYONE
+    if (channel.owner === user.id) return Access.ADMIN
+    if (channel.hasModerator(user)) return Access.MODERATOR
+    if (channel.hasMember(user)) return Access.MEMBER
+    return Access.USER
   }
 
   // site-wide access
   getUserAccess(user) {
-    if (!user) return Channel.VISITOR
-    if (user.isAdmin()) return Channel.ADMIN
-    if (user.isModerator()) return Channel.MODERATOR
-    if (user.isMember()) return Channel.MEMBER
-    return Channel.USER
+    if (!user) return Access.EVERYONE
+    if (user.isAdmin()) return Access.ROOT
+    if (user.isModerator()) return Access.MODERATOR
+    if (user.isMember()) return Access.MEMBER
+    return Access.USER
   }
 
   // access level in a channel
@@ -63,7 +64,7 @@ class UmediaAccessPolicy {
      Guests are in between 'premoderate' and 'postmoderate'.
    */
   getGuestAccess(entry, channel, desired) {
-    var access = channel.data.guest_access || this.opts.guestAccess || Channel.MODERATOR
+    var access = channel.data.guest_access || this.opts.guestAccess || Access.MODERATOR
     // guest access can't be greater than desired access after moderation
     if (access > desired) access = desired
     return access
@@ -80,16 +81,16 @@ class UmediaAccessPolicy {
   getNewEntryAccess(user, entry, channel) {
     let desired = this.getDesiredAccess(entry, channel)
     // never lift admin only access
-    if (desired <= Channel.ADMIN) return desired
+    if (desired <= Access.ADMIN) return desired
     // auto approve admins
-    if (this.getUserAccess(user, channel) <= Channel.ADMIN) return desired
+    if (this.getUserAccess(user, channel) <= Access.ADMIN) return desired
     // moderate even member & moderator actions if member.data.premoderate
-    if (user.data.premoderate) return Channel.MODERATOR
+    if (user.data.premoderate) return Access.MODERATOR
 
     // auto approve good users (FIX: check also user status in channel)
     if (user.data.postmoderate) return desired
     // auto approve members and moderators without 'premoderate' status
-    if (this.getUserAccess(user, channel) <= Channel.MEMBER) return desired
+    if (this.getUserAccess(user, channel) <= Access.MEMBER) return desired
     // auto approve all in postmoderate channels
     if (channel.data.postmoderate || this.opts.postmoderate) return desired
     // by default use guest access
@@ -98,27 +99,30 @@ class UmediaAccessPolicy {
 
   canUserView(user, entry, channel) {
     debug(`canUserView id=${entry.id} access=${entry.access}, owner=${entry.owner}, user=${user && user.id}`)
-    if (user && user.isAdmin()) return true // admins should have access always
-    if (!entry.access || entry.access < Channel.ADMIN) return false // only admins can access such entries
-    if (!user) return (entry.access >= Entity.VISITOR)
+    if (!user) return (entry.access >= Access.EVERYONE)
+    if (user.isAdmin()) return true // admins should have access always
+    if (channel && channel.hasAdmin(user) && entry.access >= Access.ADMIN) return true
+    if (!entry.access || entry.access <= Access.ADMIN) return false // only admins can access such entries
+
     if (entry.owner === user.id) return true
-    if (entry.access >= Entity.USER) return true
+    if (entry.access >= Access.USER) return true
 
     // User should see replies for own entries
-    if (entry.recipient === user.id && entry.access >= Entity.MODERATOR) return true
+    if (entry.recipient === user.id && entry.access >= Access.MODERATOR) return true
     if (entry.access >= this.getUserAccess(user, channel)) return true
     return false
   }
 
   canUserChange(user, entry, channel) {
     // FIX check entity.acl too
-    return entry.owner === user.id
+    return (entry.access > Access.ADMIN && entry.owner === user.id)
   }
 
   canUserRemove(user, entry, channel) {
     // FIX check entity.acl too
-    if (entry.owner === user.id) return true
-    if (this.getUserAccess(user, channel) <= Entity.ADMIN) return true
+    if (this.getUserAccess(user, channel) <= Access.ADMIN) return true
+    if (entry.access > Access.ADMIN && entry.owner === user.id) return true
+
     return false
   }
 

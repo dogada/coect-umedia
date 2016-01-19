@@ -26,14 +26,17 @@
           <a href={ url.entry(entry) } 
             title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
           
-          <span if={ entry.access == 20 } onclick={ moderate } class="restricted"
+          <span if="{ entry.access == Site.access.MODERATOR }" onclick={ moderate } class="restricted"
           title="The entry is awaiting for moderation.">moderation</span>
 
-          <span if={ entry.access > 20 && entry.access < 70 } class="restricted"
+          <span if="{ entry.access > Site.access.MODERATOR && entry.access < Site.access.EVERYONE }" class="restricted"
           title="Access to the entry is restricted ({ entry.access } level).">restricted</span>
 
-          <span if={ entry.access < 20 } class="restricted"
-                title="The entry was rejected by a moderator ({ entry.access } level).">rejected</span>
+          <span if="{ entry.access == Site.access.OWNER }" class="restricted"
+                title="The entry is visible to owner and admins only. ({ entry.access } level).">hidden</span>
+
+          <span if="{ entry.access < Site.access.OWNER }" class="restricted"
+                title="The entry is visible to admins only ({ entry.access } level).">rejected</span>
 
         </span>
       </div>
@@ -82,8 +85,8 @@
    self.moderate = function(e) {
      if (!Site.umedia.canModerateEntry(e)) return
      if (!(e.ctrlKey || e.altKey || e.metaKey)) return //ignore normal click
-     debug(`moderate access=${self.entry.access}, alt=${e.altKey},
-           meta=${e.metaKey}, ctrl=${e.ctrlKey}, name=${self.entry.name}`)
+     debug('moderate access=', self.entry.access, 'alt=', e.altKey,
+           'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'name=', self.entry.name)
      self.parent.store.moderate(self.entry, e.ctrlKey, function (err, data) {
        if (err) return Site.error(err)
        self.update({entry: $.extend(self.entry, data)})

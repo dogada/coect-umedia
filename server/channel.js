@@ -7,6 +7,7 @@ var _ = require('lodash')
 
 var Entity = require('./models').Entity
 var Channel = require('./models').Channel
+var Access = coect.Access
 
 const MAX_PAGE_SIZE = 20
 const PAGE_SIZE = 10
@@ -45,7 +46,7 @@ function create(req, res) {
         text: data.text,
         url: Channel.makeUrl(req.user.username, data.slug),
         owner: owner.id,
-        access: Channel.VISITOR,
+        access: Access.EVERYONE,
         data: {slug: data.slug}
       }, owner.id, this)
     },

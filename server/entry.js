@@ -7,12 +7,11 @@ var coect = require('coect')
 
 var ENTRIES_LIST = 'entries'
 var MAX_PAGE_SIZE = 20
-var OWNER = 'dvd@dogada.org'
 
 var Entity = require('./models').Entity
 var Channel = require('./models').Channel
 var Entry = require('./models').Entry
-
+var Access = coect.Access
 
 
 var wpml = require('wpml')
@@ -185,10 +184,10 @@ function moderate(req, res) {
       getEntryAndChannel(entryWhere(req), flow)
     },
     function(entry, channel) {
-      if (entry.access !== Entity.MODERATOR) return flow.fail(400, 'Entry is already moderated.')
+      if (entry.access !== Access.MODERATOR) return flow.fail(400, 'Entry is already moderated.')
       if (!req.security.canUserModerate(req.user, entry, channel)) return flow.fail(403, 'Forbidden.')
       var data = {
-        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Entity.ADMIN)
+        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Access.ADMIN)
       }
       Entry.update(entry.id, data, this.send(data))
     },
@@ -281,7 +280,7 @@ function listOrder(req) {
 function filterByAccess(q, user, access) {
   if (!user) return q.where('access', '>=', access)
   return q.whereRaw('\("access\" >= ? OR (\"access\" > ? AND (\"owner\" = ? OR \"recipient\" = ?)))',
-                    [access, Entity.ADMIN, user.id, user.id])
+                    [access, Access.ADMIN, user.id, user.id])
 }
 
 function list(req, res) {
@@ -309,8 +308,8 @@ function list(req, res) {
       var q = Entry.table(where.list)
       q = q.select(Entry.listFields)
       q = q.where(where)
-      // if user isn't an admin in a channel filter by access
-      if (access > Channel.ADMIN) q = filterByAccess(q, req.user, access)
+      // if user isn't a root in a channel filter by access
+      if (access > Access.ROOT) q = filterByAccess(q, req.user, access)
       if (req.query.cursor) {
         if (req.query.order === 'first') q = q.andWhere('id', '>', req.query.cursor)
         else if (req.query.order === 'last') q = q.andWhere('id', '<', req.query.cursor)
