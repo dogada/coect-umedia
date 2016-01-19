@@ -1,8 +1,8 @@
 <umedia-profile class="umedia-profile">
   <div class="media">
     <div class="media-left">
-      <img class="media-object" width="128" height="128" alt={user.id} 
-           src={ user.avatar || Site.config.avatar(128) }>
+      <img class="media-object" width="128" height="128" alt={ user.id } 
+           src={ Site.account.avatar(user, 128) }>
     </div>
 
     <div class="media-body">

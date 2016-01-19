@@ -69,9 +69,18 @@ function umediaUrls(base) {
   }
 }
 
-Site.config = {
-  avatar: function(size) {
-    return '/_static/img/avatar_' + (size || 32) + '.png'
+function profilePhoto(photos, size) {
+  return size >= 64 && photos.large ||
+    size > 24 && size < 64 && photos.normal ||
+    size > 16 && size <= 24 && (photos.mini || photos.normal) ||
+    size <= 16 && (photos.micro || photos.mini || photos.normal) ||
+    photos.original
+}
+
+Site.account = {
+  avatar: function(user, size) {
+    if (user.profile && user.profile.photos) return profilePhoto(user.profile.photos, size)
+    else return user.avatar || ('/_static/img/avatar_' + (size || 32) + '.png')
   }
 }
 

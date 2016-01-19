@@ -7,7 +7,7 @@
       <a href={ url.user(entry.owner) }>
         <img class="media-object" width="32" height="32" 
              title={ entry.owner.name || entry.owner.id }
-             src={ entry.owner.avatar || Site.config.avatar(32) } alt="">
+             src={ Site.account.avatar(entry.owner, 32) } alt="">
       </a>
     </div>
 

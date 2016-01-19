@@ -5,7 +5,7 @@
       <a href={ url.user(entry.owner) }>
         <img class="media-object" width="24" height="24" 
              title={ entry.owner.name || entry.owner.username || entry.owner.id }
-        src={ entry.owner.avatar || Site.config.avatar(24) } alt="">
+        src={ Site.account.avatar(entry.owner, 24) } alt="">
       </a>
     </div>
 
