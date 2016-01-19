@@ -133,6 +133,9 @@ function create(req, res) {
     function(entry) {
       debug('created entry', entry)
       updateCounters(entry, flow.send(entry))
+    },
+    function(entry) {
+      Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
     }
   ], coect.json.response(res))
 }
@@ -172,6 +175,9 @@ function update(req, res) {
     function(id) {
       debug('updated', id)
       Entry.get(id, this)
+    },
+    function(entry) {
+      Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
     },
   ], coect.json.response(res))
 }
