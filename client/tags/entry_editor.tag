@@ -23,7 +23,14 @@
   </div>
 
 
+  <style scoped>
+   .umedia-entry-editor {
+     margin-top: 10px;
+   }
+  </style>
+
   <script type="es6">
+
    var self = this
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
    self.entry = self.opts.entry || {}

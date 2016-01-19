@@ -19,6 +19,12 @@
     </form>
   </div>
 
+  <style scoped>
+   .umedia-channel-editor {
+     margin-top: 10px;
+   }
+  </style>
+
 
   <script>
    var self = this
