@@ -44,8 +44,6 @@
      count: parseInt(opts.count || 10)
    })
 
-
-
    function getThreadId(entry) {
      return (entry.type == 'reply' ? entry.thread.id : entry.id)
    }
@@ -73,10 +71,11 @@
      var url = Site.umedia.url.entry('') + '?' + $.param(getQuery(append))
      $.getJSON(url, function(data) {
        debug('loaded data', data && data.length)
-       self.update({
-         hasMore: (data.length >= self.query.count),
-         items: (append ? self.items.concat(data.items) : data.items)
-       })
+       // update self.items in-place because it may be shared with parent tag like entry_detail
+       if (!append) self.items.splice(0, self.items.length)
+       self.items.push.apply(self.items, data.items)
+       self.hasMore = (data.length >= self.query.count)
+       self.update()
      }).fail(self.failHandler)
    }
 

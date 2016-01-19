@@ -23,10 +23,12 @@
   </div>
 
 
-  <script>
+  <script type="es6">
    var self = this
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
    self.entry = self.opts.entry || {}
+   self.items = self.opts.items
+   debug(`editor entry=${self.entry}, items=${self.items}`)
 
    self.entryType = function() {
      switch(self.opts.ancestor.type) {
@@ -40,6 +42,12 @@
      self.content.style.height = '300px'
      self.expanded = true
    }
+
+   self.collapse = function() {
+     self.expanded = false
+     self.content.style.height = 'auto'
+   }
+
 
    self.edit = function(e) {
      self.text = e.target.value
@@ -60,9 +68,15 @@
         parent: self.opts.ancestor && self.opts.ancestor.id,
         list: self.opts.list && self.opts.list.id}
      ).done(function(doc) {
-       console.log('done', doc)
+       console.log('done', doc, self.items)
        self.text = self.content.value = ''
-       Site.page(self.url.entry(doc))
+       if (self.items) {
+         self.items.splice(0, 0, doc)
+         self.collapse()
+         self.parent.update()
+       } else {
+         Site.page(self.url.entry(doc))
+       }
      })
    }
 

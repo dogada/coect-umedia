@@ -1,15 +1,17 @@
 <umedia-channel-details>
   <div class="umedia-channel-detail">
     <umedia-channel if={ channel } channel={ channel }></umedia-channel>
-    <umedia-entry-editor if={ channel && canPost } ancestor="{ channel }" />
+    <umedia-entry-editor if={ channel && canPost } 
+    ancestor={ channel } items={ items } />
     <umedia-entry-list list={ opts.id } username={ opts.username } 
-      cslug={ opts.cslug } />
+      cslug={ opts.cslug } items={ items } />
     </div>
 
   <script>
    var self = this
    debug('channel_details', this.opts)
    this.mixin('coect-context', 'umedia-context')
+   self.items = []
 
    function setChannel(c) {
      debug('setChannel', c)

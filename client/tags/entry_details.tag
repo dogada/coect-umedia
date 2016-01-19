@@ -10,18 +10,20 @@
 
     <umedia-entry entry={ entry } detail="1" />
 
-    <p if={ opts.entry.type == 'reply' }>View 
-      <a href={ url.entry(opts.entry.thread) }>all replies</a> in the thread.
+    <p if={ entry.type == 'reply' }>View 
+      <a href={ url.entry(entry.thread) }>all replies</a> in the thread.
     </p>
 
-    <umedia-entry-editor if={ canComment } ancestor="{ opts.entry }"></umedia-entry-editor>
+    <umedia-entry-editor if={ canComment } 
+      ancestor="{ entry }" items={ items }></umedia-entry-editor>
+
     <h5 hide={ Site.user }>
       Please <a onclick={ Site.account.loginRequired }>sign in</a> to add a comment or a reply.
     </h5>
 
-    <umedia-entry-list if={ opts.entry.type != 'reply'} id="umedia-comments"
-                       store={ store }
-                       ancestor={ opts.entry }></umedia-entry-list>
+    <umedia-entry-list if={ entry.type != 'reply'} id="umedia-comments"
+                       store={ store } items={ items }
+                       ancestor={ entry }></umedia-entry-list>
 
   </div>
 
@@ -31,8 +33,11 @@
    }
   </style>
   <script>
-   this.store = this.opts.store
-   this.mixin('coect-context', 'umedia-context')
-   this.canComment = Site.umedia.canComment(this.opts.entry)
+   var self = this
+   self.mixin('umedia-context')
+   self.entry = this.opts.entry
+   self.store = this.opts.store
+   self.items = []
+   self.canComment = Site.umedia.canComment(self.entry)
   </script>
 </umedia-entry-details>
