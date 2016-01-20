@@ -1,5 +1,5 @@
-<umedia-entry class="umedia-entry">
-  <div id="e{entry.id}" class="media {opts.compacted ? 'umedia-compacted' : ''}">
+<umedia-entry>
+  <div id="e{entry.id}" class="media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
     
     <h2 if={ title }>{ title }</h2>
 

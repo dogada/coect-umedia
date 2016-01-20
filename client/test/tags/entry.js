@@ -10,7 +10,7 @@ describe(TAG, function() {
       text: 'Just a comment'
     }
     var tag = env.mount('umedia-entry', {entry: entry})
-    $(tag.root).should.have.class(TAG)
+    $('#e' + entry.id, tag.root).should.have.class(TAG)
     $('.wpml p', tag.root).should.text(entry.text)
   })
 
@@ -21,7 +21,7 @@ describe(TAG, function() {
       text: 'Look here ' + link
     }
     var tag = env.mount('umedia-entry', {entry: entry})
-    $(tag.root).should.have.class(TAG)
+    $('#e' + entry.id, tag.root).should.have.class(TAG)
     $('.wpml p', tag.root).should.contain('Look here')
     $('.wpml a', tag.root).should.have.attr('href', link)
     $('.wpml a', tag.root).should.have.text(link)
@@ -34,7 +34,7 @@ describe(TAG, function() {
       text: `a: gnu.org\n.href: ${link}`
     }
     var tag = env.mount('umedia-entry', {entry: entry})
-    $(tag.root).should.have.class(TAG)
+    $('#e' + entry.id, tag.root).should.have.class(TAG)
     $('.wpml a', tag.root).should.have.attr('href', link)
     $('.wpml a', tag.root).should.have.text('gnu.org')
   })

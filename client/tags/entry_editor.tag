@@ -77,6 +77,7 @@
      ).done(function(doc) {
        console.log('done', doc, self.items)
        self.text = self.content.value = ''
+       doc.highlighted = true
        if (self.items) {
          self.items.splice(0, 0, doc)
          self.collapse()
