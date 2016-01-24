@@ -33,12 +33,16 @@ function retrieve(req, res, next) {
 
 function create(req, res) {
   debug('create', req.body)
+  var userAccess = req.security.getUserAccess(req.user)
   var owner = req.user
-  tflow([
+  var flow = tflow([
     function() {
+      if (userAccess > Access.ADMIN) return this.fail(403, 'Admin or root are required.')
       Channel.validate(req.body, {}, this)
     },
+    (doc, data) => Channel.applyAccess(data, userAccess, Access.EVERYONE, flow.join(doc)),
     function(doc, data) {
+      debug('create data=', data)
       Channel.create({
         model: Channel.MODEL,
         type: Channel.TYPE,
@@ -46,8 +50,8 @@ function create(req, res) {
         text: data.text,
         url: Channel.makeUrl(req.user.username, data.slug),
         owner: owner.id,
-        access: Access.EVERYONE,
-        data: {slug: data.slug}
+        access: (data.access === undefined ? Access.EVERYONE : data.access),
+        data: data.data || {}
       }, owner.id, this)
     },
     function(id) {
@@ -58,7 +62,7 @@ function create(req, res) {
 
 function update(req, res) {
   debug('update', req.body)
-  tflow([
+  var flow = tflow([
     function() {
       Channel.get(req.params.id, this)
     },
@@ -68,10 +72,15 @@ function update(req, res) {
       else Channel.validate(req.body, {}, this.join(channel))
     },
     function(channel, doc, data) {
+      var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
+      Channel.applyAccess(data, userAccess, Access.EVERYONE, flow.join(channel, doc))
+    },
+    function(channel, doc, data) {
       //FIX: use actual channel user
-      var update = _.pick(data, 'name', 'text')
+      debug()
+      var update = _.pick(data, 'name', 'text', 'access')
       if (!channel.url) update.url = Channel.makeUrl(req.user.username, data.slug)
-      Channel.update(channel.id, update, this)
+      Channel.update(channel.id, _.omit(update, _.isUndefined), this)
     },
     function(id) {
       Channel.get(id, this)
@@ -79,7 +88,7 @@ function update(req, res) {
   ], coect.json.response(res))
 }
 
-function remove(req, res) {
+function trash(req, res) {
   debug('remove params', req.params, req.oid)
   tflow([
     function() {
@@ -90,7 +99,7 @@ function remove(req, res) {
       else return this.next(channel)
     },
     function(channel) {
-      Channel.remove(channel.id, this)
+      Channel.update(channel.id, {access: Access.TRASH}, this)
     },
   ], coect.json.response(res))
 }
@@ -122,9 +131,9 @@ function list(req, res) {
 
 
 module.exports = {
-  create: create,
-  retrieve: retrieve,
-  update: update,
-  remove: remove,
-  list: list
+  create,
+  retrieve,
+  update,
+  trash,
+  list
 }

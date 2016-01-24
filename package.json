@@ -41,7 +41,6 @@
     "escape-html": "~1.0.3",
     "html-tag": "~0.2.1",
     "linkify-it": "~1.2.0",
-    "lodash": "^3.10.1",
     "moment": "~2.10.6",
     "object-apply": "~1.0.1",
     "object-assign": "~4.0.1",
@@ -68,16 +67,17 @@
     "babelify": "~6.3.0",
     "brfs": "~1.4.1",
     "browserify-istanbul": "~0.2.1",
-    "browserify-versionify": "latest",
     "browserify-shim": "latest",
+    "browserify-versionify": "latest",
     "coect": "0.x",
     "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
+    "lodash": "~3.10.1",
     "page": "~1.6.4",
     "precommit-hook": "latest",
+    "riot": "2.x",
     "riotify": "~0.1.2",
-    "wpml": "0.x",
-    "riot": "2.x"
+    "wpml": "0.x"
   },
   "pre-commit": [
     "lint",

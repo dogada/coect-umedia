@@ -25,18 +25,18 @@
 
           <a href={ url.entry(entry) } 
             title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
-          
-          <span if="{ entry.access == Site.access.MODERATOR }" onclick={ moderate } class="restricted"
-          title="The entry is awaiting for moderation.">moderation</span>
 
-          <span if="{ entry.access > Site.access.MODERATOR && entry.access < Site.access.EVERYONE }" class="restricted"
-          title="Access to the entry is restricted ({ entry.access } level).">restricted</span>
+          <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
+                title="The entry is awaiting for moderation.">moderation</span>
 
-          <span if="{ entry.access == Site.access.OWNER }" class="restricted"
-                title="The entry is visible to owner and admins only. ({ entry.access } level).">hidden</span>
+          <span if="{ entry.access == Access.REJECTED }" class="restricted"
+                title="The entry was rejected after moderation.">rejected</span>
 
-          <span if="{ entry.access < Site.access.OWNER }" class="restricted"
-                title="The entry is visible to admins only ({ entry.access } level).">rejected</span>
+          <span if="{ entry.access == Access.HIDDEN }" class="restricted"
+                title="The entry is visible to owner and admins only.">hidden</span>
+
+          <span if="{ isRestricted(entry) }" class="restricted"
+                title="Access to the entry is restricted (level: { entry.access }).">restricted</span>
 
         </span>
       </div>
@@ -50,9 +50,20 @@
 
   <script>
    var self = this
+   var Access = self.Access = require('coect').Access
+   self.ancestor = self.opts.ancestor
+
    self.store = self.opts.store
+   
    self.mixin('coect-context', 'umedia-context')
-   debug('entry', this.opts, 'url=', self.url)
+   debug('opts', this.opts, 'url=', self.url)
+
+   self.isRestricted = function(entry) {
+     if ([Access.MODERATION, Access.REJECTED,
+     Access.HIDDEN].indexOf(entry.access) !== -1) return false
+     if (self.ancestor && self.ancestor.access) return entry.access < self.ancestor.access
+     return entry.access !== Access.EVERYONE
+   }
 
    self.displayName = function(user) {
      return user.name || user.username || user.id

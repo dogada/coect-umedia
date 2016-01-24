@@ -38,7 +38,10 @@ module.exports = function(r) {
   r.route('/e/:id')
     .get(entry.retrieve)
     .put(loginRequired, entry.update)
-    .delete(loginRequired, entry.remove)
+    .delete(loginRequired, entry.purge)
+
+  r.route('/e/:id/trash')
+    .post(loginRequired, entry.trash)
 
   r.route('/e/:id/:action(accept|reject)')
     .post(loginRequired, entry.moderate)
@@ -50,7 +53,7 @@ module.exports = function(r) {
   r.route('/c/:id')
     .get(channel.retrieve)
     .put(loginRequired, channel.update)
-    .delete(loginRequired, channel.remove)
+    .delete(loginRequired, channel.trash)
 
   r.route('/u/:id')
     .get(user.retrieve)

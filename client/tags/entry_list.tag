@@ -21,7 +21,7 @@
     <div>
       <ul class="list-unstyled">
         <li each={e in items}>
-          <umedia-entry entry={ e } />
+          <umedia-entry entry={ e } ancestor={ parent.ancestor } />
         </li>
       </ul>
 

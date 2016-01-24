@@ -45,6 +45,17 @@ function makeVersion() {
   return new Date().toISOString()
 }
 
+function validate(req, parent, channel, schema, done) {
+  var flow = tflow([
+    function() {
+      Entry.validate(req.body, schema, flow)
+    },
+    function(doc, data) {
+      var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
+      Entry.applyAccess(data, userAccess, parent.access, flow.join(doc))
+    }
+  ], done);
+}
 
 function checkNewEntry(req, done) {
   tflow([
@@ -56,16 +67,12 @@ function checkNewEntry(req, done) {
       if (parent.type === 'channel') return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
-    function(parent, list) {
+    function(parent, channel) {
       if (parent.type === 'channel' && parent.owner !== req.user.id) return this.fail('Not owner of the list')
-      Entry.validate(req.body,
-                     {schema: Entry.getTypeSchema(parent.type === 'channel' ? 'post' : 'comment')},
-                     this.join(parent, list))
+      validate(req, parent, channel, Entry.getTypeSchema(parent.type === 'channel' ? 'post' : 'comment'), this.join(parent, channel))
     },
   ], done)
 }
-
-
 
 function saveNewEntry(req, parent, list, doc, data, done) {
   var type = 'post'
@@ -77,11 +84,13 @@ function saveNewEntry(req, parent, list, doc, data, done) {
     type = (parent.thread ? 'reply' : 'comment')
   }
   //Fix made a transaction
-  var access = req.security.getNewEntryAccess(req.user, {type: type}, list)
-  debug(`saveNewEntry type=${type} access=${access}`, req.user.id, list.name, parent.name, data.name)
+  var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, list)
+  debug(`saveNewEntry type=${type} access=${data.access}, defaultAccess=${defaultAccess}`)
+  debug(`user=${req.user.id}, list=${list.name}, parent=${parent.name}, name=${data.name}`)
   Entry.create({
     model: Entry.MODEL,
     type: type,
+    access: data.access || defaultAccess,
     name: data.name,
     text: req.body.text,
     // custom urls are allowed for posts only
@@ -90,7 +99,6 @@ function saveNewEntry(req, parent, list, doc, data, done) {
     recipient: (parent.model === 'entry' ? parent.owner: null),
     list: list.id,
     version: makeVersion(),
-    access: access,
     parent: parent.id,
     topic: topicId,
     thread: threadId
@@ -153,6 +161,7 @@ function getEntryAndChannel(where, done) {
   ], done)
 }
 
+
 function update(req, res) {
   debug('update', req.body)
   var flow = tflow([
@@ -161,16 +170,18 @@ function update(req, res) {
     },
     function(entry, channel) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
-      Entry.validate(req.body, {schema: Entry.getTypeSchema(entry.type)}, this.join(entry, channel))
+      validate(req, channel, channel, Entry.getTypeSchema(entry.type), flow.join(entry, channel))
     },
     function(entry, list, doc, data) {
-      Entry.update(entry.id, {
+      debug('update data', data)
+      Entry.update(entry.id, _.omit({
         name: data.name,
         head: doc.head,
         text: doc.text,
-        url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || null,
+        access: data.access,
+        url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || undefined,
         version: makeVersion()
-      }, this)
+      }, _.isUndefined), this)
     },
     function(id) {
       debug('updated', id)
@@ -190,10 +201,10 @@ function moderate(req, res) {
       getEntryAndChannel(entryWhere(req), flow)
     },
     function(entry, channel) {
-      if (entry.access !== Access.MODERATOR) return flow.fail(400, 'Entry is already moderated.')
+      if (entry.access !== Access.MODERATION) return flow.fail(400, 'Entry is already moderated.')
       if (!req.security.canUserModerate(req.user, entry, channel)) return flow.fail(403, 'Forbidden.')
       var data = {
-        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Access.ADMIN)
+        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Access.REJECTED)
       }
       Entry.update(entry.id, data, this.send(data))
     },
@@ -204,30 +215,31 @@ function retrieve(req, res, next) {
   debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
   var flow = tflow([
     function() {
-      Entry.get(entryWhere(req), flow)
+      getEntryAndChannel(entryWhere(req), flow)
     },
-    function(entry) {
-      var ids = Array.from(new Set([entry.list, entry.parent, entry.thread, entry.topic])).filter(v => v)
+    function(entry, channel) {
+      if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
+      if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
+
+      var ids = Array.from(new Set([entry.parent, entry.thread, entry.topic, entry.list])).filter(v => v)
       var fields = Entry.listFields.filter(v => (v !== 'text'))
       debug('ids', ids)
-      Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry))
+      Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry, channel))
     },
-    function(entry, related) {
-      Entity.fillUsers(related.concat(entry), req.app.userCache, flow.join(entry))
+    function(entry, channel, related) {
+      Entity.fillUsers(related.concat(entry), req.app.userCache, flow.join(entry, channel))
     },
-    function(entry, related) {
+    function(entry, channel, related) {
       debug(`related.length=${related.length}`)
       // replace ids with related objects
       let relatedMap = {}
       for (let e of related) relatedMap[e.id] = e
-      let channel = relatedMap[entry.list]
       debug('channel', channel)
-      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
       for (let field of ['list', 'parent', 'thread', 'topic']) {
         let fieldValue = entry[field]
         let relatedObj  = relatedMap[fieldValue]
-        if (relatedObj && relatedObj !== channel &&
-            !req.security.canUserView(req.user, relatedObj, channel)) return flow.fail(403, 'Forbidden')
+        // if (relatedObj && relatedObj.id !== channel.id &&
+        //     !req.security.canUserView(req.user, relatedObj, channel)) return flow.fail(403, 'Forbidden')
         if (fieldValue) entry[field] =  relatedObj || {id: fieldValue}
       }
       flow.next(entry)
@@ -235,11 +247,26 @@ function retrieve(req, res, next) {
   ], req.app.janus(req, res, next))
 }
 
-function remove(req, res) {
-  debug('remove params', req.params, req.oid)
+/**
+   Move entry to 'Trash bin' with ability to restore later.
+*/
+function trash(req, res) {
+  debug('remove params', req.params)
   var flow = tflow([
     () => getEntryAndChannel(entryWhere(req), flow),
-    (entry, channel) => req.security.canUserRemove(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
+    (entry, channel) => req.security.canTrashEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
+    (entry) => Entry.update(entry.id, {access: Access.TRASH}, flow)
+  ], coect.json.response(res))
+}
+
+/**
+   Phisically remove entry from the database.
+*/
+function purge(req, res) {
+  debug('purge params', req.params)
+  var flow = tflow([
+    () => getEntryAndChannel(entryWhere(req), flow),
+    (entry, channel) => req.security.canPurgeEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
     (entry) => Entry.remove(entry.id, flow)
   ], coect.json.response(res))
 }
@@ -336,10 +363,11 @@ function list(req, res) {
 }
 
 module.exports = {
-  create: create,
-  retrieve: retrieve,
-  update: update,
-  remove: remove,
-  list: list,
+  create,
+  retrieve,
+  update,
+  trash,
+  purge,
+  list,
   moderate
 }

@@ -4,6 +4,7 @@ var debug = require('debug')('umedia:entity')
 var tflow = require('tflow')
 var coect = require('coect')
 var Model = coect.orm.Model
+var Access = coect.Access
 
 var wpml = require('../wpml')
 
@@ -68,7 +69,7 @@ Entity.validate = function(data, opts, done) {
     },
     function(doc) {
       var combined = Object.assign({name: doc.name}, doc.meta, data)
-      debug('combied', combined, 'doc', doc, data)
+      debug('combied', combined, 'doc', doc, 'data', data)
       Model.validate(combined, opts.schema || Klass.schema, this.join(doc))
     }
   ], done)
@@ -90,6 +91,20 @@ Entity.fillUsers = function(entries, cache, done) {
       this.next(entries)
     }
   ], done)
+}
+
+Entity.applyAccess = function(data, userAccess, maxAccess, done) {
+  if (!data.access) return done(null, data)
+  var access = Access.nameValue(data.access)
+  var maxAccessName = Access.valueName(maxAccess)
+  debug('apply access', data.access, access, userAccess, maxAccess)
+
+  if (typeof access !== 'number') return done(new coect.HttpError(400, `Invalid access: ${data.access}`))
+  if (access < userAccess) return done(new coect.HttpError(403, `Insufficient permissions to change access to ${data.access}`))
+  if (access > maxAccess) return done(new coect.HttpError(403, `Invalid access: ${data.access} > ${maxAccessName}`))
+  debug(`Changing access from ${data.access} to ${access}`)
+  data.access = access
+  done(null, data)
 }
 
 module.exports = Entity

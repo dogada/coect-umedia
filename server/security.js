@@ -35,9 +35,11 @@ class UmediaAccessPolicy extends Access {
   // site-wide access
   getUserAccess(user) {
     if (!user) return Access.EVERYONE
-    if (user.isAdmin()) return Access.ROOT
+    if (user.isRoot()) return Access.ROOT
+    if (user.isAdmin()) return Access.ADMIN
     if (user.isModerator()) return Access.MODERATOR
-    if (user.isMember()) return Access.MEMBER
+    if (user.isStaff()) return Access.STAFF
+    if (user.isVIP()) return Access.VIP
     return Access.USER
   }
 
@@ -58,13 +60,13 @@ class UmediaAccessPolicy extends Access {
     return desired
   }
   /**
-     Default access for guests (new users without known reputation yet).
+     Default access for new entries created by guests (new users without known reputation yet).
      Users with bad reputation will have 'premderate' status anyway.
      Users with good reputation will have 'postmoderate' status.
      Guests are in between 'premoderate' and 'postmoderate'.
    */
-  getGuestAccess(entry, channel, desired) {
-    var access = channel.data.guest_access || this.opts.guestAccess || Access.MODERATOR
+  getDefaultGuestAccess(entry, channel, desired) {
+    var access = channel.data.guest_access || this.opts.guestAccess || Access.MODERATION
     // guest access can't be greater than desired access after moderation
     if (access > desired) access = desired
     return access
@@ -85,44 +87,54 @@ class UmediaAccessPolicy extends Access {
     // auto approve admins
     if (this.getUserAccess(user, channel) <= Access.ADMIN) return desired
     // moderate even member & moderator actions if member.data.premoderate
-    if (user.data.premoderate) return Access.MODERATOR
+    if (user.data.premoderate) return Access.MODERATION
 
     // auto approve good users (FIX: check also user status in channel)
     if (user.data.postmoderate) return desired
     // auto approve members and moderators without 'premoderate' status
-    if (this.getUserAccess(user, channel) <= Access.MEMBER) return desired
+    if (this.getUserAccess(user, channel) <= Access.VIP) return desired
     // auto approve all in postmoderate channels
     if (channel.data.postmoderate || this.opts.postmoderate) return desired
     // by default use guest access
-    return this.getGuestAccess(entry, channel, desired)
+    return this.getDefaultGuestAccess(entry, channel, desired)
   }
 
   canUserView(user, entry, channel) {
-    debug(`canUserView id=${entry.id} access=${entry.access}, owner=${entry.owner}, user=${user && user.id}`)
+    debug(`canUserView id=${entry.id} access=${entry.access}, owner=${entry.owner}`)
+    debug(`user=${user && user.id}, channel=${channel && channel.id}`, typeof channel)
     if (!user) return (entry.access >= Access.EVERYONE)
-    if (user.isAdmin()) return true // admins should have access always
-    if (channel && channel.hasAdmin(user) && entry.access >= Access.ADMIN) return true
-    if (!entry.access || entry.access <= Access.ADMIN) return false // only admins can access such entries
+    if (user.isRoot()) return true // root should have access always
+    if (!entry.access || entry.access < Access.ADMIN) return false // only root is allowed
+    if (entry.access >= this.getUserAccessInsideChannel(user, channel)) return true
 
-    if (entry.owner === user.id) return true
-    if (entry.access >= Access.USER) return true
-
+    if (entry.owner === user.id && entry.access > Access.DELETED) return true
     // User should see replies for own entries
-    if (entry.recipient === user.id && entry.access >= Access.MODERATOR) return true
-    if (entry.access >= this.getUserAccess(user, channel)) return true
+    if (entry.recipient === user.id && entry.access >= Access.MODERATION) return true
     return false
   }
 
   canUserChange(user, entry, channel) {
     // FIX check entity.acl too
-    return (entry.access > Access.ADMIN && entry.owner === user.id)
+    if (user.isRoot()) return true
+    if (user.isAdmin() && user.id === entry.owner && entry.access >= Access.ADMIN) return true
+    return (entry.access > Access.DELETED && entry.owner === user.id)
   }
 
-  canUserRemove(user, entry, channel) {
+  canTrashEntry(user, entry, channel) {
     // FIX check entity.acl too
     if (this.getUserAccess(user, channel) <= Access.ADMIN) return true
     if (entry.access > Access.ADMIN && entry.owner === user.id) return true
+    return false
+  }
 
+  /**
+     Only entries that are already in Trash can be purged by default.
+   */
+  canPurgeEntry(user, entry, channel) {
+    // FIX check entity.acl too
+    if (entry.access !== Access.TRASH) return false
+    if (this.getUserAccess(user, channel) <= Access.ADMIN) return true
+    if (entry.access > Access.ADMIN && entry.owner === user.id) return true
     return false
   }
 
