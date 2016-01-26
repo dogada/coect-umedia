@@ -31,6 +31,21 @@ function retrieve(req, res, next) {
   ], req.app.janus(req, res, next))
 }
 
+function validate(req, channel, done) {
+  var flow = tflow([
+    function() {
+      Channel.validate(req.body, {}, flow)
+    },
+    function(doc, data) {
+      var userAccess = (channel ? 
+                        req.security.getUserAccessInsideChannel(req.user, channel) :
+                        req.security.getUserAccess(req.user))
+      var defaultAccess = req.security.getDefaultChannelAccess()
+      Channel.applyAccess(data, userAccess, Access.EVERYONE, defaultAccess, flow.join(doc))
+    }
+  ], done);
+}
+
 function create(req, res) {
   debug('create', req.body)
   var userAccess = req.security.getUserAccess(req.user)
@@ -38,9 +53,8 @@ function create(req, res) {
   var flow = tflow([
     function() {
       if (userAccess > Access.ADMIN) return this.fail(403, 'Admin or root are required.')
-      Channel.validate(req.body, {}, this)
+      validate(req, null, this)
     },
-    (doc, data) => Channel.applyAccess(data, userAccess, Access.EVERYONE, flow.join(doc)),
     function(doc, data) {
       debug('create data=', data)
       Channel.create({
@@ -50,8 +64,8 @@ function create(req, res) {
         text: data.text,
         url: Channel.makeUrl(req.user.username, data.slug),
         owner: owner.id,
-        access: (data.access === undefined ? Access.EVERYONE : data.access),
-        data: data.data || {}
+        access: data.access,
+        data: Object.assign({}, {access: data.accessData})
       }, owner.id, this)
     },
     function(id) {
@@ -64,22 +78,20 @@ function update(req, res) {
   debug('update', req.body)
   var flow = tflow([
     function() {
-      Channel.get(req.params.id, this)
+      Channel.get(req.params.id, {select: '*'}, this)
     },
     function(channel) {
       debug('Updating', channel)
       if (channel.owner !== req.user.id) this.fail(403, 'Owner required')
-      else Channel.validate(req.body, {}, this.join(channel))
-    },
-    function(channel, doc, data) {
-      var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
-      Channel.applyAccess(data, userAccess, Access.EVERYONE, flow.join(channel, doc))
+      validate(req, channel, this.join(channel))
     },
     function(channel, doc, data) {
       //FIX: use actual channel user
       debug()
       var update = _.pick(data, 'name', 'text', 'access')
       if (!channel.url) update.url = Channel.makeUrl(req.user.username, data.slug)
+      update.data = Object.assign(channel.data, {access: data.accessData})
+      debug('update', update)
       Channel.update(channel.id, _.omit(update, _.isUndefined), this)
     },
     function(id) {

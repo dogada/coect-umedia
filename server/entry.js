@@ -45,14 +45,15 @@ function makeVersion() {
   return new Date().toISOString()
 }
 
-function validate(req, parent, channel, schema, done) {
+function validate(req, parent, channel, type, done) {
   var flow = tflow([
     function() {
-      Entry.validate(req.body, schema, flow)
+      Entry.validate(req.body, Entry.getTypeSchema(type), flow)
     },
     function(doc, data) {
       var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
-      Entry.applyAccess(data, userAccess, parent.access, flow.join(doc))
+      var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, channel)
+      Entry.applyAccess(data, userAccess, parent.access, defaultAccess, flow.join(doc))
     }
   ], done);
 }
@@ -69,7 +70,7 @@ function checkNewEntry(req, done) {
     },
     function(parent, channel) {
       if (parent.type === 'channel' && parent.owner !== req.user.id) return this.fail('Not owner of the list')
-      validate(req, parent, channel, Entry.getTypeSchema(parent.type === 'channel' ? 'post' : 'comment'), this.join(parent, channel))
+      validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment', this.join(parent, channel))
     },
   ], done)
 }
@@ -83,14 +84,16 @@ function saveNewEntry(req, parent, list, doc, data, done) {
     else threadId = parent.thread
     type = (parent.thread ? 'reply' : 'comment')
   }
-  //Fix made a transaction
-  var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, list)
-  debug(`saveNewEntry type=${type} access=${data.access}, defaultAccess=${defaultAccess}`)
-  debug(`user=${req.user.id}, list=${list.name}, parent=${parent.name}, name=${data.name}`)
+  // Fix made a transaction
+  debug(`saveNewEntry type=${type} access=${data.access}, name=${data.name}`)
+  debug(`user=${req.user.id}, list=${list.name}, parent=${parent.name}`)
+  var entryData = {}
+  if (_.size(data.accessData)) entryData.access = data.accessData
   Entry.create({
     model: Entry.MODEL,
     type: type,
-    access: data.access || defaultAccess,
+    access: data.access,
+    data: entryData,
     name: data.name,
     text: req.body.text,
     // custom urls are allowed for posts only
@@ -156,7 +159,7 @@ function entryWhere(req) {
 
 function getEntryAndChannel(where, done) {
   let flow = tflow([
-    () => Entry.get(where, flow),
+    () => Entry.get(where, {select: '*'}, flow),
     (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry))
   ], done)
 }
@@ -169,16 +172,23 @@ function update(req, res) {
       getEntryAndChannel(entryWhere(req), flow)
     },
     function(entry, channel) {
+      if (entry.type === 'post') this.next(entry, channel, channel)
+      else Entry.get(entry.parent, this.join(entry, channel))
+    },
+    function(entry, channel, parent) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
-      validate(req, channel, channel, Entry.getTypeSchema(entry.type), flow.join(entry, channel))
+      validate(req, parent, channel, entry.type, flow.join(entry, channel))
     },
     function(entry, list, doc, data) {
       debug('update data', data)
+      var entryData = entry.data
+      if (entryData.access || _.size(data.accessData)) entryData.access = data.accessData
       Entry.update(entry.id, _.omit({
         name: data.name,
         head: doc.head,
         text: doc.text,
         access: data.access,
+        data: entryData,
         url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || undefined,
         version: makeVersion()
       }, _.isUndefined), this)
@@ -217,10 +227,14 @@ function retrieve(req, res, next) {
     function() {
       getEntryAndChannel(entryWhere(req), flow)
     },
+    
     function(entry, channel) {
       if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
       if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
-
+      //FIX remove sensitive fields without reloading
+      Entry.get(entry.id, flow.join(channel))
+    },
+    function(channel, entry) {
       var ids = Array.from(new Set([entry.parent, entry.thread, entry.topic, entry.list])).filter(v => v)
       var fields = Entry.listFields.filter(v => (v !== 'text'))
       debug('ids', ids)

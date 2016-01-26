@@ -19,6 +19,17 @@ class Entity extends Model {
     return this.name || this.id
   }
 
+  /**
+     Get numeric access value for scope.
+   */
+  getAccess(scope) {
+    debug('getAccess', scope, this.data.access)
+    if (!this.data.access) return
+    var name = this.data.access[scope + '_access']
+    var value = name && Access.nameValue(name)
+    if (name && typeof value !== 'number') throw new Error(`Unknown access for ${scope}: ${name}`)
+    return value
+  }
 }
 
 Entity.schema = {
@@ -93,17 +104,31 @@ Entity.fillUsers = function(entries, cache, done) {
   ], done)
 }
 
-Entity.applyAccess = function(data, userAccess, maxAccess, done) {
-  if (!data.access) return done(null, data)
-  var access = Access.nameValue(data.access)
-  var maxAccessName = Access.valueName(maxAccess)
-  debug('apply access', data.access, access, userAccess, maxAccess)
+/*
+  Parse access related fields from wpml and save them in entity.data.access.
+  Always set data.access to an user-value or default value.
+*/
+Entity.applyAccess = function(data, userAccess, maxAccess, defaultAccess, done) {
+  if (defaultAccess < userAccess || defaultAccess > maxAccess) return done(
+    new coect.HttpError(400, `Invalid default access ${defaultAccess}`))
 
-  if (typeof access !== 'number') return done(new coect.HttpError(400, `Invalid access: ${data.access}`))
-  if (access < userAccess) return done(new coect.HttpError(403, `Insufficient permissions to change access to ${data.access}`))
-  if (access > maxAccess) return done(new coect.HttpError(403, `Invalid access: ${data.access} > ${maxAccessName}`))
-  debug(`Changing access from ${data.access} to ${access}`)
-  data.access = access
+  var parsed = {}
+  for (let name of ['access', 'write_access', 'post_access', 'comment_access', 'write_post_access', 'write_comment_access']) {
+    var accessName = data[name]
+    if (accessName === undefined) continue
+    var access = Access.nameValue(accessName)
+    var maxAccessName = Access.valueName(maxAccess)
+    debug(`apply access ${name}: ${accessName}->${access}, user=${userAccess}, max=${maxAccess}`)
+    if (typeof access !== 'number') return done(new coect.HttpError(400, `Invalid ${name}: ${accessName}`))
+    if (access < userAccess) return done(new coect.HttpError(403, `Insufficient permissions for ${name}: ${accessName}`))
+    if (access > maxAccess) return done(new coect.HttpError(403, `Invalid ${name}: ${accessName} > ${maxAccessName}`))
+    debug(`Accepted ${name}: ${accessName}`)
+    parsed[name] = accessName
+  }
+  // set access always because user may remove !access from wpml and we need to
+  // reset it to the default then
+  data.access = (parsed.access ? Access.nameValue(parsed.access) : defaultAccess)
+  data.accessData = parsed
   done(null, data)
 }
 

@@ -24,6 +24,10 @@ class UmediaAccessPolicy extends Access {
     }, opts || {})
   }
 
+  getDefaultChannelAccess(channel) {
+    return this.opts.defaultAccess
+  }
+
   accessInsideChannel(user, channel) {
     if (!user) return Access.EVERYONE
     if (channel.owner === user.id) return Access.ADMIN
@@ -54,7 +58,10 @@ class UmediaAccessPolicy extends Access {
   }
 
   getDesiredAccess(entry, channel) {
-    var desired = channel.data[entry.type + '_access'] || channel.access || this.opts.defaultAccess
+    var typeAccess = channel.getAccess(entry.type)
+    // use comment access for replies if own access for replies isn't defined
+    if (entry.type === 'reply' && typeAccess === undefined) typeAccess = channel.getAccess('comment')
+    var desired = typeAccess || channel.access || this.opts.defaultAccess
     // access mode for entries can't be greater than channel access itself
     if (desired > channel.access) desired = channel.access
     return desired
