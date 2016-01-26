@@ -57,11 +57,14 @@ class UmediaAccessPolicy extends Access {
     return null
   }
 
+  getEntryAccessType(entry) {
+    return (entry.type === 'post' ? 'post' : 'comment')
+  }
+
   getDesiredAccess(entry, channel) {
-    var typeAccess = channel.getAccess(entry.type)
-    // use comment access for replies if own access for replies isn't defined
-    if (entry.type === 'reply' && typeAccess === undefined) typeAccess = channel.getAccess('comment')
-    var desired = typeAccess || channel.access || this.opts.defaultAccess
+    // use comment access for replies
+    var typeAccess = channel.getAccess(this.getEntryAccessType(entry))
+    var desired = Access.firstOf(typeAccess, channel.access, this.opts.defaultAccess)
     // access mode for entries can't be greater than channel access itself
     if (desired > channel.access) desired = channel.access
     return desired
@@ -77,6 +80,26 @@ class UmediaAccessPolicy extends Access {
     // guest access can't be greater than desired access after moderation
     if (access > desired) access = desired
     return access
+  }
+
+  canCreateEntry(user, parent, channel) {
+    if (!user) return false
+    debug('parent', (typeof parent), parent.id)
+    var userAccess = this.getUserAccessInsideChannel(user, channel)
+    var accessType = this.getEntryAccessType({type: parent.getChildType()}) 
+    var writeAccess = channel.getAccess(`write_${accessType}`, 'write')
+    debug('writeAccess', writeAccess, accessType, channel.access)
+
+    if (channel.access < writeAccess) writeAccess = channel.access
+    if (userAccess <= writeAccess) return true
+    if (parent.type === 'channel') {
+      // channel owner can write in own channel if it's not blocked by root
+      if (user.id === channel.owner && channel.access >= Access.ADMIN) return true
+    } else if (writeAccess === undefined) {
+      // by default anyone who can see comments, can comment too
+      if (userAccess <= Access.firstOf(channel.getAccess(accessType), channel.access)) return true
+    }
+    return false
   }
 
   /**
@@ -159,6 +182,7 @@ class UmediaAccessPolicy extends Access {
     return false
   }
 
+  
 }
 
 module.exports = UmediaAccessPolicy

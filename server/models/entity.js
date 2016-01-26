@@ -22,14 +22,27 @@ class Entity extends Model {
   /**
      Get numeric access value for scope.
    */
-  getAccess(scope) {
-    debug('getAccess', scope, this.data.access)
+  getAccess() {
+    debug('getAccess', arguments, this.data.access)
     if (!this.data.access) return
-    var name = this.data.access[scope + '_access']
-    var value = name && Access.nameValue(name)
-    if (name && typeof value !== 'number') throw new Error(`Unknown access for ${scope}: ${name}`)
-    return value
+    for (let scope of arguments) {
+      var name = this.data.access[scope + '_access']
+      var value = name && Access.nameValue(name)
+      if (name) {
+        if (typeof value === 'number') return value
+        throw new Error(`Unknown access for ${scope}: ${name}`)
+      }
+    }
   }
+
+  getChildType() {
+    switch (this.type) {
+      case 'channel': return 'post'
+      case 'post': return 'comment'
+      case 'comment': return 'reply'
+    }
+  }
+
 }
 
 Entity.schema = {
@@ -109,7 +122,8 @@ Entity.fillUsers = function(entries, cache, done) {
   Always set data.access to an user-value or default value.
 */
 Entity.applyAccess = function(data, userAccess, maxAccess, defaultAccess, done) {
-  if (defaultAccess < userAccess || defaultAccess > maxAccess) return done(
+  if (defaultAccess !== Access.MODERATION && 
+      (defaultAccess < userAccess || defaultAccess > maxAccess)) return done(
     new coect.HttpError(400, `Invalid default access ${defaultAccess}`))
 
   var parsed = {}

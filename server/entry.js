@@ -69,7 +69,7 @@ function checkNewEntry(req, done) {
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
     function(parent, channel) {
-      if (parent.type === 'channel' && parent.owner !== req.user.id) return this.fail('Not owner of the list')
+      if (!req.security.canCreateEntry(req.user, parent, channel)) return this.fail(403, 'Not enough permissions to create')
       validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment', this.join(parent, channel))
     },
   ], done)

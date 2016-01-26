@@ -13,6 +13,7 @@ class Entry extends Entity {
   toString() {
     return this.name || this.id
   }
+
 }
 
 Entry.MODEL = 'entry'
