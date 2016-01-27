@@ -101,7 +101,7 @@ function update(req, res) {
 }
 
 function trash(req, res) {
-  debug('remove params', req.params, req.oid)
+  debug('remove params', req.params)
   tflow([
     function() {
       Channel.get(req.params.id, this)
@@ -141,11 +141,27 @@ function list(req, res) {
   ], coect.json.response(res))
 }
 
+function permissions(req, res) {
+  tflow([
+    function() {
+      Channel.get(req.params.id, {select: '*'}, this)
+    },
+    function(channel) {
+      debug('permissions', channel)
+      if (!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Can\'t view')
+      this.next({
+        post: req.security.canCreateEntry(req.user, {type: channel.type}, channel),
+        comment: req.security.canCreateEntry(req.user, {type: 'post'}, channel)
+      })
+    }
+  ], coect.json.response(res))
+}
 
 module.exports = {
   create,
   retrieve,
   update,
   trash,
-  list
+  list,
+  permissions
 }

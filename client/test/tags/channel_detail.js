@@ -16,7 +16,10 @@ describe('umedia-channel-detail', function() {
   })
 
   it('should load channel and recent entries by channel id', function(done) {
-    var tag = env.mount('umedia-channel-details', {id: 'listId'})
+    var tag = env.mount('umedia-channel-details', {
+      channel: FAKE_CHANNEL,
+      permissions: {post: false}
+    })
 
     function checkHtml() {
       expect($('.umedia-entry-list ul li', tag.root)).to.have.length(2)
@@ -25,9 +28,8 @@ describe('umedia-channel-detail', function() {
     }
 
     // wait for ajax response and then check tag state
-    expect(tag.channel).property('id', 'listId')
-    expect(tag).property('canPost').not.ok
     expect(tag.channel).deep.equal(FAKE_CHANNEL)
+    expect(tag.permissions).eql({post: false})
     checkHtml()
     done()
   })

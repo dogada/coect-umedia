@@ -33,17 +33,8 @@
 
    var self = this
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
-   self.entry = self.opts.entry || {}
-   self.items = self.opts.items
-   debug(`editor entry=${self.entry}, items=${self.items}`)
-
-   self.entryType = function() {
-     switch(self.opts.ancestor.type) {
-       case 'channel': return 'post'
-       case 'post': return 'comment'
-       default: return 'reply'
-     }
-   }
+   var {entry, ancestor, items} = self.opts
+   debug(`editor ancestor=${ancestor} entry=${entry}, items=${items}`)
 
    self.expand = function(e) {
      self.content.style.height = '300px'
@@ -55,6 +46,21 @@
      self.content.style.height = 'auto'
    }
 
+   if (entry) {
+     self.text = self.content.value = entry.text
+     self.expand()
+   }
+
+   self.entryType = function() {
+     switch(ancestor.type) {
+       case 'channel': 
+         return 'post'
+       case 'post': 
+         return 'comment'
+       default: 
+         return 'reply'
+     }
+   }
 
    self.edit = function(e) {
      self.text = e.target.value
@@ -65,39 +71,31 @@
      else Site.page.show('/')
    }
 
+   debug('1')
+   
+   function published(doc) {
+     console.log('done', doc, items)
+     self.text = self.content.value = ''
+     doc.highlighted = true
+     if (items) {
+       items.splice(0, 0, doc)
+       self.collapse()
+       self.parent.update()
+     } else {
+       Site.page(self.url.entry(doc))
+     }
+   }
+
    self.publish = function(e) {
      e.preventDefault()
      console.log('Publish', this.text, self.opts)
      self.poutJson(
        self.url.entry(),
-       {id: self.opts.id,
+       {id: entry && entry.id,
         text: self.content.value,
-        parent: self.opts.ancestor && self.opts.ancestor.id,
-        list: self.opts.list && self.opts.list.id}
-     ).done(function(doc) {
-       console.log('done', doc, self.items)
-       self.text = self.content.value = ''
-       doc.highlighted = true
-       if (self.items) {
-         self.items.splice(0, 0, doc)
-         self.collapse()
-         self.parent.update()
-       } else {
-         Site.page(self.url.entry(doc))
-       }
-     })
+        parent: ancestor && ancestor.id,
+        list: ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id)}).done(published)
    }
-
-   self.load = function(id) {
-     $.getJSON(self.url.entry(id), function(data) {
-       self.entry = data
-       self.text = data.text
-       self.content.value = data.text
-       self.update()
-     })
-   }
-   if (self.opts.id || !self.parent) self.expand()
-   if (self.opts.id) self.load(this.opts.id)
 
   </script>
 </umedia-entry-editor>

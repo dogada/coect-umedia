@@ -55,6 +55,10 @@ module.exports = function(r) {
     .put(loginRequired, channel.update)
     .delete(loginRequired, channel.trash)
 
+  r.route('/c/:id/permissions')
+    .get(loginRequired, channel.permissions)
+
+
   r.route('/u/:id')
     .get(user.retrieve)
 

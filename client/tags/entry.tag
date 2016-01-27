@@ -59,6 +59,7 @@
    debug('opts', this.opts, 'url=', self.url)
 
    self.isRestricted = function(entry) {
+     debug('isRest', entry.access, self.ancestor)
      if ([Access.MODERATION, Access.REJECTED,
      Access.HIDDEN].indexOf(entry.access) !== -1) return false
      if (self.ancestor && self.ancestor.access) return entry.access < self.ancestor.access

@@ -23,7 +23,7 @@ describe(TAG, function() {
   it('should show post with comments', function(done) {
     var tag = env.mount(TAG, {entry: POST, thread: [POST]})
 
-    expect(tag).property('canComment').not.ok
+    expect(tag.permissions).eql({})
     $('#eID1 h2', tag.root).should.have.text('Hello world!')
     $('#eID1 p', tag.root).should.contain('See more')
     $('#eID1 p a', tag.root).should.have.attr('href', 'http://www.coect.net')

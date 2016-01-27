@@ -61,12 +61,12 @@ class UmediaAccessPolicy extends Access {
     return (entry.type === 'post' ? 'post' : 'comment')
   }
 
-  getDesiredAccess(entry, channel) {
+  getDesiredAccess(entry, parent, channel) {
     // use comment access for replies
     var typeAccess = channel.getAccess(this.getEntryAccessType(entry))
-    var desired = Access.firstOf(typeAccess, channel.access, this.opts.defaultAccess)
+    var desired = Access.firstOf(typeAccess, parent.access)
     // access mode for entries can't be greater than channel access itself
-    if (desired > channel.access) desired = channel.access
+    if (desired > parent.access) desired = parent.access
     return desired
   }
   /**
@@ -76,7 +76,8 @@ class UmediaAccessPolicy extends Access {
      Guests are in between 'premoderate' and 'postmoderate'.
    */
   getDefaultGuestAccess(entry, channel, desired) {
-    var access = channel.data.guest_access || this.opts.guestAccess || Access.MODERATION
+    var access = Access.firstOf(channel.getAccess('guest'), this.opts.guestAccess, Access.MODERATION)
+    debug(`defaultGuest access=${access}, guest_access=${channel.getAccess('guest')}, desired=${desired}`)
     // guest access can't be greater than desired access after moderation
     if (access > desired) access = desired
     return access
@@ -84,9 +85,9 @@ class UmediaAccessPolicy extends Access {
 
   canCreateEntry(user, parent, channel) {
     if (!user) return false
-    debug('parent', (typeof parent), parent.id)
+    debug('parent', (typeof parent), parent.type, parent.id, 'channel', channel)
     var userAccess = this.getUserAccessInsideChannel(user, channel)
-    var accessType = this.getEntryAccessType({type: parent.getChildType()}) 
+    var accessType = this.getEntryAccessType({type: Entity.getChildType(parent)}) 
     var writeAccess = channel.getAccess(`write_${accessType}`, 'write')
     debug('writeAccess', writeAccess, accessType, channel.access)
 
@@ -110,8 +111,8 @@ class UmediaAccessPolicy extends Access {
      FIX: allow to set user's premoderate and postmoderate status for each
      channel individually.
    */
-  getNewEntryAccess(user, entry, channel) {
-    let desired = this.getDesiredAccess(entry, channel)
+  getNewEntryAccess(user, entry, parent, channel) {
+    let desired = this.getDesiredAccess(entry, parent, channel)
     // never lift admin only access
     if (desired <= Access.ADMIN) return desired
     // auto approve admins

@@ -14,7 +14,7 @@
       <a href={ url.entry(entry.thread) }>all replies</a> in the thread.
     </p>
 
-    <umedia-entry-editor if={ canComment } 
+    <umedia-entry-editor if={ permissions.comment } 
       ancestor="{ entry }" items={ items }></umedia-entry-editor>
 
     <h5 hide={ Site.user }>
@@ -37,7 +37,7 @@
    self.mixin('umedia-context')
    self.entry = this.opts.entry
    self.store = this.opts.store
+   self.permissions = opts.permissions || {}
    self.items = []
-   self.canComment = Site.umedia.canComment(self.entry)
   </script>
 </umedia-entry-details>

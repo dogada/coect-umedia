@@ -21,7 +21,7 @@
     <div>
       <ul class="list-unstyled">
         <li each={e in items}>
-          <umedia-entry entry={ e } ancestor={ parent.ancestor } />
+          <umedia-entry entry={ e } ancestor={ parent.ancestor || parent.channel } />
         </li>
       </ul>
 
@@ -36,6 +36,8 @@
    var self = this, opts = self.opts
    debug('entry_list', self.opts)
    self.ancestor = opts.ancestor
+   self.channel = opts.channel
+   debug('ancestor', self.ancestor, 'channel', self.channel)
    self.mixin('coect-context', 'umedia-context', 'coect-site-context')
    self.items = opts.items || []
    self.hasMore = false
@@ -57,6 +59,7 @@
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
      else if (self.ancestor) query.thread = getThreadId(self.ancestor)
+     /* else if (self.channel) query.list = self.channel.id */
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
      return query

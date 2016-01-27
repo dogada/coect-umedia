@@ -35,15 +35,16 @@ class Entity extends Model {
     }
   }
 
-  getChildType() {
-    switch (this.type) {
-      case 'channel': return 'post'
-      case 'post': return 'comment'
-      case 'comment': return 'reply'
-    }
-  }
-
 }
+
+Entity.getChildType = function(data) {
+  switch (data.type) {
+  case 'channel': return 'post'
+  case 'post': return 'comment'
+  case 'comment': return 'reply'
+  }
+}
+
 
 Entity.schema = {
 
@@ -124,10 +125,11 @@ Entity.fillUsers = function(entries, cache, done) {
 Entity.applyAccess = function(data, userAccess, maxAccess, defaultAccess, done) {
   if (defaultAccess !== Access.MODERATION && 
       (defaultAccess < userAccess || defaultAccess > maxAccess)) return done(
-    new coect.HttpError(400, `Invalid default access ${defaultAccess}`))
+    new coect.HttpError(400, `Invalid default access ${defaultAccess} (${Access.valueName(defaultAccess)})`))
 
   var parsed = {}
-  for (let name of ['access', 'write_access', 'post_access', 'comment_access', 'write_post_access', 'write_comment_access']) {
+  for (let name of ['access', 'write_access', 'post_access', 'comment_access', 'guest_access',
+                    'write_post_access', 'write_comment_access']) {
     var accessName = data[name]
     if (accessName === undefined) continue
     var access = Access.nameValue(accessName)

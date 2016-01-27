@@ -52,19 +52,20 @@ function validate(req, parent, channel, type, done) {
     },
     function(doc, data) {
       var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
-      var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, channel)
+      var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, parent, channel)
       Entry.applyAccess(data, userAccess, parent.access, defaultAccess, flow.join(doc))
     }
   ], done);
 }
 
 function checkNewEntry(req, done) {
+  debug('checkNE', req.body)
   tflow([
     function() {
-      Entity.get(req.body.parent, {select: '*'}, this)
+      (req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, this)
     },
     function(parent) {
-      debug('checkNE list=', parent)
+      debug('checkNE parent=', (typeof parent), parent.type, parent.constructor, parent.hasModerator, parent)
       if (parent.type === 'channel') return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
