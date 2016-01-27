@@ -31,7 +31,7 @@ function details(ctx) {
       Site.mountTag('umedia-channel-details', 
                     {channel: channel, store: store},
                     {title: channel.name})
-      store.permissions(channel.id, (err, permissions) => {
+      if (Site.user) store.permissions(channel.id, (err, permissions) => {
         debug('permissions', err, permissions, Site.get('main'))
         Site.get('main').update({permissions})
       })

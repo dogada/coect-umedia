@@ -24,7 +24,7 @@ exports.details = function(ctx) {
       Site.mountTag('umedia-entry-details', 
                     {entry: entry, store: store},
                     {title: entry.name})
-      channelStore.permissions(entry.list.id, (err, permissions) => {
+      if (Site.user) channelStore.permissions(entry.list.id, (err, permissions) => {
         debug('permissions', err, permissions, Site.get('main'))
         Site.get('main').update({permissions})
       })
