@@ -46,9 +46,10 @@ function makeVersion() {
 }
 
 function validate(req, parent, channel, type, done) {
+  debug(`validate type=${type}`, Entry.getTypeSchema(type))
   var flow = tflow([
     function() {
-      Entry.validate(req.body, Entry.getTypeSchema(type), flow)
+      Entry.validate(req.body, {schema: Entry.getTypeSchema(type)}, flow)
     },
     function(doc, data) {
       var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
@@ -65,7 +66,7 @@ function checkNewEntry(req, done) {
       (req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, this)
     },
     function(parent) {
-      debug('checkNE parent=', (typeof parent), parent.type, parent.constructor, parent.hasModerator, parent)
+      debug('checkNE parent=', (typeof parent), parent.type)
       if (parent.type === 'channel') return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
