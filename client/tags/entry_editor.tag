@@ -52,13 +52,15 @@
    }
 
    self.entryType = function() {
-     switch(ancestor.type) {
+     switch((entry || ancestor).type) {
        case 'channel': 
          return 'post'
-       case 'post': 
+       case 'post':
          return 'comment'
-       default: 
+       case 'comment':
          return 'reply'
+       default:
+         return 'text'
      }
    }
 
