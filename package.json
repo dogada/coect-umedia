@@ -70,7 +70,6 @@
     "browserify-shim": "latest",
     "browserify-versionify": "latest",
     "coect": "0.x",
-    "coect-site": "~0.1.4",
     "jquery": "~2.1.4",
     "lodash": "~3.10.1",
     "page": "~1.6.4",

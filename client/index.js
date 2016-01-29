@@ -8,7 +8,6 @@ var routes = require('./routes')
 /**
    Init app and integrate it into the site.
    @param {object} opts
-   @param {Site} site
 */
 function init(opts) {
   debug('umedia init', opts)
