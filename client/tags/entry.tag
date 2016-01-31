@@ -1,7 +1,7 @@
 <umedia-entry>
-  <div id="e{entry.id}" class="media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
+  <div id="e{entry.id}" class="h-entry media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
     
-    <h1 if={ title }>{ title }</h2>
+    <h1 if={ title } class="p-name">{ title }</h2>
 
     <div class="media-left">
       <a href={ url.user(entry.owner) }>
@@ -13,7 +13,7 @@
 
     <div class="media-body">
       <div>
-        <a class="umedia-display-name" href="{ url.user(entry.owner) }"
+        <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         <span class="umedia-meta small">
           <span if={ entry.type == 'post'}>
@@ -23,8 +23,9 @@
             <a href={ url.entry(entry.parent) }>{ actionName(entry) }</a>
           </span>
 
-          <a href={ url.entry(entry) } 
-            title={ fullDate(entry.created) }>{ getAge(entry.created) }</a>
+          <a class="u-url" href={ url.entry(entry) } title={ fullDate(entry.created) }>
+            <time class="dt-published" datetime={ entry.created }>{ getAge(entry.created) }</time>
+          </a>
 
           <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
                 title="The entry is awaiting for moderation.">moderation</span>
@@ -40,7 +41,7 @@
 
         </span>
       </div>
-      <umedia-wpml doc={ doc }></umedia-wpml>
+      <umedia-wpml doc={ doc } class="e-content"></umedia-wpml>
       <div class="umedia-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
         <span if={ canChange }>· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
