@@ -1,14 +1,16 @@
 <umedia-profile class="umedia-profile">
-  <div class="media">
+  <div class="media vcard">
     <div class="media-left">
-      <img class="media-object" width="128" height="128" alt={ user.id } 
-           src={ Site.account.avatar(user, 128) }>
+      <a href={ Site.umedia.url.user(user) } class="url">
+        <img class="media-object photo" width="128" height="128" alt={ user.id } src={ Site.account.avatar(user, 128) }>
+      </a>
     </div>
 
     <div class="media-body">
-      <h1>{ user.name || user.id } <small if={ user.username }>@{ user.username }</small></h1>
+      <h1><span class="fn">{ user.name || user.id }</span>
+        <small if={ user.username }>@<span class="nickname">{ user.username }</span></small></h1>
       <umedia-wpml text={ user.about }></umedia-wpml>
-      <p class="umedia-location">{ user.location }</p>
+      <p if={ user.location } class="umedia-location locality">{ user.location }</p>
       
     </div>
 
