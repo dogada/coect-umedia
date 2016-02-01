@@ -13,6 +13,7 @@ function init(opts) {
   debug('umedia init', opts)
   riot.mixin('umedia-context', $.extend(require('./helpers'), {
     url: opts.url,
+    wpml: opts.wpml || require('../common/wpml'),
   }))
   routes(opts.route, opts);
 }
@@ -20,6 +21,6 @@ function init(opts) {
 
 module.exports = {
   init: init,
-  handlers: handlers
+  handlers: handlers,
 }
 
