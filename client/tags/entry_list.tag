@@ -1,5 +1,5 @@
 <umedia-entry-list>
-  <div if={ items.length } class="umedia-entry-list">
+  <div if={ items.length } class="umedia-entry-list h-feed">
     
     <div if={ ancestor } class="umedia-entries-header clearfix">
       <ul class="nav nav-pills pull-right">
