@@ -2,11 +2,10 @@
 
   <script>
    var self = this
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
-   
+   this.mixin('umedia-context')
 
    function rebuild() {
-     debug('wpml.rebuild', self.opts)
+     self.debug('wpml.rebuild')
      if (self.opts.doc) self.doc = self.opts.doc
      else if (self.opts.text) self.doc = self.wpml.doc(self.opts.text)
 

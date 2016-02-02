@@ -7,5 +7,6 @@ module.exports = {
   channel: require('./channel'),
   user: require('./user'),
   security: require('./security'),
-  wpml: require('../common/wpml')
+  wpml: require('../common/wpml'),
+  riot: require('../common/riot')
 }

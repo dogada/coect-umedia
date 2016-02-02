@@ -89,6 +89,7 @@ Site.umedia.url = umediaUrls(urlBuilder('/', urlIdTranslator))
 
 umedia.riot.init({
   url: Site.umedia.url, 
+  debug: require('debug')('umedia:tag')
 })
 
 umedia.routes(page, {
