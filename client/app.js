@@ -13,6 +13,3 @@ exports.canComment = function(entry) {
 exports.canChangeEntry = function(entry) {
   return Site.user && entry.user && Site.user.id === entry.user.id
 }
-
-
-

@@ -87,7 +87,15 @@ Site.account = {
 Site.umedia = require('../../app')
 Site.umedia.url = umediaUrls(urlBuilder('/', urlIdTranslator))
 
-umedia.init({route: page, url: Site.umedia.url, slug: true, newspaper: false})
+umedia.riot.init({
+  url: Site.umedia.url, 
+})
+
+umedia.routes(page, {
+  slug: true, 
+  newspaper: false,
+  url: Site.umedia.url
+})
 
 var debugModule = require('debug')
 debugModule.log = console.info.bind(console)

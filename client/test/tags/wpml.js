@@ -1,5 +1,5 @@
 var env = require('../env')
-var helpers = require('../../helpers')
+var wpml = require('../../../common/wpml')
 
 var TAG = 'umedia-wpml'
 
@@ -25,7 +25,7 @@ describe(TAG, function() {
   })
 
   it('should render already parsed wpml-doc', function() {
-    checkText(env.mount('umedia-wpml', {doc: helpers.wpml.doc(TEXT)}))
+    checkText(env.mount('umedia-wpml', {doc: wpml.doc(TEXT)}))
   })
 
 })
