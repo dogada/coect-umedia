@@ -26,7 +26,7 @@
   </script>
 
   <style scoped>
-   .media-body h1 {
+   h1 {
      margin-top: 0;
    }
   </style>
