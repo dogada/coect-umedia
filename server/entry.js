@@ -14,7 +14,10 @@ var Entry = require('./models').Entry
 var Access = coect.Access
 
 
-var wpml = require('wpml')
+var riot = require('riot')
+var detailTag = require('../client/tags/entry_details.tag')
+require('../client/tags/entry.tag')
+require('../client/tags/wpml.tag')
 
 /**
    Load list and parent and check that they match each other.
@@ -260,7 +263,14 @@ function retrieve(req, res, next) {
       }
       flow.next(entry)
     }
-  ], req.app.janus(req, res, next))
+  ], coect.janus(req, res, next, function(entry) {
+    res.render('index', {
+      title: entry.name,
+      canonicalUrl: entry.url,
+      content: riot.render(detailTag, {entry: entry})
+    })
+    
+  }))
 }
 
 /**

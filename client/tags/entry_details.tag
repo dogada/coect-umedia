@@ -8,7 +8,7 @@
         href={ url.entry(entry.parent) }>{ entry.parent.name }</a></li>
     </ol>
 
-    <umedia-entry entry={ entry } detail="1" />
+    <umedia-entry entry={ entry } detail="1"></umedia-entry>
 
     <p if={ entry.type == 'reply' }>View 
       <a href={ url.entry(entry.thread) }>all replies</a> in the thread.

@@ -14,6 +14,8 @@
   </div>
 
   <script type="es6">
-   this.on('mount', e => this.update({channel: this.opts.channel}))
+   var self = this
+   self.mixin('umedia-context')
+   self.channel = opts.channel
   </script>
 </umedia-channel>

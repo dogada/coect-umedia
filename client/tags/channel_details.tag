@@ -6,8 +6,8 @@
   </div>
 
   <script>
-   this.mixin('coect-context', 'umedia-context')
    var self = this
+   self.mixin('umedia-context')
    debug('channel_details', this.opts)
    self.channel = opts.channel
    self.permissions = opts.permissions || {}

@@ -1,7 +1,7 @@
 <umedia-entry>
   <div id="e{entry.id}" class="h-entry media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
     
-    <h1 if={ title } class="p-name">{ title }</h2>
+    <h1 if={ title } class="p-name">{ title }</h1>
 
     <div class="media-left">
       <a href={ url.user(entry.owner) }>
@@ -56,7 +56,7 @@
 
    self.store = self.opts.store
    
-   self.mixin('coect-context', 'umedia-context')
+   self.mixin('umedia-context')
    debug('opts', this.opts, 'url=', self.url)
 
    self.isRestricted = function(entry) {
@@ -106,19 +106,10 @@
      })
    }
    
-   self.rebuild = function() {
-     var entry = self.opts.entry || self.opts.state && self.opts.state.entry
-     var doc = self.wpml.doc(entry.text || '')
-     self.update({
-       entry: entry,
-       doc: doc,
-       title: doc.meta.title || doc.meta.name,
-       canChange: Site.umedia.canChangeEntry(entry)
-     })
-   }
-
-   
-   self.on('mount', self.rebuild)
+   self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   self.doc = self.wpml.doc(self.entry.text || '')
+   self.title = self.doc.meta.title || self.doc.meta.name
+   self.canChange = (typeof Site !== 'undefined' && Site.umedia.canChangeEntry(self.entry))
   </script>
 
   <style scoped>
