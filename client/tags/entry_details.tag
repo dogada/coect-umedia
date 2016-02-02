@@ -17,9 +17,9 @@
     <umedia-entry-editor if={ permissions.comment } 
       ancestor="{ entry }" items={ items }></umedia-entry-editor>
 
-    <h5 hide={ Site.user }>
+    <div class="login-required" hide={ Site.user }>
       Please <a onclick={ Site.account.loginRequired }>sign in</a> to add a comment or a reply.
-    </h5>
+    </div>
 
     <umedia-entry-list if={ entry.type != 'reply'} id="umedia-comments"
                        store={ store } items={ items }
@@ -31,8 +31,10 @@
    .breadcrumb {
      margin-bottom: 5px;
    }
+   
   </style>
-  <script>
+  
+<script>
    var self = this
    self.mixin('umedia-context')
    self.entry = this.opts.entry
@@ -40,4 +42,6 @@
    self.permissions = opts.permissions || {}
    self.items = []
   </script>
+
+  
 </umedia-entry-details>
