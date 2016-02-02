@@ -9,6 +9,11 @@ var Entity = require('./models').Entity
 var Channel = require('./models').Channel
 var Access = coect.Access
 
+var riot = require('riot')
+var channelTag = require('../client/tags/channel_details.tag')
+require('../client/tags/channel.tag')
+require('../client/tags/wpml.tag')
+
 const MAX_PAGE_SIZE = 20
 const PAGE_SIZE = 10
 
@@ -28,7 +33,13 @@ function retrieve(req, res, next) {
       if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
       this.next(channel)
     },
-  ], req.app.janus(req, res, next))
+  ], coect.janus(req, res, next, function(channel) {
+    res.render('index', {
+      title: channel.name,
+      canonicalUrl: channel.url,
+      content: riot.render(channelTag, {channel: channel})
+    })
+  }))
 }
 
 function validate(req, channel, done) {

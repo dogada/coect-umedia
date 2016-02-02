@@ -15,9 +15,10 @@ var Access = coect.Access
 
 
 var riot = require('riot')
-var detailTag = require('../client/tags/entry_details.tag')
+var entryTag = require('../client/tags/entry_details.tag')
 require('../client/tags/entry.tag')
 require('../client/tags/wpml.tag')
+
 
 /**
    Load list and parent and check that they match each other.
@@ -267,7 +268,7 @@ function retrieve(req, res, next) {
     res.render('index', {
       title: entry.name,
       canonicalUrl: entry.url,
-      content: riot.render(detailTag, {entry: entry})
+      content: riot.render(entryTag, {entry: entry})
     })
     
   }))
