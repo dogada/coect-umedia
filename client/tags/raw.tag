@@ -1,7 +1,7 @@
 <umedia-raw class="umedia-raw">
   <script>
    var self = this
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   this.mixin('coect-context', 'umedia-context')
    
    function refresh(data) {
      self.root.innerHTML = self.opts.html || ''

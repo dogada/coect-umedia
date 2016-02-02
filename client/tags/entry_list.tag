@@ -38,7 +38,7 @@
    self.ancestor = opts.ancestor
    self.channel = opts.channel
    debug('ancestor', self.ancestor, 'channel', self.channel)
-   self.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   self.mixin('coect-context', 'umedia-context')
    self.items = opts.items || []
    self.hasMore = false
    self.query = initQuery({

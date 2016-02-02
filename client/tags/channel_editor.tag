@@ -28,7 +28,7 @@
 
   <script>
    var self = this
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   this.mixin('coect-context', 'umedia-context')
    debug('channel editor', self.opts)
 
    self.cancel = function(e) {

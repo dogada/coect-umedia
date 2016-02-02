@@ -9,7 +9,7 @@
 
   <script>
    var self = this
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   this.mixin('coect-context', 'umedia-context')
 
    function init(query) {
      var url = self.url.base('t')

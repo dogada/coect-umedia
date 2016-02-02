@@ -32,7 +32,7 @@
   <script type="es6">
 
    var self = this
-   self.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   self.mixin('coect-context', 'umedia-context')
    var {entry, ancestor, items} = self.opts
    debug(`editor ancestor=${ancestor} entry=${entry}, items=${items}`)
 

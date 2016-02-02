@@ -24,7 +24,7 @@
 
   <script type="es6">
    var self = this
-   this.mixin('coect-context', 'umedia-context', 'coect-site-context')
+   this.mixin('coect-context', 'umedia-context')
 
    self.reload = function() {
      $.getJSON(self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id), function(data) {

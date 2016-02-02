@@ -15,11 +15,6 @@ var umedia = require('../../')
 // init tags mixins
 coect.mixins.register()
 
-//TODO remove
-riot.mixin('coect-site-context', {
-}) // overwrite riot tag properties 
-
-
 /**
    Build full url from path fragments.
    @param {(string|string[]} path or path fragments
