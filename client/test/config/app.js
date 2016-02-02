@@ -60,15 +60,6 @@ function identityTranslator(obj) {
   return obj
 }
 
-function umediaUrls(base) {
-  return {
-    base: base,
-    entry: prefixOrUrl(base, 'e'),
-    channel: prefixOrUrl(base, 'c'),
-    user: prefixOrUrl(base, 'u'),
-  }
-}
-
 function profilePhoto(photos, size) {
   return size >= 64 && photos.large ||
     size > 24 && size < 64 && photos.normal ||
@@ -85,17 +76,26 @@ Site.account = {
 }
 
 Site.umedia = require('../../app')
-Site.umedia.url = umediaUrls(urlBuilder('/', urlIdTranslator))
+
+var base = urlBuilder('/', urlIdTranslator)
+
+var urls = {
+  base: base,
+  entry: prefixOrUrl(base, 'e'),
+  channel: prefixOrUrl(base, 'c'),
+  user: prefixOrUrl(base, 'u'),
+  avatar: Site.account.avatar
+}
 
 umedia.riot.init({
-  url: Site.umedia.url, 
+  url: urls, 
   debug: require('debug')('umedia:tag')
 })
 
 umedia.routes(page, {
   slug: true, 
   newspaper: false,
-  url: Site.umedia.url
+  url: urls
 })
 
 var debugModule = require('debug')

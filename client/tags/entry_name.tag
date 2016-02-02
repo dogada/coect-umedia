@@ -5,12 +5,12 @@
       <a href={ url.user(entry.owner) }>
         <img class="media-object" width="24" height="24" 
              title={ entry.owner.name || entry.owner.username || entry.owner.id }
-        src={ Site.account.avatar(entry.owner, 24) } alt="">
+        src={ url.avatar(entry.owner, 24) } alt="">
       </a>
     </div>
 
     <div class="media-body">
-      <a href={ Site.umedia.url.entry(entry) }>{ entry.name }</a>
+      <a href={ url.entry(entry) }>{ entry.name }</a>
     </div>
   </div>
 

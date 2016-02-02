@@ -1,8 +1,8 @@
 <umedia-profile class="umedia-profile">
   <div class="media vcard">
     <div class="media-left">
-      <a href={ Site.umedia.url.user(user) } class="url">
-        <img class="media-object photo" width="128" height="128" alt={ user.id } src={ Site.account.avatar(user, 128) }>
+      <a href={ url.user(user) } class="url">
+        <img class="media-object photo" width="128" height="128" alt={ user.id } src={ url.avatar(user, 128) }>
       </a>
     </div>
 
@@ -19,7 +19,10 @@
   <script>
    var self = this
    self.mixin('umedia-context')
+
    self.user = opts.user
+   self.debug('profile', self.url.user, self.url.user(self.user))
+
   </script>
 
   <style scoped>

@@ -71,7 +71,7 @@
 
    function load(append) {
      debug('load append=', append)
-     var url = Site.umedia.url.entry('') + '?' + $.param(getQuery(append))
+     var url = self.url.entry('') + '?' + $.param(getQuery(append))
      $.getJSON(url, function(data) {
        debug('loaded data', data && data.length)
        // update self.items in-place because it may be shared with parent tag like entry_detail

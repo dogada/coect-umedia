@@ -2,10 +2,10 @@
   <div class="umedia-entry-details">
 
     <ol class="breadcrumb">
-      <li><a href={ Site.umedia.url.user(entry.list.owner) }>{ entry.list.owner.name }</a></li>
-      <li><a href={ Site.umedia.url.channel(entry.list) }>{ entry.list.name }</a></li>
+      <li><a href={ url.user(entry.list.owner) }>{ entry.list.owner.name }</a></li>
+      <li><a href={ url.channel(entry.list) }>{ entry.list.name }</a></li>
       <li if={ entry.topic }><a 
-        href={ Site.umedia.url.entry(entry.parent) }>{ entry.parent.name }</a></li>
+        href={ url.entry(entry.parent) }>{ entry.parent.name }</a></li>
     </ol>
 
     <umedia-entry entry={ entry } detail="1" />
