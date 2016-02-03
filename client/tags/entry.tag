@@ -41,7 +41,9 @@
 
         </span>
       </div>
-      <umedia-wpml doc={ doc } class="e-content"></umedia-wpml>
+      <div class="e-content">
+        <umedia-wpml doc={ doc }></umedia-wpml>
+      </div>
       <div class="umedia-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
         <span if={ canChange }>· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
