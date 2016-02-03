@@ -104,7 +104,7 @@
    
    self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
    self.doc = self.wpml.doc(self.entry.text || '')
-   self.title = self.doc.meta.title || self.doc.meta.name
+   self.title = self.doc.meta.title
    if (self.entry.created) {
      // self.created is ISO string on client-side and Date on server-side
      var d = new Date(self.entry.created)
