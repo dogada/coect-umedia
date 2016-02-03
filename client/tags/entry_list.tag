@@ -32,13 +32,13 @@
 
 
   <script>
-   var debug = require('debug')('umedia:entry_list')
-   var self = this, opts = self.opts
-   debug('entry_list', self.opts)
+   var self = this
+   self.mixin('coect-context', 'umedia-context')
+   self.debug('entry_list window=', typeof window)
+
+   var opts = self.opts
    self.ancestor = opts.ancestor
    self.channel = opts.channel
-   debug('ancestor', self.ancestor, 'channel', self.channel)
-   self.mixin('coect-context', 'umedia-context')
    self.items = opts.items || []
    self.hasMore = false
    self.query = initQuery({
@@ -126,6 +126,6 @@
    }
 
 
-   self.on('mount', load)
+   if (typeof window !== 'undefined') self.on('mount', load)
   </script>
 </umedia-entry-list>

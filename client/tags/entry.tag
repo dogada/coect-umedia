@@ -23,8 +23,8 @@
             <a href={ url.entry(entry.parent) }>{ actionName(entry) }</a>
           </span>
 
-          <a class="u-url" href={ url.entry(entry) } title={ fullDate(entry.created) }>
-            <time class="dt-published" datetime={ entry.created }>{ getAge(entry.created) }</time>
+          <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
+            <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr }</time>
           </a>
 
           <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
@@ -57,10 +57,9 @@
    self.store = self.opts.store
    
    self.mixin('umedia-context')
-   debug('opts', this.opts, 'url=', self.url)
 
    self.isRestricted = function(entry) {
-     debug('isRest', entry.access, self.ancestor)
+     self.debug('isRest', entry.access, self.ancestor)
      if ([Access.MODERATION, Access.REJECTED,
      Access.HIDDEN].indexOf(entry.access) !== -1) return false
      if (self.ancestor && self.ancestor.access) return entry.access < self.ancestor.access
@@ -78,11 +77,6 @@
      return false
    }
 
-   self.fullDate = function(d) {
-     //debug('fullDate', typeof d, d, d.toLocaleString(), new Date().toLocaleString())
-     return d && new Date(d).toLocaleString() || d
-   }
-
    self.commentsLabel = function(entry) {
      if (entry.type == 'reply') return 'Reply'
      else return (entry.type == 'post' ? 'Comments' : 'Replies') + 
@@ -98,7 +92,7 @@
    self.moderate = function(e) {
      if (!Site.umedia.canModerateEntry(e)) return
      if (!(e.ctrlKey || e.altKey || e.metaKey)) return //ignore normal click
-     debug('moderate access=', self.entry.access, 'alt=', e.altKey,
+     self.debug('moderate access=', self.entry.access, 'alt=', e.altKey,
            'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'name=', self.entry.name)
      self.parent.store.moderate(self.entry, e.ctrlKey, function (err, data) {
        if (err) return Site.error(err)
@@ -109,7 +103,15 @@
    self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
    self.doc = self.wpml.doc(self.entry.text || '')
    self.title = self.doc.meta.title || self.doc.meta.name
+   if (self.entry.created) {
+     // self.created is ISO string on client-side and Date on server-side
+     var d = new Date(self.entry.created)
+     self.createdLocaleStr = d.toLocaleString()
+     self.createdISOStr = d.toISOString()
+     self.createdAgeStr = self.getAge(d) //getAge is from mixin
+   }
    self.canChange = (typeof Site !== 'undefined' && Site.umedia.canChangeEntry(self.entry))
+   
   </script>
 
   <style scoped>
