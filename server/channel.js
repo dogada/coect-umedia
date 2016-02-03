@@ -10,9 +10,6 @@ var Channel = require('./models').Channel
 var Access = coect.Access
 
 var riot = require('riot')
-var channelTag = require('../client/tags/channel_details.tag')
-require('../client/tags/channel.tag')
-require('../client/tags/wpml.tag')
 
 const MAX_PAGE_SIZE = 20
 const PAGE_SIZE = 10
@@ -37,7 +34,7 @@ function retrieve(req, res, next) {
     res.render('index', {
       title: channel.name,
       canonicalUrl: channel.url,
-      content: riot.render(channelTag, {channel: channel})
+      content: riot.render('umedia-channel-details', {channel: channel})
     })
   }))
 }

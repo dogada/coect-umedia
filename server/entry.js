@@ -15,9 +15,6 @@ var Access = coect.Access
 
 
 var riot = require('riot')
-var entryTag = require('../client/tags/entry_details.tag')
-require('../client/tags/entry.tag')
-require('../client/tags/wpml.tag')
 
 
 /**
@@ -265,10 +262,11 @@ function retrieve(req, res, next) {
       flow.next(entry)
     }
   ], coect.janus(req, res, next, function(entry) {
+    debug('entry', (typeof entry.created), entry.created)
     res.render('index', {
       title: entry.name,
       canonicalUrl: entry.url,
-      content: riot.render(entryTag, {entry: entry})
+      content: riot.render('umedia-entry-details', {entry: entry})
     })
     
   }))
