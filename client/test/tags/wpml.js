@@ -28,4 +28,20 @@ describe(TAG, function() {
     checkText(env.mount('umedia-wpml', {doc: wpml.doc(TEXT)}))
   })
 
+  it('should render `reply-to` plugin', function() {
+    var link = 'http://host.com/slug'
+    var tag = env.mount('umedia-wpml', {
+      text: `reply-to: ${link}\nHello, looks interesting.`
+    })
+
+    console.log('root--------------------', tag.root)
+    console.log('a', $('div.coect-reply-to a.u-in-reply-to', tag.root))
+
+    $('.coect-reply-to a.u-in-reply-to', tag.root).should.have.attr('href', link)
+
+    $('.coect-reply-to a.u-in-reply-to', tag.root).should.have.text(link)
+    $('p', tag.root).should.have.text('Hello, looks interesting.')
+  })
+
+
 })

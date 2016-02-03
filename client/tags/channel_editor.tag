@@ -1,6 +1,6 @@
 <umedia-channel-editor>
   <div class="umedia-channel-editor">
-    <form onsubmit={ save }>
+    <form onsubmit={ save } method="POST">
       <div class="form-group">
         <label>Name <small>(max length 50 chars)</small></label>
         <input type="text" class="form-control" name="name"

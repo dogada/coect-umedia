@@ -1,6 +1,6 @@
 <umedia-entry-editor>
   <div class="{umedia-entry-editor: 1, expanded: expanded}">
-    <form onsubmit={ publish }>
+    <form onsubmit={ publish } method="POST">
 
     <div class="form-group">
       <textarea rows="1" name="content" class="form-control"
