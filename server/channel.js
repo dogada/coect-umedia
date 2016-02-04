@@ -46,7 +46,7 @@ function validate(req, channel, done) {
     },
     function(doc, data) {
       var userAccess = (channel ? 
-                        req.security.getUserAccessInsideChannel(req.user, channel) :
+                        req.security.getUserAccess(req.user, channel) :
                         req.security.getUserAccess(req.user))
       var defaultAccess = req.security.getDefaultChannelAccess()
       Channel.applyAccess(data, userAccess, Access.EVERYONE, defaultAccess, flow.join(doc))
@@ -160,7 +160,7 @@ function permissions(req, res) {
       this.next({
         post: req.security.canCreateEntry(req.user, {type: channel.type}, channel),
         comment: req.security.canCreateEntry(req.user, {type: 'post'}, channel),
-        access: Access.valueName(req.security.getUserAccessInsideChannel(req.user, channel))
+        access: Access.valueName(req.security.getUserAccess(req.user, channel))
       })
     }
   ], coect.json.response(res))

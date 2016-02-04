@@ -37,7 +37,7 @@ class UmediaAccessPolicy extends Access {
   }
 
   // site-wide access
-  getUserAccess(user) {
+  genericAcces(user) {
     if (!user) return Access.EVERYONE
     if (user.isRoot()) return Access.ROOT
     if (user.isAdmin()) return Access.ADMIN
@@ -48,8 +48,12 @@ class UmediaAccessPolicy extends Access {
   }
 
   // access level in a channel
-  getUserAccessInsideChannel(user, channel) {
-    return Math.min(this.getUserAccess(user), this.accessInsideChannel(user, channel))
+  getUserAccess(user, channel) {
+    var access = this.genericAcces(user)
+    // check acess inside channel only if there is chance to get better access
+    if (access > Access.ADMIN && channel) access = Math.min(
+      access, this.accessInsideChannel(user, channel))
+    return access
   }
 
   getUserAccessTags(owner) {
@@ -86,7 +90,7 @@ class UmediaAccessPolicy extends Access {
   canCreateEntry(user, parent, channel) {
     if (!user) return false
     debug('parent', (typeof parent), parent.type, parent.id, 'channel', channel)
-    var userAccess = this.getUserAccessInsideChannel(user, channel)
+    var userAccess = this.getUserAccess(user, channel)
     var accessType = this.getEntryAccessType({type: Entity.getChildType(parent)}) 
     var writeAccess = channel.getAccess(`write_${accessType}`, 'write')
     debug('writeAccess', writeAccess, accessType, channel.access)
@@ -136,7 +140,7 @@ class UmediaAccessPolicy extends Access {
     if (!user) return (entry.access >= Access.EVERYONE)
     if (user.isRoot()) return true // root should have access always
     if (!entry.access || entry.access < Access.ADMIN) return false // only root is allowed
-    if (entry.access >= this.getUserAccessInsideChannel(user, channel)) return true
+    if (entry.access >= this.getUserAccess(user, channel)) return true
 
     if (entry.owner === user.id && entry.access > Access.DELETED) return true
     // User should see replies for own entries

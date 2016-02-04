@@ -53,7 +53,7 @@ function validate(req, parent, channel, type, done) {
       Entry.validate(req.body, {schema: Entry.getTypeSchema(type)}, flow)
     },
     function(doc, data) {
-      var userAccess = req.security.getUserAccessInsideChannel(req.user, channel)
+      var userAccess = req.security.getUserAccess(req.user, channel)
       var defaultAccess = req.security.getNewEntryAccess(req.user, {type: type}, parent, channel)
       Entry.applyAccess(data, userAccess, parent.access, defaultAccess, flow.join(doc))
     }
@@ -358,7 +358,7 @@ function list(req, res) {
     function(where, channel) {
       if (where.list_url) where = _.extend(_.omit(where, 'list_url'), {list: channel.id})
       if(channel && !req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'No access to the channel')
-      this.next(where, channel ? req.security.getUserAccessInsideChannel(req.user, channel) : req.security.getUserAccess(req.user))
+      this.next(where, channel ? req.security.getUserAccess(req.user, channel) : req.security.getUserAccess(req.user))
     },
     function(where, access) {
       debug(`list where=${where} access=${access}`)
