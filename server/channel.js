@@ -20,15 +20,18 @@ function retrieve(req, res, next) {
   tflow([
     function() {
       var p = req.params
-      if (p.id) Channel.get(p.id, this)
-      else Channel.findOne({url: p.username + '/' + p.cslug}, this)
-    },
-    function(channel) {
-      Entity.fillUsers([channel], req.app.userCache, this.send(channel))
+      var opts = {select: Channel.detailFields.concat(['data'])}
+      if (p.id) Channel.get(p.id, opts, this)
+      else Channel.findOne({url: p.username + '/' + p.cslug}, opts, this)
     },
     function(channel) {
       if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
+      // clear data that is need only for security check
+      channel.data = undefined
       this.next(channel)
+    },
+    function(channel) {
+      Entity.fillUsers([channel], req.app.userCache, this.send(channel))
     },
   ], coect.janus(req, res, next, function(channel) {
     res.render('index', {
