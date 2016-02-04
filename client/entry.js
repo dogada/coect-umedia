@@ -34,8 +34,11 @@ exports.details = function(ctx) {
 }
 
 exports.edit = function(ctx) {
-  store.get(Site.umedia.url.entry(ctx.params.id), (err, entry) => {
-    if (err) return
-    Site.mountTag('umedia-entry-editor', {entry: entry}, {title: 'Entry editor'})
-  })
+  var flow = tflow([
+    () => store.get(Site.umedia.url.entry(ctx.params.id), flow),
+    (entry) => {
+      if (!Site.umedia.canChangeEntry(entry)) return flow.fail('No permissions for editing the entry.')
+      Site.mountTag('umedia-entry-editor', {entry: entry}, {title: 'Entry editor'})
+    }
+  ], (err) => Site.error(err))
 }
