@@ -34,13 +34,23 @@ describe(TAG, function() {
       text: `reply-to: ${link}\nHello, looks interesting.`
     })
 
-    console.log('root--------------------', tag.root)
-    console.log('a', $('div.coect-reply-to a.u-in-reply-to', tag.root))
-
     $('.coect-reply-to a.u-in-reply-to', tag.root).should.have.attr('href', link)
 
     $('.coect-reply-to a.u-in-reply-to', tag.root).should.have.text(link)
     $('p', tag.root).should.have.text('Hello, looks interesting.')
+  })
+
+  it('should support basic microformats CSS for h-entry', function() {
+    var link = 'http://host.com/slug'
+    var tag = env.mount('umedia-wpml', {
+      text: `p.p-name: Look at ${link}\np.p-summary: It\'s all about it.`
+    })
+
+
+    console.log('a', $('div.coect-reply-to a.u-in-reply-to', tag.root))
+
+    $('p.p-name', tag.root).should.contain(link)
+    $('p.p-summary', tag.root).should.have.text('It\'s all about it.')
   })
 
 
