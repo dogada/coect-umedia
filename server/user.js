@@ -13,8 +13,8 @@ exports.retrieve = function(req, res, next) {
   var flow = tflow([
     function() {
       var p = req.params
-      if (p.id) req.env.User.get(p.id, flow)
-      else req.env.User.get({username: p.username}, flow)
+      if (p.id) req.coect.User.get(p.id, flow)
+      else req.coect.User.get({username: p.username}, flow)
     }
   ], coect.janus(req, res, next, function(user) {
     var content = riot.render('umedia-profile', {user: user})
