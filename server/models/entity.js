@@ -50,8 +50,8 @@ Entity.schema = {
 
   name: {
     isLength: {
-      options: [3, 80],
-      errorMessage: 'Name must be between 3 and 80 chars long'
+      options: [3, 100],
+      errorMessage: 'Name must be between 3 and 100 chars long'
     }
   },
 
@@ -66,8 +66,8 @@ Entity.schema = {
   slug: {
     optional: true,
     isLength: {
-      options: [3, 30],
-      errorMessage: 'Slug must be between 3 and 30 chars long'
+      options: [3, 50],
+      errorMessage: 'Slug must be between 3 and 50 chars long'
     },
     matches: {
       options: [/^[a-z]+[a-z\d\-]*$/],
