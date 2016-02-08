@@ -141,6 +141,8 @@ function list(req, res) {
         .where('type', 'channel')
       if (req.query.owner) q = q.where({owner: req.query.owner})
       var access = req.security.getUserAccess(req.user)
+      // show trashed items by default (use ?all=1 to show them like in ls -a)
+      if (!req.query.all) access = Math.max(access, Access.TRASH + 1)
       debug('access', access)
       q = q.where('access', '>=', access)
       q = q.limit(pageSize(req))

@@ -358,7 +358,9 @@ function list(req, res) {
     function(where, channel) {
       if (where.list_url) where = _.extend(_.omit(where, 'list_url'), {list: channel.id})
       if(channel && !req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'No access to the channel')
-      this.next(where, channel ? req.security.getUserAccess(req.user, channel) : req.security.getUserAccess(req.user))
+      var access = req.security.getUserAccess(req.user, channel)
+      if (!req.query.all) access = Math.max(access, Access.TRASH + 1)
+      this.next(where, access)
     },
     function(where, access) {
       debug(`list where=${where} access=${access}`)
