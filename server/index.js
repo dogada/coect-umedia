@@ -1,6 +1,13 @@
 'use strict';
 
+var config = require('./config')
+
+function init(opts) {
+  Object.assign(config, opts)
+}
+
 module.exports = {
+  init: init,
   routes: require('./routes'),
   models: require('./models'),
   entry: require('./entry'),
@@ -8,5 +15,7 @@ module.exports = {
   user: require('./user'),
   security: require('./security'),
   wpml: require('../common/wpml'),
-  riot: require('../common/riot')
+  riot: require('../common/riot'),
+  config: config,
+  webmention: require('./webmention')
 }

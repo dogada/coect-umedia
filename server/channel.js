@@ -138,7 +138,7 @@ function list(req, res) {
     function() {
       var q = Channel.table(req.query.owner)
         .select(Channel.listFields)
-        .where('type', 'channel')
+        .where('model', 'channel')
       if (req.query.owner) q = q.where({owner: req.query.owner})
       var access = req.security.getUserAccess(req.user)
       // show trashed items by default (use ?all=1 to show them like in ls -a)

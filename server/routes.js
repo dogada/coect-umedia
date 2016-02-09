@@ -6,6 +6,7 @@ var slug = coect.routes.slug
 var entry = require('./entry')
 var channel = require('./channel')
 var user = require('./user')
+var webmention = require('./webmention')
 
 function loginRequired(req, res, next) {
   debug('loginRequired', req.isAuthenticated())
@@ -31,6 +32,8 @@ function slugRoutes(r) {
 }
 
 module.exports = function(r) {
+  r.post('/_/umedia/webmentionio_hook', webmention.webmentionIoHook)
+
   r.route('/e/')
     .get(entry.list)
     .post(loginRequired, entry.create)

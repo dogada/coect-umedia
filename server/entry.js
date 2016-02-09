@@ -39,13 +39,6 @@ function checkListParent(req, done) {
   ], done);
 }
 
-function isAuthorized() {
-}
-
-function makeVersion() {
-  return new Date().toISOString()
-}
-
 function validate(req, parent, channel, type, done) {
   debug(`validate type=${type}`, Entry.getTypeSchema(type))
   var flow = tflow([
@@ -78,37 +71,26 @@ function checkNewEntry(req, done) {
   ], done)
 }
 
-function saveNewEntry(req, parent, list, doc, data, done) {
+function saveNewEntry(req, parent, list, form, done) {
   var type = 'post'
-  var topicId, threadId
   if (parent.type !== 'channel') {
-    topicId = parent.topic || parent.id
-    if (!parent.thread || parent.thread === parent.topic) threadId = parent.id
-    else threadId = parent.thread
     type = (parent.thread ? 'reply' : 'comment')
   }
   // Fix made a transaction
-  debug(`saveNewEntry type=${type} access=${data.access}, name=${data.name}`)
+  debug(`saveNewEntry type=${type} access=${form.access}, name=${form.name}`)
   debug(`user=${req.user.id}, list=${list.name}, parent=${parent.name}`)
-  var entryData = {}
-  if (_.size(data.accessData)) entryData.access = data.accessData
+  var data = {}
+  if (_.size(form.accessData)) data.access = form.accessData
   Entry.create({
-    model: Entry.MODEL,
     type: type,
-    access: data.access,
-    data: entryData,
-    name: data.name,
-    text: req.body.text,
+    access: form.access,
+    name: form.name,
+    text: form.text,
+    data: data,
     // custom urls are allowed for posts only
-    url: (type === 'post' ? Entry.makeUrl(list.url, data.slug) : null),
+    url: (type === 'post' ? Entry.makeUrl(list.url, form.slug) : null),
     owner: req.user.id,
-    recipient: (parent.model === 'entry' ? parent.owner: null),
-    list: list.id,
-    version: makeVersion(),
-    parent: parent.id,
-    topic: topicId,
-    thread: threadId
-  }, list.id, done)
+  }, parent, done)
 }
 
 function updateCounters(entry, done) {
@@ -138,8 +120,8 @@ function create(req, res) {
     function() {
       checkNewEntry(req, flow)
     },
-    function(parent, list, doc, data) {
-      saveNewEntry(req, parent, list, doc, data, flow)
+    function(parent, list, doc, form) {
+      saveNewEntry(req, parent, list, form, flow)
     },
     function(id) {
       Entry.get(id, flow)
@@ -193,7 +175,7 @@ function update(req, res) {
         access: data.access,
         data: entryData,
         url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || undefined,
-        version: makeVersion()
+        version: Entry.makeVersion()
       }, _.isUndefined), this)
     },
     function(id) {
@@ -318,7 +300,7 @@ function listWhere(req, done) {
       if (!Object.keys(where).length) return this.fail(400, 'An entry filter is required.')
       
       // show top-level entries (posts) only
-      if (where.owner || where.list || where.list_url) where.type = 'post'
+      if (where.owner || where.list || where.list_url) where.topic = null
       this.next(where)
     }
   ], done)

@@ -94,7 +94,7 @@ Entity.validate = function(data, opts, done) {
     },
     function(doc) {
       var combined = Object.assign({name: doc.name}, doc.meta, data)
-      debug('validate', opts.schema)
+      //debug('validate', opts.schema)
       Model.validate(combined, opts.schema || Klass.schema, this.join(doc))
     }
   ], done)

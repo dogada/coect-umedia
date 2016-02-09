@@ -20,8 +20,10 @@ Entry.MODEL = 'entry'
 Entry.POST = 'post'
 Entry.COMMENT = 'comment'
 Entry.REPLY = 'reply'
+Entry.WEBMENTION = 'webmention'
+
 Entry.listFields = ['id', 'type', 'owner', 'name', 'text', 'url', 'access', 'count', 'child_count', 'created', 'list', 'parent', 'recipient']
-Entry.detailFields = Entry.listFields.concat(['version', 'topic', 'thread'])
+Entry.detailFields = Entry.listFields.concat(['version', 'model', 'topic', 'thread'])
 
 Entry.postSchema = Object.assign({}, Entity.schema, {
   text: {
@@ -34,6 +36,33 @@ Entry.postSchema = Object.assign({}, Entity.schema, {
 
 Entry.getTypeSchema = function(type) {
   return (type === Entry.POST ? Entry.postSchema : Entry.schema)
+}
+
+function parentData(parent) {
+  debug('parentData', parent)
+  var data = {
+    parent: parent.id,
+    list: parent.list || parent.id,
+    recipient: (parent.model === 'entry' ? parent.owner: null)
+  }
+  if (parent.model !== 'channel') {
+    data.topic = parent.topic || parent.id
+    if (!parent.thread || parent.thread === parent.topic) data.thread = parent.id
+    else data.thread = parent.thread
+  }
+  return data
+}
+
+Entry.makeVersion = function() {
+  return new Date().toISOString()
+}
+
+Entry.create = function(form, parent, done) {
+  Entity.create(Object.assign({
+    model: Entry.MODEL,
+    version: Entry.makeVersion(),
+    data: form.data,
+  }, parentData(parent), form), parent.list || parent.id, done)
 }
 
 module.exports = Entry

@@ -2,6 +2,8 @@
 
 var debug = require('debug')('umedia:channel')
 var Entity = require('./entity')
+var tflow = require('tflow')
+var Access = require('coect').Access
 
 class Channel extends Entity {
 
@@ -33,8 +35,9 @@ class Channel extends Entity {
 
 Channel.MODEL = 'channel'
 Channel.TYPE = 'channel'
+Channel.MENTIONS = 'mentions'
 Channel.listFields = ['id', 'type', 'name', 'owner', 'url', 'access', 'version']
-Channel.detailFields = Channel.listFields.concat(['text', 'child_count'])
+Channel.detailFields = Channel.listFields.concat(['model', 'text', 'child_count'])
 
 
 Channel.schema = Object.assign({}, Entity.schema, {
@@ -54,5 +57,27 @@ Channel.schema = Object.assign({}, Entity.schema, {
   },
 
 })
+
+/**
+   Return or create mentions channel for a user.
+*/
+Channel.getOrCreateMentions = function(user, done) {
+  var flow = tflow([
+    () => Channel.findOne({owner: user.id, type: Channel.MENTIONS}, flow),
+    (channel) => {
+      if (channel) return flow.complete(channel)
+      Channel.create({
+        model: Channel.MODEL,
+        type: Channel.MENTIONS,
+        name: 'Mentions',
+        url: Channel.makeUrl(user.username, Channel.MENTIONS),
+        owner: user.id,
+        access: Access.HIDDEN
+      }, user.id, flow)
+    },
+    (id) => Channel.get(id, flow)
+  ], done)
+}
+
 
 module.exports = Channel
