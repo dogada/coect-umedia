@@ -22,7 +22,7 @@ Entry.COMMENT = 'comment'
 Entry.REPLY = 'reply'
 Entry.WEBMENTION = 'webmention'
 
-Entry.listFields = ['id', 'type', 'owner', 'name', 'text', 'url', 'access', 'count', 'child_count', 'created', 'list', 'parent', 'recipient']
+Entry.listFields = ['id', 'type', 'owner', 'name', 'text', 'url', 'access', 'count', 'child_count', 'created', 'list', 'parent', 'recipient', 'link']
 Entry.detailFields = Entry.listFields.concat(['version', 'model', 'topic', 'thread'])
 
 Entry.postSchema = Object.assign({}, Entity.schema, {
@@ -61,7 +61,7 @@ Entry.create = function(form, parent, done) {
   Entity.create(Object.assign({
     model: Entry.MODEL,
     version: Entry.makeVersion(),
-    data: form.data,
+    data: form.data || {},
   }, parentData(parent), form), parent.list || parent.id, done)
 }
 

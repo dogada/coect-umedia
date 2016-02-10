@@ -78,8 +78,12 @@ var getMentionParent = function(target, done) {
   var flow = tflow([
     function() {
       if (target instanceof Entity) flow.next(target)
-      else if (target instanceof config.User) Channel.getOrCreateMentions(target, flow)
-      else flow.fail(500, 'No parent for target ' + target)
+      else if (target.username) Channel.getOrCreateMentions(target, flow)
+      else {
+        console.error('Invalid webmention target', (typeof target), target, target.constructor)
+        flow.fail(500, 'No parent for target ' + ' ' +
+                  (target.constructor && target.constructor.name) + ' ' + target.id)
+      }
     }
   ], done);
 }
@@ -93,11 +97,11 @@ var mentionHash = function(parent, sourceUrl) {
 
 var saveMention = function(parent, form, done) {
   debug('save', form, parent)
-  var url = mentionHash(parent, form.data.webmention.url)
+  var url = mentionHash(parent, form.link.webmention.url)
   var flow = tflow([
     () => Entry.findOne({url: url, list: parent.list || parent.id}, flow),
     (entry) => {
-      if (entry) flow.fail(400, 'Already created ' + entry.id)
+      if (entry) flow.complete({id: entry.id, created: entry.created})
       else flow.next()
     },
     () => getMentionsOwner(flow),
@@ -108,18 +112,28 @@ var saveMention = function(parent, form, done) {
         url: url,
         name: form.name,
         text: form.text,
-        data: form.data,
+        link: form.link,
         owner: owner.id
       }, (parent), flow)
-    }
+    },
+    (id) => Entry.get(id, flow)
   ], done)
+}
+
+function webmentionText(type, data) {
+  switch (type) {
+  case 'like':
+    return ''
+  default: 
+    return data.name
+  }
 }
 
 var validate = function(wm, done) {
   Entry.validate({
-    name: `webmention_${wm.activity.type} by ${wm.data.author.name}`,
-    text: wm.activity.sentence + ' ' + wm.data.url,
-    data: {
+    name: `webmention ${wm.activity.type} by ${wm.data.author.name}`,
+    text: webmentionText(wm.activity.type, wm.data),
+    link: {
       webmention: {
         id: wm.id,
         type: wm.activity.type,

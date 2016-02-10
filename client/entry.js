@@ -26,7 +26,9 @@ exports.details = function(ctx) {
                     {title: entry.name})
       if (Site.user) channelStore.permissions(entry.list.id, (err, permissions) => {
         debug('permissions', err, permissions, Site.get('main'))
-        Site.get('main').update({permissions})
+        var main = Site.get('main')
+        if (main && main.root) main.update({permissions})
+        else console.error('No main in entry_detail.')
       })
       Site.checkMount('umedia-channel-list', {owner: entry.owner.id}, {target: 'sidebar'})
     }

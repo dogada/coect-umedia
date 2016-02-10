@@ -19,8 +19,8 @@
           <span if={ entry.type == 'post'}>
             <a href={ url.channel(entry.list) }>wrote</a>
           </span>
-          <span if={ entry.type == 'comment' || entry.type == 'reply' }>
-            <a href={ url.entry(entry.parent) }>{ actionName(entry) }</a>
+          <span if={ action }>
+            <a href={ url.entry(entry.parent) }>{ action }</a>
           </span>
 
           <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
@@ -46,7 +46,12 @@
       </div>
       <div class="umedia-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
-        <span if={ canChange }>· <a href={ url.entry(entry.id, 'edit') }>Edit</a></span>
+       <span if={ webmention }>·
+         <a class="u-syndication" rel="syndication" href={ webmention.url }>Source</a>
+       </span>
+       <span if={ canChange }>·
+         <a href={ url.entry(entry.id, 'edit') }>Edit</a>
+       </span>
       </div>
     </div>
   </div>
@@ -85,10 +90,15 @@
                                 ' (' + (entry.child_count || 0) + ')'
    }
 
-   self.actionName = function(entry) {
-     if (entry.type === 'post') return ''
-     else if (entry.type === 'comment') return 'commented'
-     else if (entry.type === 'reply') return 'replied'
+   self.actionName = function(type, webmType) {
+     self.debug('actionName', type, webmType)
+     if (type === 'comment') return 'commented'
+     else if (type === 'reply' || webmType === 'reply') return 'replied'
+     else if (type === 'like' || webmType === 'like') return 'liked'
+     else if (type === 'repost' || webmType === 'repost') return 'reposted'
+     else if (webmType === 'bookmark') return 'bookmarked'
+
+     return ''
    }
 
    self.moderate = function(e) {
@@ -103,11 +113,14 @@
    }
    
    self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   self.webmention = self.entry.link && self.entry.link.webmention
    self.doc = self.wpml.doc(self.entry.text || '')
    self.title = self.doc.meta.title
+   self.action = self.actionName(self.entry.type, self.webmention && self.webmention.type)
+
    if (self.entry.created) {
      // self.created is ISO string on client-side and Date on server-side
-     var d = new Date(self.entry.created)
+     var d = new Date(self.webmention && self.webmention.published || self.entry.created)
      self.createdLocaleStr = d.toLocaleString()
      self.createdISOStr = d.toISOString()
      self.createdAgeStr = self.getAge(d) //getAge is from mixin

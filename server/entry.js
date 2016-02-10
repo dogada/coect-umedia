@@ -196,13 +196,17 @@ function moderate(req, res) {
       getEntryAndChannel(entryWhere(req), flow)
     },
     function(entry, channel) {
+      if (entry.parent === channel.id) flow.next(entry, channel, channel)
+      else Entity.get(entry.parent, flow.join(entry, channel))
+    },
+    function(entry, channel, parent) {
       if (entry.access !== Access.MODERATION) return flow.fail(400, 'Entry is already moderated.')
       if (!req.security.canUserModerate(req.user, entry, channel)) return flow.fail(403, 'Forbidden.')
       var data = {
-        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, channel) : Access.REJECTED)
+        access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, parent, channel) : Access.REJECTED)
       }
       Entry.update(entry.id, data, this.send(data))
-    },
+    }
   ], coect.json.response(res))
 }
 
@@ -212,7 +216,6 @@ function retrieve(req, res, next) {
     function() {
       getEntryAndChannel(entryWhere(req), flow)
     },
-    
     function(entry, channel) {
       if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
       if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')

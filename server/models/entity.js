@@ -105,6 +105,15 @@ Entity.makeUrl = function(parentUrl, slug) {
   return (parentUrl && slug ? parentUrl + '/' + slug : null)
 }
 
+function webmentionOwner(author) {
+  return {
+    type: 'webmention',
+    name: author.name,
+    avatar: author.photo,
+    url: author.url
+  }
+}
+
 Entity.fillUsers = function(entries, cache, done) {
   tflow([
     function() {
@@ -112,7 +121,9 @@ Entity.fillUsers = function(entries, cache, done) {
     },
     function(users) {
       debug('found users', Object.keys(users))
-      for (let e of entries) e.owner = users[e.owner] || {id: e.owner}
+      for (let e of entries) {
+        e.owner = (e.type === 'webmention' ? webmentionOwner(e.link.webmention.author) : users[e.owner]) || {id : e.owner}
+      }
       this.next(entries)
     }
   ], done)
