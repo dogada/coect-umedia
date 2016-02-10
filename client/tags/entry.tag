@@ -86,8 +86,8 @@
 
    self.commentsLabel = function(entry) {
      if (entry.type == 'reply') return 'Reply'
-     else return (entry.type == 'post' ? 'Comments' : 'Replies') + 
-                                ' (' + (entry.child_count || 0) + ')'
+     else return (entry.type == 'post' ? 'Comments' : 'Replies')
+     //+ ' (' + (entry.child_count || 0) + ')'
    }
 
    self.actionName = function(type, webmType) {
