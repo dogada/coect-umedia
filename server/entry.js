@@ -61,7 +61,7 @@ function checkNewEntry(req, done) {
     },
     function(parent) {
       debug('checkNE parent=', (typeof parent), parent.type)
-      if (parent.type === 'channel') return this.next(parent, parent)
+      if (parent.model === Channel.MODEL) return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
     function(parent, channel) {

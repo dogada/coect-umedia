@@ -34,10 +34,19 @@
    var self = this
    self.mixin('coect-context', 'umedia-context')
    var {entry, ancestor, items} = self.opts
-   debug(`editor ancestor=${ancestor} entry=${entry}, items=${items}`)
+   var webmention = ancestor && ancestor.link && ancestor.link.webmention
+
+   debug(`editor ancestor=${ancestor} entry=${entry}, webmention=${webmention}, items=${items}`)
+
+   function setText(text) {
+     self.text = self.content.value = text
+   }
 
    self.expand = function(e) {
      self.content.style.height = '300px'
+     if (webmention) {
+       setText(`reply-to: ${webmention.url}\n\n`)
+     }
      self.expanded = true
    }
 
@@ -46,10 +55,6 @@
      self.content.style.height = 'auto'
    }
 
-   if (entry) {
-     self.text = self.content.value = entry.text
-     self.expand()
-   }
 
    self.entryType = function() {
      switch((entry || ancestor).type) {
@@ -73,8 +78,6 @@
      else Site.page.show('/')
    }
 
-   debug('1')
-   
    function published(doc) {
      console.log('done', doc, items)
      self.text = self.content.value = ''
@@ -97,6 +100,11 @@
         text: self.content.value,
         parent: ancestor && ancestor.id,
         list: ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id)}).done(published)
+   }
+
+   if (entry) {
+     setText(entry.text)
+     self.expand()
    }
 
   </script>
