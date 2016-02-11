@@ -130,19 +130,22 @@ function webmentionText(type, data) {
 }
 
 var validate = function(wm, done) {
+  var data = wm.data || wm.post
+  var type = wm.activity && wm.activity.type || data.type
+
   Entry.validate({
-    name: `webmention ${wm.activity.type} by ${wm.data.author.name}`,
-    text: webmentionText(wm.activity.type, wm.data),
+    name: `webmention ${type} by ${data.author.name}`,
+    text: webmentionText(type, data),
     link: {
       webmention: {
         id: wm.id,
-        type: wm.activity.type,
-        url: wm.data.url,
+        type: type,
+        url: data.url,
         source: wm.source,
         target: wm.target,
         verified: wm.verified_date,
-        published: wm.data.published,
-        author: wm.data.author
+        published: data.published,
+        author: data.author
       }
     }
   }, {schema: Entry.getTypeSchema(Entry.WEBMENTION)}, done)
@@ -165,10 +168,9 @@ exports.onReceive = function(wm, done) {
 exports.webmentionIoHook = function (req, res) {
   var flow = tflow([
     () => {
-      if (req.body.secret !== config.webmentionIo.secret) return this.fail(403, 'Bad secret')
+      if (req.body.secret !== config.webmentionIo.secret) return flow.fail(403, 'Bad secret')
       exports.onReceive(req.body, flow)
     },
     () => flow.next({result: 'OK'})
   ], coect.json.response(res))
 }
-
