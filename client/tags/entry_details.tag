@@ -22,8 +22,7 @@
     </div>
 
     <umedia-entry-list if={ entry.type != 'reply'} id="umedia-comments"
-                       store={ store } items={ items }
-                       ancestor={ entry }></umedia-entry-list>
+                       items={ items } ancestor={ entry }></umedia-entry-list>
 
   </div>
 
@@ -38,7 +37,6 @@
    var self = this
    self.mixin('umedia-context')
    self.entry = this.opts.entry
-   self.store = this.opts.store
    self.permissions = opts.permissions || {}
    self.items = []
   </script>

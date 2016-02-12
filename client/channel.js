@@ -2,36 +2,22 @@
 
 var debug = require('debug')('umedia:channel')
 var tflow = require('tflow')
-var {ui, Store} = require('coect')
+var {ui} = require('coect')
 
-class ChannelStore extends Store {
-
-  permissions(channelId, done) {
-    var url = Site.umedia.url.channel(channelId, 'permissions')
-    // FIX: move cache logic with timeout to Store
-    if (this.cache[url]) return done(null, this.cache[url])
-    this.get(url, (err, data) => {
-      if (err) return done(err)
-      this.cache[url] = data
-      done(null, data)
-    })
-  }
-}
-
-const store = new ChannelStore()
+var store = require('./store')
 
 function details(ctx) {
 
   debug('details', ctx)
   var flow = tflow([
     function() {
-      ui.getData(ctx, 'channel', next => store.get(ctx.path, next), flow)
+      ui.getData(ctx, 'channel', next => store.channel.get(ctx.path, next), flow)
     },
     function(channel) {
       Site.mountTag('umedia-channel-details', 
-                    {channel: channel, store: store},
+                    {channel, store},
                     {title: channel.name})
-      if (Site.user) store.permissions(channel.id, (err, permissions) => {
+      if (Site.user) store.channel.permissions(channel.id, (err, permissions) => {
         debug('permissions', err, permissions, Site.get('main'))
         Site.get('main').update({permissions})
       })

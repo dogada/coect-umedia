@@ -58,12 +58,12 @@
 
   <script>
    var self = this
+   self.mixin('umedia-context')
+   debug('entry store', self.store)
+
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
 
-   self.store = self.opts.store
-   
-   self.mixin('umedia-context')
 
    self.isRestricted = function(entry) {
      self.debug('isRest', entry.access, self.ancestor)
@@ -106,7 +106,7 @@
      if (!(e.ctrlKey || e.altKey || e.metaKey)) return //ignore normal click
      self.debug('moderate access=', self.entry.access, 'alt=', e.altKey,
            'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'name=', self.entry.name)
-     self.parent.store.moderate(self.entry, e.ctrlKey, function (err, data) {
+     self.store.entry.moderate(self.entry, e.ctrlKey, function (err, data) {
        if (err) return Site.error(err)
        self.update({entry: $.extend(self.entry, data)})
      })
