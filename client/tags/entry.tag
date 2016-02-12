@@ -66,7 +66,6 @@
 
 
    self.isRestricted = function(entry) {
-     self.debug('isRest', entry.access, self.ancestor)
      if ([Access.MODERATION, Access.REJECTED,
      Access.HIDDEN].indexOf(entry.access) !== -1) return false
      if (self.ancestor && self.ancestor.access) return entry.access < self.ancestor.access
@@ -103,9 +102,9 @@
 
    self.moderate = function(e) {
      if (!Site.umedia.canModerateEntry(e)) return
-     if (!(e.ctrlKey || e.altKey || e.metaKey)) return //ignore normal click
+     if (!(e.ctrlKey || e.altKey || e.metaKey || e.shiftKey)) return //ignore normal click
      self.debug('moderate access=', self.entry.access, 'alt=', e.altKey,
-           'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'name=', self.entry.name)
+                'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'shift=', e.shiftKey, 'name=', self.entry.name)
      self.store.entry.moderate(self.entry, e.ctrlKey, function (err, data) {
        if (err) return Site.error(err)
        self.update({entry: $.extend(self.entry, data)})
