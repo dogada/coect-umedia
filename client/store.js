@@ -21,7 +21,16 @@ class ChannelStore extends Store {
   }
 }
 
+class UserStore extends Store {
+
+  ownChannels(user, done) {
+    this.get(Site.umedia.url.channel(), {owner: user.id}, done)
+  }
+}
+
+
 module.exports = {
   entry: new EntryStore(),
-  channel: new ChannelStore()
+  channel: new ChannelStore(),
+  user: new UserStore()
 }

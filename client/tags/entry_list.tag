@@ -126,6 +126,8 @@
    }
 
 
-   if (typeof window !== 'undefined') self.on('mount', load)
+   if (typeof window !== 'undefined') self.on('mount', () => {
+     if (!self.items.length) load()
+   })
   </script>
 </umedia-entry-list>
