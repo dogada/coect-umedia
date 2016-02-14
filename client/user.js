@@ -14,7 +14,7 @@ exports.detail = function(ctx) {
     },
     function(user) {
       Site.mountTag('umedia-profile', {user: user}, {title: user.name})
-      ui.getData(ctx, 'channels', next => store.user.ownChannels(user, next), flow)
+      ui.getData(ctx, 'channels', next => store.channel.list({owner: user.id}, next), flow)
     },
     function(data) {
       Site.mountTag('umedia-channel-list', data, {target: 'sidebar'})

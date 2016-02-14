@@ -19,13 +19,13 @@ class ChannelStore extends Store {
       done(null, data)
     })
   }
+
+  list(opts, done) {
+    this.get(Site.umedia.url.channel(), opts, done)
+  }
 }
 
 class UserStore extends Store {
-
-  ownChannels(user, done) {
-    this.get(Site.umedia.url.channel(), {owner: user.id}, done)
-  }
 }
 
 
