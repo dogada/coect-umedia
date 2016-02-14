@@ -79,5 +79,4 @@ Channel.getOrCreateMentions = function(user, done) {
   ], done)
 }
 
-
 module.exports = Channel

@@ -25,10 +25,10 @@ function adminRequired(req, res, next) {
    Short urls for channels and entries with slugs.
 */
 function slugRoutes(r) {
-  r.get(slug('username'), user.retrieve)
-  r.get(slug('username') + slug('cslug'), channel.retrieve)
-  r.get(slug('username') + slug('cslug') + slug('eslug'), entry.retrieve)
-  r.get(slug('username') + slug('cslug') + '/e/:id', entry.retrieve)
+  r.get(slug('username'), user.detail)
+  r.get(slug('username') + slug('cslug'), channel.detail)
+  r.get(slug('username') + slug('cslug') + slug('eslug'), entry.detail)
+  r.get(slug('username') + slug('cslug') + '/e/:id', entry.detail)
 }
 
 module.exports = function(r) {
@@ -39,7 +39,7 @@ module.exports = function(r) {
     .post(loginRequired, entry.create)
 
   r.route('/e/:id')
-    .get(entry.retrieve)
+    .get(entry.detail)
     .put(loginRequired, entry.update)
     .delete(loginRequired, entry.purge)
 
@@ -54,7 +54,7 @@ module.exports = function(r) {
     .post(adminRequired, channel.create)
 
   r.route('/c/:id')
-    .get(channel.retrieve)
+    .get(channel.detail)
     .put(loginRequired, channel.update)
     .delete(loginRequired, channel.trash)
 
@@ -63,7 +63,7 @@ module.exports = function(r) {
 
 
   r.route('/u/:id')
-    .get(user.retrieve)
+    .get(user.detail)
 
   slugRoutes(r)
   return r

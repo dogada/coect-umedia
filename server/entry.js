@@ -210,8 +210,8 @@ function moderate(req, res) {
   ], coect.json.response(res))
 }
 
-function retrieve(req, res, next) {
-  debug('retrieve xhr=', req.xhr, req.path, req.params, req.query)
+function detail(req, res, next) {
+  debug('detail xhr=', req.xhr, req.path, req.params, req.query)
   var flow = tflow([
     function() {
       getEntryAndChannel(entryWhere(req), flow)
@@ -376,7 +376,7 @@ function list(req, res) {
 
 module.exports = {
   create,
-  retrieve,
+  detail,
   update,
   trash,
   purge,

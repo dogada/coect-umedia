@@ -10,14 +10,11 @@ exports.detail = function(ctx) {
   
   var flow = tflow([
     function() {
-      ui.getData(ctx, 'user', next => store.user.get(ctx.path, next), flow)
-    },
-    function(user) {
-      Site.mountTag('umedia-profile', {user: user}, {title: user.name})
-      ui.getData(ctx, 'channels', next => store.channel.list({owner: user.id}, next), flow)
+      ui.getData(ctx, 'data', next => store.user.get(ctx.path, next), flow)
     },
     function(data) {
-      Site.mountTag('umedia-channel-list', data, {target: 'sidebar'})
-    },
+      Site.mountTag('umedia-profile', data, {title: data.user.name})
+      Site.mountTag('umedia-channel-list', data.channels, {target: 'sidebar'})
+    }
   ], Site.error)
 }

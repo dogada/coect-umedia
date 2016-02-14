@@ -5,18 +5,16 @@ var tflow = require('tflow')
 var coect = require('coect')
 var _ = require('lodash')
 
+var store = require('./store')
 var Entity = require('./models').Entity
 var Channel = require('./models').Channel
+
 var Access = coect.Access
 
 var riot = require('riot')
 
-const MAX_PAGE_SIZE = 20
-const PAGE_SIZE = 10
-
-
-function retrieve(req, res, next) {
-  debug('retrieve xhr=', req.xhr, req.params)
+function detail(req, res, next) {
+  debug('detail xhr=', req.xhr, req.params)
   tflow([
     function() {
       var p = req.params
@@ -128,29 +126,11 @@ function trash(req, res) {
 }
 
 
-function pageSize(req) {
-  return Math.min(MAX_PAGE_SIZE, PAGE_SIZE || parseInt(req.query.count, 10))
-}
 
 function list(req, res) {
   debug('list', req.query)
-  tflow([
-    function() {
-      var q = Channel.table(req.query.owner)
-        .select(Channel.listFields)
-        .where('model', 'channel')
-      if (req.query.owner) q = q.where({owner: req.query.owner})
-      var access = req.security.getUserAccess(req.user)
-      // show trashed items by default (use ?all=1 to show them like in ls -a)
-      if (!req.query.all) access = Math.max(access, Access.TRASH + 1)
-      debug('access', access)
-      q = q.where('access', '>=', access)
-      q = q.limit(pageSize(req))
-      q.asCallback(this)
-    },
-    function(channels) {
-      this.next({items: channels})
-    }
+  var flow = tflow([
+    () => store.channel.list(req, req.query, flow)
   ], coect.json.response(res))
 }
 
@@ -173,7 +153,7 @@ function permissions(req, res) {
 
 module.exports = {
   create,
-  retrieve,
+  detail,
   update,
   trash,
   list,

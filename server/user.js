@@ -4,25 +4,25 @@ var debug = require('debug')('umedia:user')
 var tflow = require('tflow')
 var coect = require('coect')
 
+var store = require('./store')
 var riot = require('riot')
-// var profileTag = require('../client/tags/profile.tag')
-// require('../client/tags/wpml.tag')
 
-exports.retrieve = function(req, res, next) {
+exports.detail = function(req, res, next) {
   debug('user profile', req.params)
   var flow = tflow([
-    function() {
+    () => {
       var p = req.params
       if (p.id) req.coect.User.get(p.id, flow)
       else req.coect.User.get({username: p.username}, flow)
-    }
-  ], coect.janus(req, res, next, function(user) {
-    var content = riot.render('umedia-profile', {user: user})
+    },
+    (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
+    (user, channels) => flow.next({user, channels})
+  ], coect.janus(req, res, next, function(data) {
     res.render('index', {
-      title:  user.name || user.username || '',
-      canonicalUrl: user.url,
-      content: content
+      title:  data.user.name || data.user.username || '',
+      canonicalUrl: data.user.url,
+      content: riot.render('umedia-profile', data),
+      sidebar: riot.render('umedia-channel-list', data.channels)
     })
-    
   }))
 }
