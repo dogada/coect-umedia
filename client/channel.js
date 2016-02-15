@@ -7,23 +7,13 @@ var {ui} = require('coect')
 var store = require('./store')
 
 function details(ctx) {
-
   debug('details', ctx)
   var flow = tflow([
-    function() {
-      ui.getData(ctx, 'channel', next => store.channel.get(ctx.path, next), flow)
-    },
-    function(channel) {
-      Site.mountTag('umedia-channel-details', 
-                    {channel, store},
-                    {title: channel.name})
-      if (Site.user) store.channel.permissions(channel.id, (err, permissions) => {
-        debug('permissions', err, permissions, Site.get('main'))
-        Site.get('main').update({permissions})
-      })
-      Site.checkMount('umedia-channel-list', {owner: channel.owner.id}, {target: 'sidebar'})
-    }
-  ])
+    () => ui.getData(ctx, 'data', next => store.channel.get(ctx.path, next), flow),
+    (data) => ui.renderTags(data, flow.send(data.content.opts.channel)),
+    (channel) => Site.user && store.channel.permissions(channel.id, flow),
+    (permissions) => Site.get('main').update({permissions})
+  ], Site.error)
 }
 
 function edit(ctx) {

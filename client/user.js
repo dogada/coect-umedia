@@ -10,6 +10,6 @@ exports.detail = function(ctx) {
   
   var flow = tflow([
     () => ui.getData(ctx, 'data', next => store.user.get(ctx.path, next), flow),
-    ui.renderTags
+    (data) => ui.renderTags(data, flow)
   ], Site.error)
 }

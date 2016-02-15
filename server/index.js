@@ -17,5 +17,6 @@ module.exports = {
   wpml: require('../common/wpml'),
   riot: require('../common/riot'),
   config: config,
-  webmention: require('./webmention')
+  webmention: require('./webmention'),
+  store: require('./store')
 }

@@ -115,6 +115,7 @@ function webmentionOwner(author) {
 }
 
 Entity.fillUsers = function(entries, cache, done) {
+  debug('fillUsers', entries.length)
   tflow([
     function() {
       cache.getUsers(Array.from(new Set(entries.map(e => e.owner))), this)

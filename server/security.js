@@ -48,11 +48,13 @@ class UmediaAccessPolicy extends Access {
   }
 
   // access level in a channel
-  getUserAccess(user, channel) {
+  getUserAccess(user, channel, opts) {
     var access = this.genericAcces(user)
     // check acess inside channel only if there is chance to get better access
     if (access > Access.ADMIN && channel) access = Math.min(
       access, this.accessInsideChannel(user, channel))
+    // don't show items in trash by default even if user can see them
+    if (!opts || !opts.all) access = Math.max(access, Access.TRASH + 1)
     return access
   }
 

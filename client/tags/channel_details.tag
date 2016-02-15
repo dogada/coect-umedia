@@ -8,10 +8,10 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-   debug('channel_details', this.opts)
-   self.channel = opts.channel
-   self.permissions = opts.permissions || {}
-   self.items = []
+   debug('channel_details')
+   self.channel = self.opts.channel
+   self.permissions = self.opts.permissions || {}
+   self.items = self.opts.entries || []
   </script>
 
 </umedia-channel-details>

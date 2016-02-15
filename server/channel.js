@@ -13,31 +13,21 @@ var Access = coect.Access
 
 var riot = require('riot')
 
-function detail(req, res, next) {
+function detail(req, res, done) {
   debug('detail xhr=', req.xhr, req.params)
-  tflow([
-    function() {
-      var p = req.params
-      var opts = {select: Channel.detailFields.concat(['data'])}
-      if (p.id) Channel.get(p.id, opts, this)
-      else Channel.findOne({url: p.username + '/' + p.cslug}, opts, this)
-    },
-    function(channel) {
-      if(!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Access to the channel is forbidden')
-      // clear data that is need only for security check
-      channel.data = undefined
-      this.next(channel)
-    },
-    function(channel) {
-      Entity.fillUsers([channel], req.app.userCache, this.send(channel))
-    },
-  ], coect.janus(req, res, next, function(channel) {
-    res.render('index', {
-      title: channel.name,
-      canonicalUrl: channel.url,
-      content: riot.render('umedia-channel-details', {channel: channel})
+  var flow = tflow([
+    () => store.channel.withAccess(req, req.params, flow),
+    (channel, access) => store.entry.list(req.user, access, {list: channel.id}, flow.join(channel)),
+    (channel, entries) => store.channel.list(req, {owner: channel.owner}, flow.join(channel, entries)),
+    (channel, entries, channels) => Entity.fillUsers([channel].concat(entries).concat(channels),
+                                                     req.app.userCache, flow.send(channel, entries, channels)),
+    (channel, entries, channels) => flow.next({
+      content: {tag: 'umedia-channel-details', opts: {channel, entries}},
+      sidebar: {tag: 'umedia-channel-list', opts: {items: channels}},
+      title:  channel.name,
+      canonicalUrl: channel.url
     })
-  }))
+  ], coect.janus(req, res, done))
 }
 
 function validate(req, channel, done) {
@@ -130,7 +120,8 @@ function trash(req, res) {
 function list(req, res) {
   debug('list', req.query)
   var flow = tflow([
-    () => store.channel.list(req, req.query, flow)
+    () => store.channel.list(req, req.query, flow),
+    (channels) => flow.next({items: channels})
   ], coect.json.response(res))
 }
 

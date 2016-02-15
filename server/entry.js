@@ -13,7 +13,7 @@ var Channel = require('./models').Channel
 var Entry = require('./models').Entry
 var Access = coect.Access
 
-
+var store = require('./store')
 var riot = require('riot')
 
 
@@ -281,89 +281,26 @@ function purge(req, res) {
   ], coect.json.response(res))
 }
 
-function firstItem(obj, keys) {
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i]
-    if (obj[key]) {
-      var res = {}
-      res[key] = obj[key]
-      return res
-    }
-  }
-  return {}
-}
-
-function listWhere(req, done) {
-  tflow([
-    function() {
-      //list_url
-      var where = firstItem(req.query, ['owner', 'list', 'list_url', 'topic', 'thread'])
-      // FIX: switch to timeline
-      if (!Object.keys(where).length) where = {type: 'post'}
-      if (!Object.keys(where).length) return this.fail(400, 'An entry filter is required.')
-      
-      // show top-level entries (posts) only
-      if (where.owner || where.list || where.list_url) where.topic = null
-      this.next(where)
-    }
-  ], done)
-}
-
-function listOrder(req) {
-  if (req.query.order === 'top') return ['rating', 'desc']
-  else if (req.query.order === 'first') return ['id', 'asc']
-  else return ['id', 'desc']
-}
-
-
-
-/**
-   Show entries allowed for user, created by himself or wrote to her.
-*/
-function filterByAccess(q, user, access) {
-  if (!user) return q.where('access', '>=', access)
-  return q.whereRaw('\("access\" >= ? OR (\"access\" > ? AND (\"owner\" = ? OR \"recipient\" = ?)))',
-                    [access, Access.ADMIN, user.id, user.id])
-}
-
 function list(req, res) {
-  tflow([
-    function() {
-      listWhere(req, this)
+  var flow = tflow([
+    () => {
+      var parentId = req.query.thread || req.query.topic
+      if (parentId) Entry.get(parentId, flow)
+      else flow.next()
     },
-    function(where) {
-      if (where.thread || where.topic) Entry.get(where.thread || where.topic, this.join(where))
-      else this.next(where)
+    (parent) => {
+      var q = (parent ? parent.list : req.query.list)
+      if (!q && req.query.list_url) q = {url: req.query.list_url}
+      if (q) Channel.get(q, {select: '*'}, flow)
+      else flow.next()
     },
-    function(where, parent) {
-      var q = (parent ? parent.list : where.list || where.list_url && {url: where.list_url})
-      if (q) Channel.get(q, {select: '*'}, this.join(where))
-      else this.next(where)
-    },
-    function(where, channel) {
-      if (where.list_url) where = _.extend(_.omit(where, 'list_url'), {list: channel.id})
-      if(channel && !req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'No access to the channel')
-      var access = req.security.getUserAccess(req.user, channel)
-      if (!req.query.all) access = Math.max(access, Access.TRASH + 1)
-      this.next(where, access)
-    },
-    function(where, access) {
-      debug(`list where=${where} access=${access}`)
-      if (access === undefined) return this.fail(403, 'Access mode is undefined')
-      var q = Entry.table(where.list)
-      q = q.select(Entry.listFields)
-      q = q.where(where)
-      // if user isn't a root in a channel filter by access
-      if (access > Access.ROOT) q = filterByAccess(q, req.user, access)
-      if (req.query.cursor) {
-        if (req.query.order === 'first') q = q.andWhere('id', '>', req.query.cursor)
-        else if (req.query.order === 'last') q = q.andWhere('id', '<', req.query.cursor)
-      }
-      q = q.orderBy.apply(q, listOrder(req))
-      if (req.query.offset) q = q.offset(parseInt(req.query.offset, 10))
-      q = q.limit(Math.min(MAX_PAGE_SIZE, parseInt(req.query.count, 10)))
-      debug('list SQL', q.toString().slice(-130))
-      q.asCallback(this)
+    (channel) => {
+      var opts = req.query
+      if (channel && opts.list_url) opts = _.extend(_.omit(opts, 'list_url'), {list: channel.id})
+      if (channel && !req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'No access to the channel')
+      var access = req.security.getUserAccess(req.user, channel, opts)
+      if (access === undefined) return flow.fail(403, 'Access mode is undefined.')
+      store.entry.list(req.user, access, opts, flow)
     },
     function(entries) {
       Entity.fillUsers(entries, req.app.userCache, this)
