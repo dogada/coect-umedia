@@ -126,7 +126,7 @@
    }
 
 
-   if (typeof window !== 'undefined') self.on('mount', () => {
+   if (typeof window !== 'undefined') self.on('mount', function() {
      if (!self.items.length) load()
    })
   </script>
