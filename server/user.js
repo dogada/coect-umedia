@@ -5,7 +5,6 @@ var tflow = require('tflow')
 var coect = require('coect')
 
 var store = require('./store')
-var riot = require('riot')
 
 exports.detail = function(req, res, next) {
   debug('user profile', req.params)
@@ -16,13 +15,11 @@ exports.detail = function(req, res, next) {
       else req.coect.User.get({username: p.username}, flow)
     },
     (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
-    (user, channels) => flow.next({user, channels})
-  ], coect.janus(req, res, next, function(data) {
-    res.render('index', {
-      title:  data.user.name || data.user.username || '',
-      canonicalUrl: data.user.url,
-      content: riot.render('umedia-profile', data),
-      sidebar: riot.render('umedia-channel-list', data.channels)
+    (user, channels) => flow.next({
+      content: {tag: 'umedia-profile', opts: {user}}, 
+      sidebar: {tag: 'umedia-channel-list', opts: channels},
+      title:  user.name || user.username || '',
+      canonicalUrl: req.coect.urls.user(user)
     })
-  }))
+  ], coect.janus(req, res, next))
 }
