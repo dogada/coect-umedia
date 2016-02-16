@@ -1,12 +1,6 @@
 <umedia-entry-details>
   <div class="umedia-entry-details">
-
-    <ol class="breadcrumb">
-      <li><a href={ url.user(entry.list.owner) }>{ entry.list.owner.name }</a></li>
-      <li><a href={ url.channel(entry.list) }>{ entry.list.name }</a></li>
-      <li if={ entry.topic }><a 
-        href={ url.entry(entry.parent) }>{ entry.parent.name }</a></li>
-    </ol>
+    <coect-breadcrumbs items={ breadcrumbs } />
 
     <umedia-entry entry={ entry } detail="1"></umedia-entry>
 
@@ -25,20 +19,18 @@
                        items={ items } ancestor={ entry }></umedia-entry-list>
 
   </div>
-
-  <style scoped>
-   .breadcrumb {
-     margin-bottom: 5px;
-   }
-   
-  </style>
   
 <script>
-   var self = this
-   self.mixin('umedia-context')
-   self.entry = this.opts.entry
-   self.permissions = opts.permissions || {}
-   self.items = []
+  var self = this
+  self.mixin('umedia-context')
+  var entry = self.entry = self.opts.entry
+  self.permissions = opts.permissions || {}
+  self.items = []
+  self.breadcrumbs = [
+    {name: entry.list.owner.name, url: self.url.user(entry.list.owner)},
+    {name: entry.list.name, url: self.url.channel(entry.list)},
+  ]
+  if (entry.topic) self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
   </script>
 
   
