@@ -23,7 +23,7 @@ function detail(req, res, done) {
                                                      req.app.userCache, flow.send(channel, entries, channels)),
     (channel, entries, channels) => flow.next({
       content: {tag: 'umedia-channel-details', opts: {channel, entries}},
-      sidebar: {tag: 'umedia-channel-list', opts: {items: channels}},
+      sidebar: {tag: 'coect-channel-feed', opts: {items: channels}},
       title:  channel.name,
       canonicalUrl: channel.url
     })

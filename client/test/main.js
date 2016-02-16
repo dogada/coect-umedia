@@ -10,7 +10,7 @@ require('./config/app')
 require('../../build/tags/raw.js')
 require('../../build/tags/wpml.js')
 require('../../build/tags/channel.js')
-require('../../build/tags/channel_list.js')
+require('../../build/tags/channel_feed.js')
 require('../../build/tags/channel_details.js')
 
 // have issues with riotify when browserify run from Karma

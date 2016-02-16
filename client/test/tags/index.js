@@ -2,7 +2,7 @@
 require('./wpml')
 
 require('./channel')
-require('./channel_list')
+require('./channel_feed')
 require('./channel_detail')
 
 require('./entry')

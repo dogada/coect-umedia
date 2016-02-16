@@ -17,7 +17,7 @@ exports.detail = function(req, res, next) {
     (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
     (user, channels) => flow.next({
       content: {tag: 'umedia-profile', opts: {user}}, 
-      sidebar: {tag: 'umedia-channel-list', opts: {items: channels}},
+      sidebar: {tag: 'coect-channel-feed', opts: {items: channels}},
       title:  user.name || user.username || '',
       canonicalUrl: req.coect.urls.user(user)
     })

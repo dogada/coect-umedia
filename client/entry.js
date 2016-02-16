@@ -21,7 +21,7 @@ exports.details = function(ctx) {
         if (main && main.root) main.update({permissions})
         else console.error('No main in entry_detail.')
       })
-      Site.checkMount('umedia-channel-list', {owner: entry.owner.id}, {target: 'sidebar'})
+      Site.checkMount('coect-channel-feed', {owner: entry.owner.id}, {target: 'sidebar'})
     }
   ])
 }
