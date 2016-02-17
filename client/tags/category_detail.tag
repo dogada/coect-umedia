@@ -1,7 +1,8 @@
 <coect-category-detail>
   <div class="coect-category-detail">
     <coect-breadcrumbs items={ breadcrumbs } />
-    <umedia-entry-list category={ opts.category } channel={ opts.channel } items={ items } />
+    <umedia-entry-list category={ opts.category } 
+    list={ opts.channel && opts.channel.id } items={ items } />
   </div>
 
   <script>

@@ -67,7 +67,7 @@ function listWhere(opts, done) {
 class EntryStore extends Store {
 
   list(user, access, opts, done) {
-    debug('list', access, opts)
+    debug('ES.list', access, opts)
     var flow = tflow([
       () => listWhere(opts, flow),
       function(where, tag) {

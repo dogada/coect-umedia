@@ -24,6 +24,7 @@ exports.detail = function (req, res, next) {
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
+    (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts, channel)),
     (opts, channel, entries) => Entity.fillUsers(channel ? entries.concat(channel) : entries,
                                                  req.app.userCache, flow.send(opts, channel, entries)),

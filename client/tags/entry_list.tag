@@ -39,6 +39,7 @@
    var opts = self.opts
    self.ancestor = opts.ancestor
    self.channel = opts.channel
+   self.category = opts.category
    self.items = opts.items || []
    self.hasMore = false
    self.query = initQuery({
@@ -62,6 +63,8 @@
      /* else if (self.channel) query.list = self.channel.id */
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
+
+     if (opts.category) query.tag = opts.category
      return query
    }
 

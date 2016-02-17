@@ -298,14 +298,10 @@ function list(req, res) {
       if (req.query.thread) flow.next({list: parent.list, thread: req.query.thread})
       else if (req.query.topic) flow.next({list: parent.list, topic: req.query.topic})
       else if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag && c/:id
-      else if (req.query.list) flow.next({list: req.query.list})
-      else if (req.query.list_url) flow.next({url: req.query.list_url})
-      else if (req.params.username && req.params.clusg) flow.next({ // :username/:cslug/t/:tag and :username/:cslug
-        url: req.params.username + '/' + req.params.clusg,
-        tag: req.params.tag
-      })
+      else if (req.query.list) flow.next({list: req.query.list, tag: req.query.tag})
+      else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
       else if (req.query.owner) flow.next({owner: req.query.owner})
-      else if (req.params.tag) flow.next({tag: req.params.tag})
+      else if (req.query.tag) flow.next({tag: req.query.tag})
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {
@@ -313,6 +309,7 @@ function list(req, res) {
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
+    (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow),
     (entries) => Entity.fillUsers(entries, req.app.userCache, flow.send({items: entries}))
   ], coect.json.response(res))
