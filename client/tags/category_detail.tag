@@ -1,17 +1,23 @@
 <coect-category-detail>
   <div class="coect-category-detail">
-    Category { category }
-    <umedia-entry-list category={ category } channel={ channel } items={ items } />
+    <coect-breadcrumbs items={ breadcrumbs } />
+    <umedia-entry-list category={ opts.category } channel={ opts.channel } items={ items } />
   </div>
 
   <script>
    var self = this
    self.mixin('umedia-context')
-   debug('tag_detail')
-   self.category = self.opts.category
-   self.channel = self.opts.channel
-   self.permissions = self.opts.permissions || {}
+   var opts = self.opts, channel = opts.channel
+   debug('category_detail', opts)
+
    self.items = self.opts.items || []
+
+   self.breadcrumbs = [{name: opts.category}]
+   if (channel) self.breadcrumbs.splice(
+     0, 0,
+     {name: channel.owner.name, url: self.url.user(channel.owner)},
+     {name: channel.name, url: self.url.channel(channel)})
+
   </script>
 
 </coect-category-detail>

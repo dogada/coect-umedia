@@ -17,7 +17,7 @@ function nameFromContent(content, limit) {
 
 function parseTags(meta) {
   if (!meta.tags) return
-  var tags = meta.tags.split(',').slice(0, 5).map(t => t.trim())
+  var tags = meta.tags.split(',').slice(0, 3).map(t => t.trim())
   return Array.from(new Set(tags))
 }
 
