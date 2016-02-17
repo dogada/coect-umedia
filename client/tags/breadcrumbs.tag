@@ -6,7 +6,7 @@
         <a if={ item.url } href={ item.url } itemprop="item" class="h-breadcrumb">
           <span itemprop="name">{ item.name }</span>
         </a>
-        <span if={ !item.url }>{ item.name }</span>
+        <strong if={ !item.url }>{ item.name }</strong>
         <meta itemprop="position" content={ i + 1 } />
       </li>
     </ol>
