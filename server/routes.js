@@ -6,6 +6,7 @@ var slug = coect.routes.slug
 var entry = require('./entry')
 var channel = require('./channel')
 var user = require('./user')
+var category = require('./category')
 var webmention = require('./webmention')
 
 function loginRequired(req, res, next) {
@@ -29,6 +30,7 @@ function slugRoutes(r) {
   r.get(slug('username') + slug('cslug'), channel.detail)
   r.get(slug('username') + slug('cslug') + slug('eslug'), entry.detail)
   r.get(slug('username') + slug('cslug') + '/e/:id', entry.detail)
+  r.get(slug('username') + slug('cslug') + '/t/:tag', category.detail)
 }
 
 module.exports = function(r) {
@@ -61,6 +63,12 @@ module.exports = function(r) {
   r.route('/c/:id/permissions')
     .get(loginRequired, channel.permissions)
 
+  r.route('/c/:id/t/:tag')
+    .get(category.detail)
+
+  r.route('/t/:tag')
+    .get(category.detail)
+
 
   r.route('/u/:id')
     .get(user.detail)
@@ -68,5 +76,3 @@ module.exports = function(r) {
   slugRoutes(r)
   return r
 }
-
-

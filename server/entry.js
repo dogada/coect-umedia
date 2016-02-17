@@ -71,6 +71,10 @@ function checkNewEntry(req, done) {
   ], done)
 }
 
+function getTags(form, type) {
+  if (type === 'post' && form.tags && form.tags.length) return form.tags
+}
+
 function saveNewEntry(req, parent, list, form, done) {
   var type = 'post'
   if (parent.type !== 'channel') {
@@ -85,6 +89,7 @@ function saveNewEntry(req, parent, list, form, done) {
     type: type,
     access: form.access,
     name: form.name,
+    tags: getTags(form, type),
     text: form.text,
     data: data,
     // custom urls are allowed for posts only
@@ -164,17 +169,18 @@ function update(req, res) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
       validate(req, parent, channel, entry.type, flow.join(entry, channel))
     },
-    function(entry, list, doc, data) {
-      debug('update data', data)
+    function(entry, list, doc, form) {
+      debug('update form', form)
       var entryData = entry.data
-      if (entryData.access || _.size(data.accessData)) entryData.access = data.accessData
+      if (entryData.access || _.size(form.accessData)) entryData.access = form.accessData
       Entry.update(entry.id, _.omit({
-        name: data.name,
+        name: form.name,
         head: doc.head,
         text: doc.text,
-        access: data.access,
+        access: form.access,
+        tags: getTags(form, entry.type),
         data: entryData,
-        url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, data.slug) || undefined,
+        url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, form.slug) || undefined,
         version: Entry.makeVersion()
       }, _.isUndefined), this)
     },
@@ -289,25 +295,26 @@ function list(req, res) {
       else flow.next()
     },
     (parent) => {
-      var q = (parent ? parent.list : req.query.list)
-      if (!q && req.query.list_url) q = {url: req.query.list_url}
-      if (q) Channel.get(q, {select: '*'}, flow)
-      else flow.next()
+      if (req.query.thread) flow.next({list: parent.list, thread: req.query.thread})
+      else if (req.query.topic) flow.next({list: parent.list, topic: req.query.topic})
+      else if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag && c/:id
+      else if (req.query.list) flow.next({list: req.query.list})
+      else if (req.query.list_url) flow.next({url: req.query.list_url})
+      else if (req.params.username && req.params.clusg) flow.next({ // :username/:cslug/t/:tag and :username/:cslug
+        url: req.params.username + '/' + req.params.clusg,
+        tag: req.params.tag
+      })
+      else if (req.query.owner) flow.next({owner: req.query.owner})
+      else if (req.params.tag) flow.next({tag: req.params.tag})
+      else flow.fail(400, 'Unknown query')
     },
-    (channel) => {
-      var opts = req.query
-      if (channel && opts.list_url) opts = _.extend(_.omit(opts, 'list_url'), {list: channel.id})
-      if (channel && !req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'No access to the channel')
-      var access = req.security.getUserAccess(req.user, channel, opts)
-      if (access === undefined) return flow.fail(403, 'Access mode is undefined.')
-      store.entry.list(req.user, access, opts, flow)
+    (opts) => {
+      for (let param of ['cursor', 'offset', 'count']) opts[param] = req.query[param]
+      if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
+      else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
-    function(entries) {
-      Entity.fillUsers(entries, req.app.userCache, this)
-    },
-    function(entries) {
-      this.next({items: entries})
-    },
+    (opts, channel, access) => store.entry.list(req.user, access, opts, flow),
+    (entries) => Entity.fillUsers(entries, req.app.userCache, flow.send({items: entries}))
   ], coect.json.response(res))
 }
 

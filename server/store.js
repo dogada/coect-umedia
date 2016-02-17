@@ -49,18 +49,17 @@ function firstItem(obj, keys) {
 }
 
 function listWhere(opts, done) {
-  tflow([
+  var flow = tflow([
     function() {
       //list_url
-      var where = firstItem(opts, ['owner', 'list', 'list_url', 'topic', 'thread'])
+      var where = firstItem(opts, ['topic', 'thread', 'list', 'owner'])
       // FIX: switch to timeline
-      if (!Object.keys(where).length) where = {type: 'post'}
-      if (!Object.keys(where).length) return this.fail(400, 'An entry filter is required.')
+      if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       
       // show top-level entries (posts) only
-      if (where.owner || where.list) where.topic = null
+      if ((where.owner || where.list) && !opts.tag) where.topic = null
 
-      this.next(where)
+      this.next(where, opts.tag)
     }
   ], done)
 }
@@ -71,12 +70,13 @@ class EntryStore extends Store {
     debug('list', access, opts)
     var flow = tflow([
       () => listWhere(opts, flow),
-      function(where) {
+      function(where, tag) {
         debug(`list where=${where} access=${access}`)
 
         var q = Entry.table(where.list)
         q = q.select(Entry.listFields)
         q = q.where(where)
+        if (tag) q = q.andWhere('tags', '@>', JSON.stringify([tag]))
         // if user isn't a root in a channel filter by access
         if (access > Access.ROOT) q = filterByAccess(q, user, access)
         if (opts.cursor) {
@@ -115,12 +115,14 @@ class ChannelStore extends Store {
 
   withAccess(req, opts, done) {
     var flow = tflow([
-      function() {
-        var q = {select: Channel.detailFields.concat(['data'])}
-        if (opts.id) Channel.get(opts.id, opts, flow)
-        else Channel.get({url: opts.username + '/' + opts.cslug}, q, flow)
+      () => {
+        if (opts.id || opts.list) flow.next({id: opts.id || opts.list})
+        else if (opts.url) flow.next({url: opts.url})
+        else if (opts.username && opts.cslug) flow.next({url: opts.username + '/' + opts.cslug})
+        else flow.fail('Invalid channel query ' + opts)
       },
-      function(channel) {
+      (query) => Channel.get(query, {select: Channel.detailFields.concat(['data'])}, flow),
+      (channel) => {
         if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
         // clear data that is need only for security check
         var access = req.security.getUserAccess(req.user, channel, req.query)

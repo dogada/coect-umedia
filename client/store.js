@@ -28,9 +28,13 @@ class ChannelStore extends Store {
 class UserStore extends Store {
 }
 
+class CategoryStore extends Store {
+}
+
 
 module.exports = {
   entry: new EntryStore(),
   channel: new ChannelStore(),
-  user: new UserStore()
+  user: new UserStore(),
+  category: new CategoryStore()
 }

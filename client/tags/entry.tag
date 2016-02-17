@@ -52,6 +52,12 @@
        <span if={ canChange }>·
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
        </span>
+
+       <ul if={ entry.tags } class="coect-tags pull-right list-inline">
+         <li each={ t, i in entry.tags }>
+           <a href="{ url.category(t) }" class="p-category label label-default">{ t }</a>
+         </li>
+       </ul>
       </div>
     </div>
   </div>

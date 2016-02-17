@@ -14,7 +14,10 @@ function baseRoutes(route, url) {
   route(url.channel('_/admin'), handlers.channel.admin)
   route(url.channel(':id'), handlers.channel.details)
   route(url.channel(':id', 'edit'), handlers.channel.edit)
+
   route(url.user(':id'), handlers.user.detail)
+
+  route(url.category(':tag'), handlers.category.detail)
 
 }
 
@@ -25,6 +28,8 @@ function baseRoutes(route, url) {
 function slugRoutes(route, prefix) {
   route(prefix(slug('username')), handlers.user.detail)
   route(prefix(slug('username') + slug('cslug')), handlers.channel.details)
+  route(prefix(slug('username') + slug('cslug')) + '/t/:tag', handlers.category.detail)
+
   route(prefix(slug('username') + slug('cslug') + slug('eslug')), handlers.entry.details)
   route(prefix(slug('username') + slug('cslug') + '/e/:id'), handlers.entry.details)
 }
