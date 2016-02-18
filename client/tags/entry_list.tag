@@ -1,25 +1,37 @@
 <umedia-entry-list>
   <div if={ items.length } class="umedia-entry-list h-feed">
-    
-    <div if={ ancestor || category } class="umedia-entries-header clearfix">
-      <ul class="nav nav-pills pull-right">
-        <li role="presentation" class="{ query.order == 'last' ? 'active': ''}"><a onclick={ last }>Last</a></li>
-        <li role="presentation" class="{ query.order == 'first' ? 'active': ''}"><a onclick={ first }>First</a></li>
-        <li role="presentation" class="{ query.order == 'top' ? 'active': ''}"><a onclick={ top }>Top</a></li>
+    <div>
+      <ul class="list-inline actions">
+        <li if={ ancestor || opts.category }>
+          <button onclick={ last } type="button" 
+                  class="btn btn-xs btn-default{ active(query.order == 'last') }">Last</button>
+        </li>
+        
+        <li if={ ancestor || opts.category }>
+          <button onclick={ first } type="button" 
+                  class="btn btn-xs btn-default{ active(query.order == 'first')}">First</button>
+        </li>
+
+        <li if={ ancestor }>
+          <button onclick={ top } type="button" 
+                  class="btn btn-xs btn-default{ active(query.order == 'top')}">Top</button>
+        </li>
+
+        <li if={ ancestor && ancestor.type == 'post' }>
+          <button onclick={ toggleThreaded } type="button" 
+                  class="btn btn-xs btn-default{ active(query.thread) }">Threaded</button>
+        </li>
+
+        <li if={ ancestor && ancestor.type == 'post' }>
+          <button onclick={ toggleThreaded } type="button" 
+                  class="btn btn-xs btn-default{ active(!query.thread) }">Flat</button>
+        </li>
+        
       </ul>
-
-      <div>
-        <h4 class="umedia-comments-title">
-          { commentsTitle() }
-        </h4>
-        <a if={ ancestor && ancestor.type == 'post' } onclick={ toggleComments }>{ commentsHint() }</a>
-      </div>
-
     </div>
 
-
     <div>
-      <ul class="list-unstyled">
+      <ul class="list-unstyled entries">
         <li each={e in items}>
           <umedia-entry entry={ e } ancestor={ parent.ancestor || parent.channel } />
         </li>
@@ -34,18 +46,20 @@
   <script>
    var self = this
    self.mixin('coect-context', 'umedia-context')
-   self.debug('entry_list window=', typeof window)
+   self.debug('entry_list window=', typeof window, self.opts)
 
    var opts = self.opts
    self.ancestor = opts.ancestor
-   self.channel = opts.channel
-   self.category = opts.category
    self.items = opts.items || []
    self.hasMore = false
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
    })
+
+   self.active = function(test) {
+     return (test ? ' active' : '')
+   }
 
    function getThreadId(entry) {
      return (entry.type == 'reply' ? entry.thread.id : entry.id)
@@ -60,7 +74,6 @@
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
      else if (self.ancestor) query.thread = getThreadId(self.ancestor)
-     /* else if (self.channel) query.list = self.channel.id */
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 
@@ -105,18 +118,7 @@
      load(true)
    }
 
-   self.commentsTitle = function() {
-     if (self.ancestor && ['comment', 'reply'].indexOf(self.ancestor.type) > -1) return 'Replies'
-     else if (self.query.topic) return 'With replies'
-     if (self.ancestor && self.ancestor.type == 'post') return 'Comments'
-     else return 'Entries'
-   }
-
-   self.commentsHint = function() {
-     return (self.query.thread ? 'With replies' : 'Comments only')
-   }
-
-   self.toggleComments = function() {
+   self.toggleThreaded = function() {
      debug('toggle', self.query)
      if (!self.query.thread) {
        delete self.query.topic
@@ -128,7 +130,6 @@
      debug('after', self.query)
      load()
    }
-
 
    if (typeof window !== 'undefined') self.on('mount', function() {
      if (!self.items.length) load()

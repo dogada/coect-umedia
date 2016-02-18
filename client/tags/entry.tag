@@ -65,7 +65,6 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-   debug('entry store', self.store)
 
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
@@ -96,7 +95,7 @@
    }
 
    self.actionName = function(type, webmType) {
-     self.debug('actionName', type, webmType)
+     //self.debug('actionName', type, webmType)
      if (type === 'comment') return 'commented'
      else if (type === 'reply' || webmType === 'reply') return 'replied'
      else if (type === 'like' || webmType === 'like') return 'liked'

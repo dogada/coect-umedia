@@ -24,4 +24,6 @@ require('../../build/tags/entry_editor.js')
 require('../../build/tags/profile.js')
 require('../../build/tags/breadcrumbs.js')
 
+require('../../build/tags/category_detail.js')
+
 require('./index')  //include all tests

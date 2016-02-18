@@ -1,7 +1,5 @@
 <umedia-channel>
   <div class="umedia-channel">
-    <coect-breadcrumbs items={ breadcrumbs } />
-
     <div class="wpml">
       <umedia-wpml text={ channel.text }></umedia-wpml>
     </div>
@@ -13,10 +11,6 @@
   <script type="es6">
    var self = this
    self.mixin('umedia-context')
-   var channel = self.channel = self.opts.channel
-   self.breadcrumbs = [
-     {name: channel.owner.name, url: self.url.user(channel.owner)},
-     {name: channel.name}
-   ]
+   self.channel = self.opts.channel
   </script>
 </umedia-channel>

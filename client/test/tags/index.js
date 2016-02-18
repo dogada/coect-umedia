@@ -11,4 +11,5 @@ require('./entry_list')
 
 require('./profile')
 
+require('./category_detail')
 

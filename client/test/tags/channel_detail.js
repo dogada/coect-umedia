@@ -16,13 +16,16 @@ describe('umedia-channel-detail', function() {
     ]})
   })
 
-  it('should load channel and recent entries by channel id', function(done) {
+  it('should show channel and load recent entries by channel id', function(done) {
     var tag = env.mount('umedia-channel-details', {
       channel: FAKE_CHANNEL,
       permissions: {post: false}
     })
 
     function checkHtml() {
+      $('.coect-breadcrumbs li a span', tag.root).should.have.text('User2')
+      $('h1', tag.root).should.have.text('Fake channel')
+
       expect($('.umedia-entry-list ul li', tag.root)).to.have.length(2)
       $('#ee1 .wpml p', tag.root).should.have.text('First entry')
       $('#ee2 .wpml p', tag.root).should.contain('Second entry')
