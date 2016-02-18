@@ -17,6 +17,10 @@ function detail(req, res, done) {
   debug('detail xhr=', req.xhr, req.params)
   var flow = tflow([
     () => store.channel.withAccess(req, req.params, flow),
+    (channel, access) => {
+      if (req.params.action) flow.complete(channel)
+      else flow.next(channel, access)
+    },
     (channel, access) => store.entry.list(req.user, access, {list: channel.id}, flow.join(channel)),
     (channel, entries) => store.channel.list(req, {owner: channel.owner}, flow.join(channel, entries)),
     (channel, entries, channels) => Entity.fillUsers([channel].concat(entries).concat(channels),

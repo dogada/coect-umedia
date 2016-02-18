@@ -63,6 +63,9 @@ module.exports = function(r) {
   r.route('/c/:id/permissions')
     .get(loginRequired, channel.permissions)
 
+  r.route('/c/:id/:action(edit)')
+    .get(channel.detail)
+
   r.route('/c/:id/t/:tag')
     .get(category.detail)
 

@@ -52,9 +52,10 @@
    }
 
    self.load = function(id) {
-     $.getJSON(self.url.channel(id), function(data) {
+     $.getJSON(self.url.channel(id, 'edit'), function(data) {
        self.name.value = data.name
        self.text.value = data.text
+       debug('loadeed', data, self.name.value)
        self.update()
      }).fail(self.failHandler).complete(function() {
      })
