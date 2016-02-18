@@ -32,7 +32,7 @@
   <script type="es6">
 
    var self = this
-   self.mixin('coect-context', 'umedia-context')
+   self.mixin('umedia-context')
    var {entry, ancestor, items} = self.opts
    var webmention = ancestor && ancestor.link && ancestor.link.webmention
 
@@ -94,12 +94,13 @@
    self.publish = function(e) {
      e.preventDefault()
      console.log('Publish', this.text, self.opts)
-     self.poutJson(
+     self.store.entry.save(
        self.url.entry(),
        {id: entry && entry.id,
         text: self.content.value,
         parent: ancestor && ancestor.id,
-        list: ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id)}).done(published)
+        list: ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id)},
+       Site.callback(published))
    }
 
    if (entry) {
