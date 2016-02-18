@@ -43,11 +43,13 @@
        id: self.opts.id,
        name: self.name.value,
        text: self.text.value
-     }, Site.callback(data => Site.page(self.url.channel(data))))
+     }, Site.callback(function(data) {
+         Site.page(self.url.channel(data))
+       }))
    }
 
    self.load = function(id) {
-     self.store.channel.get(self.url.channel(id, 'data'), Site.callback(data => {
+     self.store.channel.get(self.url.channel(id, 'data'), Site.callback(function(data) {
        self.name.value = data.name
        self.text.value = data.text
        debug('loaded channel', data, self.name.value)

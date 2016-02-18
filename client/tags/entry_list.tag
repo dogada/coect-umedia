@@ -89,7 +89,7 @@
      var url = self.url.entry('') + '?' + $.param(getQuery(append))
      debug('load append=', append, 'url', url)
 
-     self.store.entry.get(url, Site.callback(data => {
+     self.store.entry.get(url, Site.callback(function(data) {
        debug('loaded data', data && data.length)
        // update self.items in-place because it may be shared with parent tag like entry_detail
        if (!append) self.items.splice(0, self.items.length)
