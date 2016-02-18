@@ -72,6 +72,17 @@ Site.account = {
 
 Site.umedia = require('../../app')
 
+
+/**
+   Return NodeJs style callback that calls Site.error on error or `fn` otherwise.
+*/
+Site.callback = function(fn) {
+  return function(err, ...rest) {
+    if (err) return Site.error(err)
+    fn(...rest)
+  }
+}
+
 var base = urlBuilder('/', urlIdTranslator)
 
 var urls = {
@@ -85,7 +96,8 @@ var urls = {
 
 umedia.riot.init({
   url: urls, 
-  debug: require('debug')('umedia:tag')
+  debug: require('debug')('umedia:tag'),
+  store: require('../../store')
 })
 
 umedia.routes(page, {

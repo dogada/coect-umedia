@@ -45,7 +45,7 @@
 
   <script>
    var self = this
-   self.mixin('coect-context', 'umedia-context')
+   self.mixin('umedia-context')
    self.debug('entry_list window=', typeof window, self.opts)
 
    var opts = self.opts
@@ -86,16 +86,17 @@
    }
 
    function load(append) {
-     debug('load append=', append)
      var url = self.url.entry('') + '?' + $.param(getQuery(append))
-     $.getJSON(url, function(data) {
+     debug('load append=', append, 'url', url)
+
+     self.store.entry.get(url, Site.callback(data => {
        debug('loaded data', data && data.length)
        // update self.items in-place because it may be shared with parent tag like entry_detail
        if (!append) self.items.splice(0, self.items.length)
        self.items.push.apply(self.items, data.items)
        self.hasMore = (data.length >= self.query.count)
        self.update()
-     }).fail(self.failHandler)
+     }))
    }
 
    self.last = function() {
