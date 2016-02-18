@@ -1,7 +1,8 @@
 <umedia-entry>
   <div id="e{entry.id}" class="h-entry media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
     
-    <h1 if={ title } class="p-name">{ title }</h1>
+    <h1 if={ title && opts.detail } class="p-name">{ title }</h1>
+    <h2 if={ title && !opts.detail } class="p-name">{ title }</h2>
 
     <div class="media-left">
       <a href={ url.user(entry.owner) }>
