@@ -24,20 +24,18 @@
 
   <script type="es6">
    var self = this
-   this.mixin('coect-context', 'umedia-context')
+   this.mixin('umedia-context')
 
    self.reload = function() {
-     $.getJSON(self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id), function(data) {
+     var url = self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id)
+     self.store.channel.get(url, Site.callback(data => {
        self.items = data.items
        self.update()
-     })
+     }))
    }
 
    self.remove = function(e) {
-     self.sendJson('DELETE', self.url.channel(e.item.id), {})
-      .done(function() {
-       self.reload() 
-     })
+     self.store.channel.del(self.url.channel(e.item.id), Site.callback(self.reload))
    }
 
    self.reload()
