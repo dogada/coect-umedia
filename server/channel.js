@@ -53,8 +53,9 @@ function validate(req, channel, done) {
 }
 
 function create(req, res) {
-  debug('create', req.body)
-  var userAccess = req.security.getUserAccess(req.user)
+  var userAccess = req.security.getUserAccess(req.user, null, {all: true})
+  debug('create', req.body, req.user, userAccess)
+
   var owner = req.user
   var flow = tflow([
     function() {

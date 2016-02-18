@@ -28,7 +28,7 @@
 
   <script>
    var self = this
-   this.mixin('coect-context', 'umedia-context')
+   this.mixin('umedia-context')
    debug('channel editor', self.opts)
 
    self.cancel = function(e) {
@@ -39,16 +39,11 @@
    self.save = function(e) {
      debug('save name', self.cname, self)
      e.preventDefault()
-     self.poutJson(
-       self.url.channel(), {
-         id: self.opts.id,
-         name: self.name.value,
-         text: self.text.value
-       }
-     ).done(function(obj) {
-       console.log('done', obj)
-       Site.page(self.url.channel(obj))
-     })
+     self.store.channel.save(self.url.channel(), {
+       id: self.opts.id,
+       name: self.name.value,
+       text: self.text.value
+     }, Site.callback(data => Site.page(self.url.channel(data))))
    }
 
    self.load = function(id) {
