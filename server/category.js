@@ -29,7 +29,7 @@ exports.detail = function (req, res, next) {
     (opts, channel, entries) => Entity.fillUsers(channel ? entries.concat(channel) : entries,
                                                  req.app.userCache, flow.send(opts, channel, entries)),
     (opts, channel, entries) => flow.next({
-      content: {tag: 'coect-category-detail', opts: {items: entries, category: opts.tag, channel}}, 
+      content: {tag: 'coect-category-detail', opts: {items: entries, category: opts.tag, channel}},
       title:  (channel ? channel.name + ' / ' + opts.tag : opts.tag),
       //canonicalUrl: req.coect.urls.user(user)
     })

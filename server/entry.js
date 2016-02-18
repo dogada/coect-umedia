@@ -305,7 +305,7 @@ function list(req, res) {
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {
-      for (let param of ['cursor', 'offset', 'count']) opts[param] = req.query[param]
+      for (let param of ['cursor', 'offset', 'count', 'order']) opts[param] = req.query[param]
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },

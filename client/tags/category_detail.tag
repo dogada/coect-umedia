@@ -13,7 +13,7 @@
 
    self.items = self.opts.items || []
 
-   self.breadcrumbs = [{name: opts.category}]
+   self.breadcrumbs = [{name: '#' + opts.category}]
    if (channel) self.breadcrumbs.splice(
      0, 0,
      {name: channel.owner.name, url: self.url.user(channel.owner)},

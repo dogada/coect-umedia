@@ -1,7 +1,7 @@
 <umedia-entry-list>
   <div if={ items.length } class="umedia-entry-list h-feed">
     
-    <div if={ ancestor } class="umedia-entries-header clearfix">
+    <div if={ ancestor || category } class="umedia-entries-header clearfix">
       <ul class="nav nav-pills pull-right">
         <li role="presentation" class="{ query.order == 'last' ? 'active': ''}"><a onclick={ last }>Last</a></li>
         <li role="presentation" class="{ query.order == 'first' ? 'active': ''}"><a onclick={ first }>First</a></li>
@@ -106,9 +106,10 @@
    }
 
    self.commentsTitle = function() {
-     if (self.ancestor && self.ancestor.type != 'post') return 'Replies'
+     if (self.ancestor && ['comment', 'reply'].indexOf(self.ancestor.type) > -1) return 'Replies'
      else if (self.query.topic) return 'With replies'
-     else return 'Comments'
+     if (self.ancestor && self.ancestor.type == 'post') return 'Comments'
+     else return 'Entries'
    }
 
    self.commentsHint = function() {

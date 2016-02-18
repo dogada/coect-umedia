@@ -12,7 +12,7 @@
     <div if={ expanded } class="form-inline form-group clearfix">
       
       <div class="form-group pull-right">
-          <button disabled={ !text } type="submit" class="btn btn-success">Publish</button>
+          <button type="submit" class="btn btn-success">Publish</button>
           <button if={ !opts.thread } type="button" class="btn btn-danger"
                   onclick={ cancel }>Cancel</button>
       </div>
