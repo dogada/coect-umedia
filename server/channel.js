@@ -13,14 +13,17 @@ var Access = coect.Access
 
 var riot = require('riot')
 
+function data(req, res, done) {
+  debug('data xhr=', req.xhr, req.params)
+  var flow = tflow([
+    () => store.channel.withAccess(req, req.params, flow),
+  ], coect.json.response(res, done))
+}
+
 function detail(req, res, done) {
   debug('detail xhr=', req.xhr, req.params)
   var flow = tflow([
     () => store.channel.withAccess(req, req.params, flow),
-    (channel, access) => {
-      if (req.params.action) flow.complete(channel)
-      else flow.next(channel, access)
-    },
     (channel, access) => store.entry.list(req.user, access, {list: channel.id}, flow.join(channel)),
     (channel, entries) => store.channel.list(req, {owner: channel.owner}, flow.join(channel, entries)),
     (channel, entries, channels) => Entity.fillUsers([channel].concat(entries).concat(channels),
@@ -148,6 +151,7 @@ function permissions(req, res) {
 
 module.exports = {
   create,
+  data,
   detail,
   update,
   trash,

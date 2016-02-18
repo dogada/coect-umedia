@@ -52,13 +52,12 @@
    }
 
    self.load = function(id) {
-     $.getJSON(self.url.channel(id, 'edit'), function(data) {
+     self.store.channel.get(self.url.channel(id, 'data'), Site.callback(data => {
        self.name.value = data.name
        self.text.value = data.text
-       debug('loadeed', data, self.name.value)
+       debug('loaded channel', data, self.name.value)
        self.update()
-     }).fail(self.failHandler).complete(function() {
-     })
+     }))
    }
 
    if (self.opts.id) self.load(self.opts.id)
