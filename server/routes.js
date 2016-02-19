@@ -51,6 +51,9 @@ module.exports = function(r) {
   r.route('/e/:id/:action(accept|reject)')
     .post(loginRequired, entry.moderate)
 
+  r.route('/e/:id/data')
+    .get(entry.data)
+
   r.route('/c/')
     .get(channel.list)
     .post(adminRequired, channel.create)

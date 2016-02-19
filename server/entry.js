@@ -147,10 +147,15 @@ function entryWhere(req) {
 }
 
 
-function getEntryAndChannel(where, done) {
+function getEntryAndChannel(req, done) {
   let flow = tflow([
-    () => Entry.get(where, {select: '*'}, flow),
-    (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry))
+    () => Entry.get(entryWhere(req), {select: '*'}, flow),
+    (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry)),
+    (entry, channel) => {
+      if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
+      if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
+      flow.next(entry, channel)
+    }
   ], done)
 }
 
@@ -159,7 +164,7 @@ function update(req, res) {
   debug('update', req.body)
   var flow = tflow([
     function() {
-      getEntryAndChannel(entryWhere(req), flow)
+      getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       if (entry.type === 'post') this.next(entry, channel, channel)
@@ -199,7 +204,7 @@ function moderate(req, res) {
   debug('moderate', req.params)
   var flow = tflow([
     function() {
-      getEntryAndChannel(entryWhere(req), flow)
+      getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       if (entry.parent === channel.id) flow.next(entry, channel, channel)
@@ -216,15 +221,21 @@ function moderate(req, res) {
   ], coect.json.response(res))
 }
 
+function data(req, res, done) {
+  debug('data xhr=', req.xhr, req.params)
+  var flow = tflow([
+    () => getEntryAndChannel(req, flow),
+    (entry, channel) => Entry.get(entry.id, flow) // FIX: do without reload
+  ], coect.json.response(res, done))
+}
+
 function detail(req, res, next) {
   debug('detail xhr=', req.xhr, req.path, req.params, req.query)
   var flow = tflow([
     function() {
-      getEntryAndChannel(entryWhere(req), flow)
+      getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
-      if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
-      if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
       //FIX remove sensitive fields without reloading
       Entry.get(entry.id, flow.join(channel))
     },
@@ -257,7 +268,9 @@ function detail(req, res, next) {
     res.render('index', {
       title: entry.name,
       canonicalUrl: entry.url,
-      content: riot.render('umedia-entry-details', {entry: entry})
+      content: riot.render('umedia-entry-details', {
+        entry: entry,
+        breadcrumbs: (req.query.breadcrumbs === 'off' ? [] : undefined)})
     })
     
   }))
@@ -269,7 +282,7 @@ function detail(req, res, next) {
 function trash(req, res) {
   debug('remove params', req.params)
   var flow = tflow([
-    () => getEntryAndChannel(entryWhere(req), flow),
+    () => getEntryAndChannel(req, flow),
     (entry, channel) => req.security.canTrashEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
     (entry) => Entry.update(entry.id, {access: Access.TRASH}, flow)
   ], coect.json.response(res))
@@ -281,7 +294,7 @@ function trash(req, res) {
 function purge(req, res) {
   debug('purge params', req.params)
   var flow = tflow([
-    () => getEntryAndChannel(entryWhere(req), flow),
+    () => getEntryAndChannel(req, flow),
     (entry, channel) => req.security.canPurgeEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
     (entry) => Entry.remove(entry.id, flow)
   ], coect.json.response(res))
@@ -317,6 +330,7 @@ function list(req, res) {
 
 module.exports = {
   create,
+  data,
   detail,
   update,
   trash,

@@ -28,7 +28,7 @@ exports.details = function(ctx) {
 
 exports.edit = function(ctx) {
   var flow = tflow([
-    () => store.entry.get(Site.umedia.url.entry(ctx.params.id), flow),
+    () => store.entry.get(Site.umedia.url.entry(ctx.params.id, 'data'), flow),
     (entry) => {
       if (!Site.umedia.canChangeEntry(entry)) return flow.fail('No permissions for editing the entry.')
       Site.mountTag('umedia-entry-editor', {entry: entry}, {title: 'Entry editor'})

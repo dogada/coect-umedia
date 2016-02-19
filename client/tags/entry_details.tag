@@ -1,6 +1,6 @@
 <umedia-entry-details>
   <div class="umedia-entry-details">
-    <coect-breadcrumbs items={ breadcrumbs } />
+    <coect-breadcrumbs if={ breadcrumbs.length } items={ breadcrumbs } />
 
     <umedia-entry entry={ entry } detail="1"></umedia-entry>
 
@@ -21,17 +21,17 @@
   </div>
   
 <script>
-  var self = this
-  self.mixin('umedia-context')
-  var entry = self.entry = self.opts.entry
-  self.permissions = opts.permissions || {}
-  self.items = []
-  self.breadcrumbs = [
-    {name: entry.list.owner.name, url: self.url.user(entry.list.owner)},
-    {name: entry.list.name, url: self.url.channel(entry.list)},
-  ]
-  if (entry.topic) self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
-  </script>
+ var self = this
+ self.mixin('umedia-context')
+ var entry = self.entry = self.opts.entry
+ self.permissions = opts.permissions || {}
+ self.items = []
+ self.breadcrumbs = opts.breadcrumbs || [
+   {name: entry.list.owner.name, url: self.url.user(entry.list.owner)},
+   {name: entry.list.name, url: self.url.channel(entry.list)},
+ ]
+ if (entry.topic) self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
+</script>
 
   
 </umedia-entry-details>
