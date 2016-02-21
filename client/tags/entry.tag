@@ -42,7 +42,7 @@
 
         </span>
       </div>
-      <div class={'e-content': 1, 'p-name': !title}>
+      <div class="e-content">
         <umedia-wpml doc={ doc }></umedia-wpml>
       </div>
       <div class="umedia-actions">

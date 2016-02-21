@@ -1,5 +1,5 @@
 var crypto = require('crypto')
-var debug = require('debug')('webmention')
+var debug = require('debug')('umedia:webmention')
 var tflow = require('tflow')
 var Url = require('url')
 var coect = require('coect')
