@@ -90,7 +90,7 @@ Entity.validate = function(data, opts, done) {
 
   tflow([
     function() {
-      wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength || 50}, this)
+      wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength}, this)
     },
     function(doc) {
       var combined = Object.assign({name: doc.name}, doc.meta, {tags: doc.tags}, data)

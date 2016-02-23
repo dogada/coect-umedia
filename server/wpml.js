@@ -1,3 +1,5 @@
+'use strict';
+
 var debug = require('debug')('umedia:wpml')
 
 var wpml = require('wpml')
@@ -8,8 +10,7 @@ function nodeText(node) {
   return (node && node.value)
 }
 
-function nameFromContent(content, limit) {
-  var first = content[0]
+function nameFromContent(content) {
   for (var i = 0, node; (node = content[i++]); ) {
     if (!node.name || /^(name|p|h\d)$/.test(node.name)) return nodeText(node)
   }
@@ -21,11 +22,24 @@ function parseTags(meta) {
   return Array.from(new Set(tags))
 }
 
+function truncate(str, maxLen, minLen) {
+  var res = str.trim().slice(0, maxLen), lastSpace = res.lastIndexOf(' ')
+  for (let sep of ['.', '?', '!', ';', ',', ' ']) {
+    let i = res.lastIndexOf(sep)
+    if (i > (minLen || maxLen/3)) {
+      res = res.slice(0, i)
+      break
+    }
+  }
+  return res.trim()
+}
+
+
 exports.parse = function(text, opts, done) {
   var parsed = wpml.parse(text)
   var meta = parsed.attrs
   var content = parsed.value
-  var name = meta.name || (meta.title || nameFromContent(content) || '').slice(0, opts.maxNameLength || 50)
+  var name = meta.name || truncate(meta.title || nameFromContent(content) || '', opts.maxNameLength || 70)
 
   debug('content', content.length, name)
   done(null, {
