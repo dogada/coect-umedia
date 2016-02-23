@@ -1,9 +1,8 @@
 'use strict';
 
 var debug = require('debug')('umedia:helpers')
-var moment = require('moment')
-
+var coect = require('coect')
 
 exports.getAge = function(date) {
-  return (date ? moment(date || 0).fromNow() : '')
+  return (date ? coect.dateDiff(date) : '')
 }

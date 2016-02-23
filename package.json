@@ -41,7 +41,6 @@
     "escape-html": "~1.0.3",
     "html-tag": "~0.2.1",
     "linkify-it": "~1.2.0",
-    "moment": "~2.10.6",
     "object-apply": "~1.0.1",
     "object-assign": "~4.0.1",
     "tflow": "^0.4.1"

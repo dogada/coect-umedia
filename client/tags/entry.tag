@@ -17,13 +17,10 @@
         <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         <span class="umedia-meta small">
-          <span if={ entry.type == 'post'}>
-            <a href={ url.channel(entry.list) }>wrote</a>
-          </span>
           <span if={ action }>
-            <a href={ url.entry(entry.parent) }>{ action }</a>
+           · <a href={ url.entry(entry.parent) }>{ action }</a>
           </span>
-
+           · 
           <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr }</time>
           </a>
