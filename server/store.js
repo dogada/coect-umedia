@@ -52,7 +52,7 @@ function listWhere(opts, done) {
   var flow = tflow([
     function() {
       //list_url
-      var where = firstItem(opts, ['topic', 'thread', 'list', 'owner'])
+      var where = firstItem(opts, ['topic', 'thread', 'list', 'owner', 'type'])
       // FIX: switch to timeline
       if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       
@@ -94,14 +94,19 @@ class EntryStore extends Store {
 }
 
 class ChannelStore extends Store {
+
   list(req, opts, done) {
     debug('channel.list', opts)
-    tflow([
+    var flow = tflow([
       function() {
         var q = Channel.table(opts.owner)
           .select(Channel.listFields)
           .where('model', 'channel')
         if (opts.owner) q = q.where({owner: opts.owner})
+        if (opts.type) {
+          if (!req.user || !req.user.isAdmin()) return flow.fail(400, 'Admin required')
+          q = q.where({type: opts.type})
+        }
         var access = req.security.getUserAccess(req.user)
         // show trashed items by default (use ?all=1 to show them like in ls -a)
         if (!opts.all) access = Math.max(access, Access.TRASH + 1)

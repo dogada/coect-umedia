@@ -160,4 +160,11 @@ Entity.applyAccess = function(data, userAccess, maxAccess, defaultAccess, done) 
   done(null, data)
 }
 
+Entity.stat = function(done) {
+  this.table()
+    .select('model', 'type', this.raw('COUNT(*) AS count'), this.raw('MAX(created) AS last_created'))
+    .groupBy('model', 'type').orderByRaw('model, last_created DESC')
+    .asCallback(done)
+}
+
 module.exports = Entity
