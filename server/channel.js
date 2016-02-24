@@ -72,7 +72,8 @@ function create(req, res) {
         url: Channel.makeUrl(req.user.username, data.slug),
         owner: owner.id,
         access: data.access,
-        data: Object.assign({}, {access: data.accessData})
+        data: Object.assign({}, {access: data.accessData}),
+        meta: doc.meta
       }, owner.id, this)
     },
     function(id) {
@@ -98,6 +99,7 @@ function update(req, res) {
       var update = _.pick(data, 'name', 'text', 'access')
       if (!channel.url) update.url = Channel.makeUrl(req.user.username, data.slug)
       update.data = Object.assign(channel.data, {access: data.accessData})
+      update.meta = Object.assign(channel.meta || {}, doc.meta)
       debug('update', update)
       Channel.update(channel.id, _.omit(update, _.isUndefined), this)
     },

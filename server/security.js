@@ -121,15 +121,16 @@ class UmediaAccessPolicy extends Access {
     let desired = this.getDesiredAccess(entry, parent, channel)
     // never lift admin only access
     if (desired <= Access.ADMIN) return desired
+    var userAccess = this.getUserAccess(user, channel)
     // auto approve admins
-    if (this.getUserAccess(user, channel) <= Access.ADMIN) return desired
+    if (userAccess <= Access.ADMIN) return desired
     // moderate even member & moderator actions if member.data.premoderate
     if (user.data.premoderate) return Access.MODERATION
 
     // auto approve good users (FIX: check also user status in channel)
     if (user.data.postmoderate) return desired
     // auto approve members and moderators without 'premoderate' status
-    if (this.getUserAccess(user, channel) <= Access.VIP) return desired
+    if (userAccess <= Access.VIP) return desired
     // auto approve all in postmoderate channels
     if (channel.data.postmoderate || this.opts.postmoderate) return desired
     // by default use guest access

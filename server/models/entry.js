@@ -23,7 +23,7 @@ Entry.REPLY = 'reply'
 Entry.WEBMENTION = 'webmention'
 
 Entry.listFields = ['id', 'type', 'owner', 'name', 'text', 'url', 'access', 'count', 'child_count', 'created', 'list', 'parent', 'recipient', 'link', 'tags']
-Entry.detailFields = Entry.listFields.concat(['version', 'model', 'topic', 'thread'])
+Entry.detailFields = Entry.listFields.concat(['version', 'model', 'topic', 'thread', 'meta'])
 
 Entry.postSchema = Object.assign({}, Entity.schema, {
   text: {

@@ -225,7 +225,7 @@ function data(req, res, done) {
   debug('data xhr=', req.xhr, req.params)
   var flow = tflow([
     () => getEntryAndChannel(req, flow),
-    (entry, channel) => Entry.get(entry.id, flow) // FIX: do without reload
+    (entry, channel) => flow.next(Entry.pick(entry))
   ], coect.json.response(res, done))
 }
 
@@ -236,17 +236,16 @@ function detail(req, res, next) {
       getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
-      //FIX remove sensitive fields without reloading
-      Entry.get(entry.id, flow.join(channel))
-    },
-    function(channel, entry) {
-      var ids = Array.from(new Set([entry.parent, entry.thread, entry.topic, entry.list])).filter(v => v)
+      entry = Entry.pick(entry)
+      channel = Channel.pick(channel)
+      var related = Array.from(new Set([entry.thread, entry.topic])).filter(v => v)
+      if (entry.parent && entry.parent !== channel.id) related.push(entry.parent)
       var fields = Entry.listFields.filter(v => (v !== 'text'))
-      debug('ids', ids)
-      Entry.table().select(fields).whereIn('id', ids).asCallback(flow.join(entry, channel))
+      debug('related ids', related)
+      Entry.table().select(fields).whereIn('id', related).asCallback(flow.join(entry, channel))
     },
     function(entry, channel, related) {
-      Entity.fillUsers(related.concat(entry), req.app.userCache, flow.join(entry, channel))
+      Entity.fillUsers(related.concat(entry, channel), req.app.userCache, flow.join(entry, channel))
     },
     function(entry, channel, related) {
       debug(`related.length=${related.length}`)
@@ -261,6 +260,8 @@ function detail(req, res, next) {
         //     !req.security.canUserView(req.user, relatedObj, channel)) return flow.fail(403, 'Forbidden')
         if (fieldValue) entry[field] =  relatedObj || {id: fieldValue}
       }
+      entry.list = channel
+      if (entry.parent && entry.parent.id === channel.id) entry.parent = channel
       flow.next(entry)
     }
   ], coect.janus(req, res, next, function(entry) {

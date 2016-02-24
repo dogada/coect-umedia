@@ -36,8 +36,8 @@ class Channel extends Entity {
 Channel.MODEL = 'channel'
 Channel.TYPE = 'channel'
 Channel.MENTIONS = 'mentions'
-Channel.listFields = ['id', 'type', 'name', 'owner', 'url', 'access', 'version']
-Channel.detailFields = Channel.listFields.concat(['model', 'text', 'child_count'])
+Channel.listFields = ['id', 'type', 'name', 'owner', 'url', 'access', 'version', 'meta']
+Channel.detailFields = Channel.listFields.concat(['model', 'text', 'child_count', 'meta'])
 
 
 Channel.schema = Object.assign({}, Entity.schema, {
