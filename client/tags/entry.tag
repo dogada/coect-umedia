@@ -130,12 +130,14 @@
      self.debug('moderate access=', self.entry.access, 'alt=', e.altKey,
                 'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'shift=', e.shiftKey, 'name=', self.entry.name)
      self.store.entry.moderate(self.entry, e.ctrlKey, Site.callback(
-       data => self.update({entry: $.extend(self.entry, data)})
+       function(data) {
+         self.update({entry: $.extend(self.entry, data)})
+       }
      ))
    }
    
    self.broadcast = function(e) {
-     self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(data => {
+     self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
        self.coect.object.assign(self.entry.meta, data.meta)
        Site.flash(JSON.stringify(data.results))
