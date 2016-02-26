@@ -4,5 +4,5 @@ var debug = require('debug')('umedia:helpers')
 var coect = require('coect')
 
 exports.getAge = function(date) {
-  return (date ? coect.dateDiff(date) : '')
+  return (date ? coect.date.diff(date) : '')
 }
