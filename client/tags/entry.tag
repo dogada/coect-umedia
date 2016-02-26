@@ -39,9 +39,11 @@
 
         </span>
       </div>
+    
       <div class="e-content">
         <umedia-wpml doc={ doc }></umedia-wpml>
       </div>
+
       <div class="umedia-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
        <span if={ webmention }>·
@@ -51,12 +53,22 @@
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
        </span>
 
+       <span if={ canBroadcast }>·
+         <a onclick={ broadcast }>Broadcast</a>
+       </span>
+
+       <a if={ meta.facebook_url } href={ meta.facebook_url }>fb</a>
+       <a if={ meta.twitter_url } href={ meta.twitter_url }>twi</a>
+
        <ul if={ entry.tags } class="coect-tags pull-right list-inline">
          <li each={ t, i in entry.tags }>
            <a href="{ url.category(t) }" class="p-category label label-default">{ t }</a>
          </li>
        </ul>
       </div>
+
+      <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
+
     </div>
   </div>
 
@@ -66,6 +78,25 @@
 
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
+   self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   self.meta = self.coect.object.assign(
+     {}, self.entry.list && self.entry.list.meta || {}, self.entry.meta || {})
+   debug('entry meta', self.entry.name, self.meta)
+   debug('bridgy', self.coect.bool(self.meta.bridy))
+   self.webmention = self.entry.link && self.entry.link.webmention
+   self.doc = self.wpml.doc(self.entry.text || '')
+   self.title = self.doc.meta.title
+   
+   self.actionName = function(type, webmType) {
+     //self.debug('actionName', type, webmType)
+     if (webmType === 'reply') return 'replied'
+     else if (type === 'like' || webmType === 'like') return 'liked'
+     else if (type === 'repost' || webmType === 'repost') return 'reposted'
+     else if (webmType === 'bookmark') return 'bookmarked'
+     return ''
+   }
+
+   self.action = self.actionName(self.entry.type, self.webmention && self.webmention.type)
 
 
    self.isRestricted = function(entry) {
@@ -92,33 +123,23 @@
      //+ ' (' + (entry.child_count || 0) + ')'
    }
 
-   self.actionName = function(type, webmType) {
-     //self.debug('actionName', type, webmType)
-     if (type === 'comment') return 'commented'
-     else if (type === 'reply' || webmType === 'reply') return 'replied'
-     else if (type === 'like' || webmType === 'like') return 'liked'
-     else if (type === 'repost' || webmType === 'repost') return 'reposted'
-     else if (webmType === 'bookmark') return 'bookmarked'
-
-     return ''
-   }
-
    self.moderate = function(e) {
      if (!Site.umedia.canModerateEntry(e)) return
      if (!(e.ctrlKey || e.altKey || e.metaKey || e.shiftKey)) return //ignore normal click
      self.debug('moderate access=', self.entry.access, 'alt=', e.altKey,
                 'meta=', e.metaKey, 'ctrl=', e.ctrlKey, 'shift=', e.shiftKey, 'name=', self.entry.name)
-     self.store.entry.moderate(self.entry, e.ctrlKey, function (err, data) {
-       if (err) return Site.error(err)
-       self.update({entry: $.extend(self.entry, data)})
-     })
+     self.store.entry.moderate(self.entry, e.ctrlKey, Site.callback(
+       data => self.update({entry: $.extend(self.entry, data)})
+     ))
    }
    
-   self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
-   self.webmention = self.entry.link && self.entry.link.webmention
-   self.doc = self.wpml.doc(self.entry.text || '')
-   self.title = self.doc.meta.title
-   self.action = self.actionName(self.entry.type, self.webmention && self.webmention.type)
+   self.broadcast = function(e) {
+     self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(data => {
+       debug('broadcasted', data)
+       self.coect.object.assign(self.entry.meta, data.meta)
+       Site.flash(JSON.stringify(data.results))
+     }))
+   }
 
    if (self.entry.created) {
      // self.created is ISO string on client-side and Date on server-side
@@ -127,8 +148,11 @@
      self.createdISOStr = d.toISOString()
      self.createdAgeStr = self.getAge(d) //getAge is from mixin
    }
-   self.canChange = (typeof Site !== 'undefined' && Site.umedia.canChangeEntry(self.entry))
-   
+
+   if (typeof window !== 'undefined') {
+     self.canChange = Site.umedia.canChangeEntry(self.entry)
+     self.canBroadcast = Site.umedia.canBroadcast(self.entry)
+   }
   </script>
 
   <style scoped>

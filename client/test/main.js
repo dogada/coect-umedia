@@ -25,5 +25,6 @@ require('../../build/tags/profile.js')
 require('../../build/tags/breadcrumbs.js')
 
 require('../../build/tags/category_detail.js')
+require('../../build/tags/bridgy_config.js')
 
 require('./index')  //include all tests

@@ -11,6 +11,7 @@ var coect = require('coect')
 exports.init = function(opts) {
   debug('umedia init', opts)
   riot.mixin('umedia-context', coect.object.assign(require('./helpers'), opts, {
-    wpml: opts.wpml || require('./wpml')
+    wpml: opts.wpml || require('./wpml'),
+    coect
   }))
 }

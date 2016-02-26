@@ -16,7 +16,6 @@ var Access = coect.Access
 var store = require('./store')
 var riot = require('riot')
 
-
 /**
    Load list and parent and check that they match each other.
 */
@@ -92,6 +91,7 @@ function saveNewEntry(req, parent, list, form, done) {
     tags: getTags(form, type),
     text: form.text,
     data: data,
+    meta: form.meta,
     // custom urls are allowed for posts only
     url: (type === 'post' ? Entry.makeUrl(list.url, form.slug) : null),
     owner: req.user.id,
@@ -159,7 +159,6 @@ function getEntryAndChannel(req, done) {
   ], done)
 }
 
-
 function update(req, res) {
   debug('update', req.body)
   var flow = tflow([
@@ -185,6 +184,7 @@ function update(req, res) {
         access: form.access,
         tags: getTags(form, entry.type),
         data: entryData,
+        meta: Object.assign(entry.meta || {}, form.meta),
         url: entry.url || entry.type === 'post' && Entry.makeUrl(list.url, form.slug) || undefined,
         version: Entry.makeVersion()
       }, _.isUndefined), this)
@@ -220,6 +220,7 @@ function moderate(req, res) {
     }
   ], coect.json.response(res))
 }
+
 
 function data(req, res, done) {
   debug('data xhr=', req.xhr, req.params)
@@ -338,5 +339,6 @@ module.exports = {
   trash,
   purge,
   list,
-  moderate
+  moderate,
+  getEntryAndChannel
 }

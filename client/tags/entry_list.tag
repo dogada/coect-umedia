@@ -46,7 +46,7 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-   self.debug('entry_list window=', typeof window, self.opts)
+   self.debug('entry_list window=', typeof window)
 
    var opts = self.opts
    self.ancestor = opts.ancestor

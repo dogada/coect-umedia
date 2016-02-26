@@ -93,7 +93,8 @@ Entity.validate = function(data, opts, done) {
       wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength}, this)
     },
     function(doc) {
-      var combined = Object.assign({name: doc.name}, doc.meta, {tags: doc.tags}, data)
+      var combined = Object.assign({name: doc.name}, doc.meta,
+                                   {tags: doc.tags, meta: doc.meta}, data)
       //debug('validate', opts.schema)
       Model.validate(combined, opts.schema || Klass.schema, this.join(doc))
     }

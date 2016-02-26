@@ -190,6 +190,12 @@ class UmediaAccessPolicy extends Access {
     return false
   }
 
+  canUserBroadcast(user, entry, channel) {
+    if (!user) return false
+    if (channel.owner === user.id || user.isAdmin()) return true
+    return false
+  }
+
   
 }
 

@@ -8,6 +8,7 @@ var channel = require('./channel')
 var user = require('./user')
 var category = require('./category')
 var webmention = require('./webmention')
+var broadcast = require('./broadcast')
 
 function loginRequired(req, res, next) {
   debug('loginRequired', req.isAuthenticated())
@@ -50,6 +51,9 @@ module.exports = function(r) {
 
   r.route('/e/:id/:action(accept|reject)')
     .post(loginRequired, entry.moderate)
+
+  r.route('/e/:id/broadcast')
+    .post(loginRequired, broadcast.broadcast)
 
   r.route('/e/:id/data')
     .get(entry.data)
