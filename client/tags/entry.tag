@@ -49,16 +49,17 @@
        <span if={ webmention }>·
          <a class="u-syndication" rel="syndication" href={ webmention.url }>Source</a>
        </span>
-       <span if={ canChange }>·
+       <a if={ meta.facebook_url } class="u-syndication" href={ meta.facebook_url }>fb</a>
+       <a if={ meta.twitter_url } class="u-syndication" href={ meta.twitter_url }>t</a>
+
+       <span if={ canChange }>
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
        </span>
 
-       <span if={ canBroadcast }>·
+       <span if={ canBroadcast }>
          <a onclick={ broadcast }>Broadcast</a>
        </span>
 
-       <a if={ meta.facebook_url } href={ meta.facebook_url }>fb</a>
-       <a if={ meta.twitter_url } href={ meta.twitter_url }>twi</a>
 
        <ul if={ entry.tags } class="coect-tags pull-right list-inline">
          <li each={ t, i in entry.tags }>
