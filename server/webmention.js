@@ -89,6 +89,7 @@ var getMentionParent = function(target, done) {
 }
 
 var mentionHash = function(parent, sourceUrl) {
+  debug('mentionHash', parent.owner, sourceUrl)
   var hash = crypto.createHash('sha256')
   hash.update(sourceUrl)
   return `!${parent.owner}/${hash.digest('hex')}`
@@ -98,6 +99,7 @@ var mentionHash = function(parent, sourceUrl) {
 var saveMention = function(parent, form, done) {
   debug('save', form, parent)
   var url = mentionHash(parent, form.link.webmention.url)
+  debug('url', url)
   var flow = tflow([
     () => Entry.findOne({url: url, list: parent.list || parent.id}, flow),
     (entry) => {
@@ -120,21 +122,36 @@ var saveMention = function(parent, form, done) {
   ], done)
 }
 
+function webmentionType(wm) {
+  if (wm.activity && wm.activity.type) return wm.activity.type
+  else if (wm['like-of']) return 'like'
+  else if (wm['in-reply-to']) return 'reply'
+  else if (wm['repost-of']) return 'repost'
+  else if (wm['bookmark-of']) return 'bookmark'
+  else if (wm.rsvp) return 'rsvp'
+  else return 'link'
+}
+
+function webmentionName(type, data) {
+  if (data.author && data.author.name) return `webmention ${type} by ${data.author.name}`
+  else return `webmention ${type}`
+}
+
 function webmentionText(type, data) {
-  switch (type) {
-  case 'like':
-    return ''
-  default: 
-    return data.name
-  }
+  return (type === 'reply' && data.name || '')
 }
 
 var validate = function(wm, done) {
+  // webhook received data in wm.post, but webmention API uses wm.activity 
+  // see examples of actual JSON at
+  // https://webmention.io/dashboard and
+  // http://webmention.io/api/mentions?target=http://indiewebcamp.com
+  // only id, source and target are mandatory, rest of fields are optional
+  var type = webmentionType(wm)
+  debug('type', type)
   var data = wm.data || wm.post
-  var type = wm.activity && wm.activity.type || data.type
-
   Entry.validate({
-    name: `webmention ${type} by ${data.author.name}`,
+    name: webmentionName(type, data),
     text: webmentionText(type, data),
     link: {
       webmention: {

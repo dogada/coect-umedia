@@ -29,7 +29,7 @@ function broadcastTargets(meta) {
 }
 
 function mergeMeta(entry, channel) {
-  return Object.assign(channel.meta, entry.meta)
+  return Object.assign(channel.meta || {}, entry.meta || {})
 }
 
 function sendWebmention(endpoint, source, target, done) {

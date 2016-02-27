@@ -94,11 +94,12 @@
      else if (type === 'like' || webmType === 'like') return 'liked'
      else if (type === 'repost' || webmType === 'repost') return 'reposted'
      else if (webmType === 'bookmark') return 'bookmarked'
+     else if (webmType === 'rsvp') return 'rsvp'
+     else if (webmType === 'link') return 'mentioned'
      return ''
    }
 
    self.action = self.actionName(self.entry.type, self.webmention && self.webmention.type)
-
 
    self.isRestricted = function(entry) {
      if ([Access.MODERATION, Access.REJECTED,
