@@ -15,8 +15,10 @@ exports.detail = function(req, res, next) {
       else req.coect.User.get({username: p.username}, flow)
     },
     (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
-    (user, channels) => flow.next({
-      content: {tag: 'umedia-profile', opts: {user}}, 
+    (user, channels) => store.entry.list(req, req.security.getUserAccess(req.user),
+                                         {owner: user.id, model: 'entry'}, flow.join(user, channels)),
+    (user, channels, entries) => flow.next({
+      content: {tag: 'umedia-profile', opts: {user, entries}}, 
       sidebar: {tag: 'coect-channel-feed', opts: {items: channels}},
       title:  user.name || user.username || '',
       canonicalUrl: req.coect.urls.user(user)

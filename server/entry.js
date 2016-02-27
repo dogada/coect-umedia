@@ -315,7 +315,7 @@ function list(req, res) {
       else if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag && c/:id
       else if (req.query.list) flow.next({list: req.query.list, tag: req.query.tag})
       else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
-      else if (req.query.owner) flow.next({owner: req.query.owner})
+      else if (req.query.owner) flow.next({owner: req.query.owner, model: 'entry'})
       else if (req.query.tag) flow.next({tag: req.query.tag})
       else if (req.query.type && req.user && req.user.isAdmin()) flow.next({type: req.query.type})
       else flow.fail(400, 'Unknown query')

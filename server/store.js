@@ -14,7 +14,7 @@ const MAX_PAGE_SIZE = 20
 const PAGE_SIZE = 10
 
 function pageSize(opts) {
-  return Math.min(MAX_PAGE_SIZE, PAGE_SIZE || parseInt(opts.count, 10))
+  return Math.min(MAX_PAGE_SIZE, parseInt(opts.count, 10) || PAGE_SIZE)
 }
 
 class Store {
@@ -57,8 +57,8 @@ function listWhere(opts, done) {
       if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       
       // show top-level entries (posts) only
-      if ((where.owner || where.list) && !opts.tag) where.topic = null
-
+      if ((where.owner || where.list) && !opts.tag && !opts.model) where.topic = null
+      if (opts.model) where.model = opts.model
       this.next(where, opts.tag)
     }
   ], done)
@@ -67,7 +67,7 @@ function listWhere(opts, done) {
 class EntryStore extends Store {
 
   list(user, access, opts, done) {
-    debug('ES.list', access, opts)
+    debug('ES.list access=', access, opts)
     var flow = tflow([
       () => listWhere(opts, flow),
       function(where, tag) {
@@ -77,6 +77,7 @@ class EntryStore extends Store {
         q = q.select(Entry.listFields)
         q = q.where(where)
         if (tag) q = q.andWhere('tags', '@>', JSON.stringify([tag]))
+        if (where.model) q = q.andWhere('type', '<>', 'webmention')
         // if user isn't a root in a channel filter by access
         if (access > Access.ROOT) q = filterByAccess(q, user, access)
         if (opts.cursor) {
@@ -85,7 +86,7 @@ class EntryStore extends Store {
         }
         q = q.orderBy.apply(q, listOrder(opts.order))
         if (opts.offset) q = q.offset(parseInt(opts.offset, 10))
-        q = q.limit(Math.min(MAX_PAGE_SIZE, parseInt(opts.count, 10)))
+        q = q.limit(pageSize(opts))
         debug('list SQL', q.toString().slice(-130))
         q.asCallback(flow)
       }
