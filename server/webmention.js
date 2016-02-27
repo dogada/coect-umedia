@@ -25,7 +25,7 @@ function makeParsers() {
   var user = config.urls.user
   return {
     username: re(user({url: slug('username')})),
-    entryId: re(entry(':id')),
+    entryId: re(entry('([a-zA-Z1-9]{10,})')),
     entryUrl: re(entry({
       url: slug('username') + slug('cslug') + slug('eslug')
     }))
@@ -122,13 +122,12 @@ var saveMention = function(parent, form, done) {
   ], done)
 }
 
-function webmentionType(wm) {
-  if (wm.activity && wm.activity.type) return wm.activity.type
-  else if (wm['like-of']) return 'like'
-  else if (wm['in-reply-to']) return 'reply'
-  else if (wm['repost-of']) return 'repost'
-  else if (wm['bookmark-of']) return 'bookmark'
-  else if (wm.rsvp) return 'rsvp'
+function webmentionType(post) {
+  if (post['like-of']) return 'like'
+  else if (post['in-reply-to']) return 'reply'
+  else if (post['repost-of']) return 'repost'
+  else if (post['bookmark-of']) return 'bookmark'
+  else if (post.rsvp) return 'rsvp'
   else return 'link'
 }
 
@@ -147,20 +146,20 @@ var validate = function(wm, done) {
   // https://webmention.io/dashboard and
   // http://webmention.io/api/mentions?target=http://indiewebcamp.com
   // only id, source and target are mandatory, rest of fields are optional
-  var type = webmentionType(wm)
-  debug('type', type)
+  var type = wm.activity && wm.activity.type || webmentionType(wm.post)
   var data = wm.data || wm.post
+  debug('validate type', type, data)
   Entry.validate({
     name: webmentionName(type, data),
     text: webmentionText(type, data),
     link: {
       webmention: {
-        id: wm.id,
+        id: wm.id, // undefined for web hook's data
         type: type,
         url: data.url,
         source: wm.source,
         target: wm.target,
-        verified: wm.verified_date,
+        verified: wm.verified_date, // undefined for web hook's data
         published: data.published,
         author: data.author
       }
