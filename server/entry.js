@@ -12,7 +12,7 @@ var Entity = require('./models').Entity
 var Channel = require('./models').Channel
 var Entry = require('./models').Entry
 var Access = coect.Access
-
+var config = require('./config')
 var store = require('./store')
 var riot = require('riot')
 
@@ -38,22 +38,21 @@ function checkListParent(req, done) {
   ], done);
 }
 
-function parentMeta(parent) {
+function recipientMeta(parent, recipient) {
   var meta = {}
   var wm = parent.link && parent.link.webmention && parent.link.webmention
   if (wm) meta.reply_to = wm.url || wm.source
-  // for webmentions parent.owner = paret.link.webmention.author
-  if (parent.model === Entry.MODEL) meta.reply_to_name = parent.owner && parent.owner.name || undefined
-  debug('parentMeta', meta, parent.type, parent.owner)
+  if (parent.model === Entry.MODEL) meta.reply_to_name = recipient && recipient.name
+  debug('parentMeta', meta, parent.type, recipient)
   return meta
 }
 
-function validate(req, parent, channel, type, done) {
+function validate(req, parent, channel, type, meta, done) {
   debug(`validate type=${type}`, Entry.getTypeSchema(type))
   debug(`parent ${parent.model} ${parent.type} ${parent.id}`)
   var flow = tflow([
     function() {
-      Entry.validate(req.body, {schema: Entry.getTypeSchema(type), meta: parentMeta(parent)}, flow)
+      Entry.validate(req.body, {schema: Entry.getTypeSchema(type), meta: meta}, flow)
     },
     function(doc, data) {
       var userAccess = req.security.getUserAccess(req.user, channel)
@@ -74,10 +73,11 @@ function checkNewEntry(req, done) {
       if (parent.model === Channel.MODEL) return this.next(parent, parent)
       else return Channel.get(parent.list, {select: '*'}, this.join(parent))
     },
-    (parent, channel) => Entity.fillUsers([parent], req.app.userCache, flow.send(parent, channel)),
-    function(parent, channel) {
+    (parent, channel) => config.User.get(parent.owner, flow.join(parent, channel)),
+    function(parent, channel, recipient) {
       if (!req.security.canCreateEntry(req.user, parent, channel)) return this.fail(403, 'Not enough permissions to create')
-      validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment', this.join(parent, channel))
+      validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment',
+               recipientMeta(parent, recipient), this.join(parent, channel))
     },
   ], done)
 }
@@ -181,10 +181,10 @@ function update(req, res) {
       if (entry.type === 'post') this.next(entry, channel, channel)
       else Entry.get(entry.parent, this.join(entry, channel))
     },
-    (entry, channel, parent) => Entity.fillUsers([parent], req.app.userCache, flow.send(entry, channel, parent)),
-    function(entry, channel, parent) {
+    (entry, channel, parent) => config.User.get(parent.owner, flow.join(entry, channel, parent)),
+    function(entry, channel, parent, recipient) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
-      validate(req, parent, channel, entry.type, flow.join(entry, channel))
+      validate(req, parent, channel, entry.type, recipientMeta(parent, recipient), flow.join(entry, channel))
     },
     function(entry, list, doc, form) {
       debug('update form', form)

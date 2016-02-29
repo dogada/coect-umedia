@@ -91,7 +91,7 @@
    self.title = self.doc.meta.title
    self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
-   self.replyToUrl = self.meta_reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
+   self.replyToUrl = self.meta.reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
    debug('type', self.type, self.replyToUrl)
 
    self.actionName = function(type) {
@@ -106,6 +106,8 @@
    }
 
    self.action = self.actionName(self.type)
+   // post with external reply_to
+   if (self.replyToUrl && !self.action) self.action = 'in reply to'
    if (self.webmention && self.webmention.url) self.actionUrl = self.webmention.url
 
    self.isRestricted = function(entry) {
