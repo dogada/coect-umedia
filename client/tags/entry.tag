@@ -13,43 +13,40 @@
     </div>
 
     <div class="media-body">
-      <div>
+
+      <aside class="entry-meta">
         <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
-        <small class="umedia-meta">
-
-          <a if={ webmention && webmention.url && action } title="Webmention source"
-            href={ webmention.url } target="_blank">{ action }</a>
-          
-          <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
+        
+        <a if={ action && actionUrl } rel="nofollow" href={ actionUrl } target="_blank">{ action }</a>
+        <span if={ action && !actionUrl }>{ action }</span>
+        
+        <a if={ replyToUrl } href={ replyToUrl } 
+          class="u-in-reply-to">{ meta.reply_to_name || coect.util.truncateUrl(replyToUrl) }</a>
+        
+        <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr }</time>
-          </a>
-
-          <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to">
-            <span class="glyphicon glyphicon-share-alt"></span>
-            { replyToUrl }
-          </a>
-
-          <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
-                title="The entry is awaiting for moderation.">moderation</span>
-
-          <span if="{ entry.access == Access.REJECTED }" class="restricted"
-                title="The entry was rejected after moderation.">rejected</span>
-
-          <span if="{ entry.access == Access.HIDDEN }" class="restricted"
+        </a>
+        
+        <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
+              title="The entry is awaiting for moderation.">moderation</span>
+        
+        <span if="{ entry.access == Access.REJECTED }" class="restricted"
+              title="The entry was rejected after moderation.">rejected</span>
+        
+        <span if="{ entry.access == Access.HIDDEN }" class="restricted"
                 title="The entry is visible to owner and admins only.">hidden</span>
+        
+        <span if="{ isRestricted(entry) }" class="restricted"
+              title="Access to the entry is restricted (level: { entry.access }).">restricted</span>
 
-          <span if="{ isRestricted(entry) }" class="restricted"
-                title="Access to the entry is restricted (level: { entry.access }).">restricted</span>
-
-        </small>
-      </div>
+      </aside>
     
-      <div class="e-content">
+      <article class="e-content">
         <umedia-wpml doc={ doc }></umedia-wpml>
-      </div>
+      </article>
 
-      <div class="umedia-actions">
+      <aside class="entry-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
 
        <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
@@ -69,7 +66,7 @@
            <a href="{ url.category(t) }" class="p-category label label-default">{ t }</a>
          </li>
        </ul>
-      </div>
+      </aside>
 
       <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
 
@@ -84,29 +81,32 @@
    self.ancestor = self.opts.ancestor
    var entry = self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
    self.meta = self.coect.object.assign(
-     {}, self.entry.list && self.entry.list.meta || {}, self.entry.meta || {})
-   debug('entry meta', self.entry.name, self.meta)
-   self.webmention = self.entry.link && self.entry.link.webmention
-   var parentWebmention = entry.parent && entry.parent.link && entry.parent.link.webmention
-   self.replyToUrl = self.meta.reply_to || parentWebmention && parentWebmention.url
-   debug('bridgy', self.coect.bool(self.meta.bridy))
-   debug('replyToUrl', self.replyToUrl)
+     {}, entry.list && entry.list.meta || {}, entry.meta || {})
+   debug('entry meta', entry.name, self.meta)
+   self.webmention = entry.link && entry.link.webmention
 
-   self.doc = self.wpml.doc(self.entry.text || '')
+   debug('bridgy', self.coect.bool(self.meta.bridy))
+
+   self.doc = self.wpml.doc(entry.text || '')
    self.title = self.doc.meta.title
-   
-   self.actionName = function(type, webmType) {
+   self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
+
+   self.replyToUrl = self.meta_reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
+   debug('type', self.type, self.replyToUrl)
+
+   self.actionName = function(type) {
      //self.debug('actionName', type, webmType)
-     if (webmType === 'reply') return 'replied'
-     else if (type === 'like' || webmType === 'like') return 'liked'
-     else if (type === 'repost' || webmType === 'repost') return 'reposted'
-     else if (webmType === 'bookmark') return 'bookmarked'
-     else if (webmType === 'rsvp') return 'rsvp'
-     else if (webmType === 'link') return 'mentioned'
+     if (type === 'reply') return 'replied'
+     else if (type === 'like') return 'liked'
+     else if (type === 'repost') return 'reposted'
+     else if (type === 'bookmark') return 'bookmarked'
+     else if (type === 'rsvp') return 'rsvp'
+     else if (type === 'link') return 'mentioned'
      return ''
    }
 
-   self.action = self.actionName(self.entry.type, self.webmention && self.webmention.type)
+   self.action = self.actionName(self.type)
+   if (self.webmention && self.webmention.url) self.actionUrl = self.webmention.url
 
    self.isRestricted = function(entry) {
      if ([Access.MODERATION, Access.REJECTED,
