@@ -126,7 +126,7 @@ Entity.fillUsers = function(entries, cache, done) {
     function(users) {
       debug('found users', Object.keys(users))
       for (let e of entries) {
-        e.owner = (e.type === 'webmention' ? webmentionOwner(e.link.webmention.author) : users[e.owner]) || {id : e.owner}
+        e.owner = (e.type === 'webmention' ? webmentionOwner(e.link.webmention.author || {}) : users[e.owner]) || {id : e.owner}
       }
       this.next(entries)
     }
