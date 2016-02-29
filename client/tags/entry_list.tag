@@ -17,14 +17,15 @@
                   class="btn btn-xs btn-default{ active(query.order == 'top')}">Top</button>
         </li>
 
-        <li if={ ancestor && ancestor.type == 'post' }>
-          <button onclick={ toggleThreaded } type="button" 
-                  class="btn btn-xs btn-default{ active(query.thread) }">Threaded</button>
-        </li>
 
         <li if={ ancestor && ancestor.type == 'post' }>
           <button onclick={ toggleThreaded } type="button" 
                   class="btn btn-xs btn-default{ active(!query.thread) }">Flat</button>
+        </li>
+
+        <li if={ ancestor && ancestor.type == 'post' }>
+          <button onclick={ toggleThreaded } type="button" 
+                  class="btn btn-xs btn-default{ active(query.thread) }">Threaded</button>
         </li>
         
       </ul>
@@ -65,6 +66,10 @@
      return (entry.type == 'reply' ? entry.thread.id : entry.id)
    }
 
+   function getTopicId(entry) {
+     return entry.topic && entry.topic.id || entry.id
+   }
+
    function getCursor() {
      if (self.query.order === 'top') return {offset: self.items.length}
      else return {cursor: self.items[self.items.length - 1].id}
@@ -73,7 +78,7 @@
    function initQuery(query) {
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
-     else if (self.ancestor) query.thread = getThreadId(self.ancestor)
+     else if (self.ancestor) query.topic = getTopicId(self.ancestor)
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 
@@ -120,13 +125,13 @@
    }
 
    self.toggleThreaded = function() {
-     debug('toggle', self.query)
+     debug('toggleT', self.query)
      if (!self.query.thread) {
        delete self.query.topic
        self.query.thread = getThreadId(self.ancestor)
      } else {
        delete self.query.thread
-       self.query.topic = self.ancestor.topic && self.ancestor.topic.id || self.ancestor.id
+       self.query.topic = getTopicId(self.ancestor)
      }
      debug('after', self.query)
      load()
