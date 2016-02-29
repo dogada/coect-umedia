@@ -3,7 +3,7 @@
     <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
       <li each={ item, i in opts.items } class={active: !item.url}
           itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-        <a if={ item.url } href={ item.url } itemprop="item" class="h-breadcrumb">
+        <a if={ item.url } href={ item.url } itemprop="item" class="disabled-h-breadcrumb">
           <span itemprop="name">{ item.name }</span>
         </a>
         <strong if={ !item.url }>{ item.name }</strong>

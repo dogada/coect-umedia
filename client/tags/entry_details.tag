@@ -30,7 +30,9 @@
    {name: entry.list.owner.name, url: self.url.user(entry.list.owner)},
    {name: entry.list.name, url: self.url.channel(entry.list)},
  ]
- if (entry.topic) self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
+ if (entry.topic && self.breadcrumbs && self.breadcrumbs.length) {
+   self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
+ }
 </script>
 
   
