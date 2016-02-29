@@ -47,7 +47,7 @@
       </article>
 
       <aside class="entry-actions">
-       <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
+       <a if={ !opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
 
        <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
        <a if={ meta.twitter_url } class="u-syndication" rel="syndication" href={ meta.twitter_url }>t</a>
