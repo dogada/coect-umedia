@@ -34,9 +34,8 @@
    var self = this
    self.mixin('umedia-context')
    var {entry, ancestor, items} = self.opts
-   var webmention = ancestor && ancestor.link && ancestor.link.webmention
 
-   debug(`editor ancestor=${ancestor} entry=${entry}, webmention=${webmention}, items=${items}`)
+   debug(`editor ancestor=${ancestor} entry=${entry}, items=${items}`)
 
    function setText(text) {
      self.text = self.content.value = text
@@ -44,9 +43,6 @@
 
    self.expand = function(e) {
      self.content.style.height = '300px'
-     if (webmention) {
-       setText(`reply-to: ${webmention.url}\n\n`)
-     }
      self.expanded = true
    }
 

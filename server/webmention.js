@@ -148,7 +148,7 @@ var validate = function(wm, done) {
   // only id, source and target are mandatory, rest of fields are optional
   var type = wm.activity && wm.activity.type || webmentionType(wm.post)
   var data = wm.data || wm.post
-  debug('validate type', type, data)
+  debug('validate type', type)
   Entry.validate({
     name: webmentionName(type, data),
     text: webmentionText(type, data),
@@ -168,7 +168,7 @@ var validate = function(wm, done) {
 }
 
 exports.onReceive = function(wm, done) {
-  debug('onReceive', wm)
+  debug('onReceive', wm.source, wm)
   var flow = tflow([
     () => exports.getTarget(wm.target, flow),
     (target) => getMentionParent(target, flow),

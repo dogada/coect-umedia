@@ -16,13 +16,18 @@
       <div>
         <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
-        <span class="umedia-meta small">
-          <span if={ action }>
-           · <a href={ url.entry(entry.parent) }>{ action }</a>
-          </span>
-           · 
+        <small class="umedia-meta">
+
+          <a if={ webmention && webmention.url && action } title="Webmention source"
+            href={ webmention.url } target="_blank">{ action }</a>
+          
           <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr }</time>
+          </a>
+
+          <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to">
+            <span class="glyphicon glyphicon-share-alt"></span>
+            { replyToUrl }
           </a>
 
           <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
@@ -37,7 +42,7 @@
           <span if="{ isRestricted(entry) }" class="restricted"
                 title="Access to the entry is restricted (level: { entry.access }).">restricted</span>
 
-        </span>
+        </small>
       </div>
     
       <div class="e-content">
@@ -46,11 +51,9 @@
 
       <div class="umedia-actions">
        <a class={ active: opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
-       <span if={ webmention }>·
-         <a class="u-syndication" rel="syndication" href={ webmention.url }>Source</a>
-       </span>
-       <a if={ meta.facebook_url } class="u-syndication" href={ meta.facebook_url }>fb</a>
-       <a if={ meta.twitter_url } class="u-syndication" href={ meta.twitter_url }>t</a>
+
+       <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
+       <a if={ meta.twitter_url } class="u-syndication" rel="syndication" href={ meta.twitter_url }>t</a>
 
        <span if={ canChange }>
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
@@ -79,12 +82,16 @@
 
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
-   self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   var entry = self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
    self.meta = self.coect.object.assign(
      {}, self.entry.list && self.entry.list.meta || {}, self.entry.meta || {})
    debug('entry meta', self.entry.name, self.meta)
-   debug('bridgy', self.coect.bool(self.meta.bridy))
    self.webmention = self.entry.link && self.entry.link.webmention
+   var parentWebmention = entry.parent && entry.parent.link && entry.parent.link.webmention
+   self.replyToUrl = self.meta.reply_to || parentWebmention && parentWebmention.url
+   debug('bridgy', self.coect.bool(self.meta.bridy))
+   debug('replyToUrl', self.replyToUrl)
+
    self.doc = self.wpml.doc(self.entry.text || '')
    self.title = self.doc.meta.title
    
