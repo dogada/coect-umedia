@@ -56,12 +56,8 @@
      switch((entry || ancestor).type) {
        case 'channel': 
          return 'post'
-       case 'post':
-         return 'comment'
-       case 'comment':
-         return 'reply'
        default:
-         return 'text'
+         return 'reply'
      }
    }
 

@@ -3,6 +3,7 @@
 var debug = require('debug')('umedia:wpml')
 
 var wpml = require('wpml')
+var coect = require('coect')
 
 
 function nodeText(node) {
@@ -22,24 +23,12 @@ function parseTags(meta) {
   return Array.from(new Set(tags))
 }
 
-function truncate(str, maxLen, minLen) {
-  var res = str.trim().slice(0, maxLen), lastSpace = res.lastIndexOf(' ')
-  for (let sep of ['.', '?', '!', ';', ',', ' ']) {
-    let i = res.lastIndexOf(sep)
-    if (i > (minLen || maxLen/3)) {
-      res = res.slice(0, i)
-      break
-    }
-  }
-  return res.trim()
-}
-
 
 exports.parse = function(text, opts, done) {
   var parsed = wpml.parse(text)
   var meta = parsed.attrs
   var content = parsed.value
-  var name = meta.name || truncate(meta.title || nameFromContent(content) || '', opts.maxNameLength || 70)
+  var name = meta.name || coect.util.truncate(meta.title || nameFromContent(content) || '', opts.maxNameLength || 70)
 
   debug('content', content.length, name)
   done(null, {

@@ -57,13 +57,14 @@
      order: 'last', 
      count: parseInt(opts.count || 10)
    })
+   debug('initial query', self.query, 'items.length=', self.items.length)
 
    self.active = function(test) {
      return (test ? ' active' : '')
    }
 
    function getThreadId(entry) {
-     return (entry.type == 'reply' ? entry.thread.id : entry.id)
+     return (entry.thread && entry.thread.id !== entry.topic.id ? entry.thread.id : entry.id)
    }
 
    function getTopicId(entry) {
@@ -78,7 +79,8 @@
    function initQuery(query) {
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
-     else if (self.ancestor) query.topic = getTopicId(self.ancestor)
+     else if (self.ancestor && !self.ancestor.thread) query.topic = getTopicId(self.ancestor)
+     else if (self.ancestor && self.ancestor.thread) query.thread = getThreadId(self.ancestor)
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 
@@ -91,8 +93,9 @@
    }
 
    function load(append) {
+     debug('load', append)
      var url = self.url.entry('') + '?' + $.param(getQuery(append))
-     debug('load append=', append, 'url', url)
+     debug('url', url)
 
      self.store.entry.get(url, Site.callback(function(data) {
        debug('loaded data', data && data.length)
@@ -140,5 +143,7 @@
    if (typeof window !== 'undefined') self.on('mount', function() {
      if (!self.items.length) load()
    })
+
+   //if (typeof window !== 'undefined' && !self.items.length) self.load()
   </script>
 </umedia-entry-list>

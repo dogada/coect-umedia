@@ -15,8 +15,7 @@
       Please <a onclick={ Site.account.loginRequired }>sign in</a> to add a comment or a reply.
     </div>
 
-    <umedia-entry-list if={ entry.type != 'reply'} id="umedia-comments"
-                       items={ items } ancestor={ entry }></umedia-entry-list>
+    <umedia-entry-list if={ !entry.thread || entry.thread.id === entry.topic.id } id="umedia-comments" items={ items } ancestor={ entry }></umedia-entry-list>
 
   </div>
   
@@ -31,7 +30,7 @@
    {name: entry.list.name, url: self.url.channel(entry.list)},
  ]
  if (entry.topic && self.breadcrumbs && self.breadcrumbs.length) {
-   self.breadcrumbs.push({name: entry.parent.name, url: self.url.entry(entry.parent)})
+   self.breadcrumbs.push({name: self.coect.util.truncate(entry.parent.name, 30), url: self.url.entry(entry.parent)})
  }
 </script>
 
