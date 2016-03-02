@@ -18,7 +18,7 @@
     </div>
     
     <div if={ opts.entries.length } >
-      <h4>Recent entries</h4>
+      <h2>Recent entries</h2>
       <coect-entry-feed items={ opts.entries }></coect-entry-feed>
     </div>
     

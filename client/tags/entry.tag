@@ -14,7 +14,7 @@
 
     <div class="media-body">
 
-      <aside class="entry-meta">
+      <aside class="entry-meta coect-meta">
         <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         
@@ -46,7 +46,7 @@
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
-      <aside class="entry-actions">
+      <aside class="entry-actions coect-meta">
        <a if={ !opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
 
        <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
