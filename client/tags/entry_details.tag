@@ -15,7 +15,7 @@
       Please <a onclick={ Site.account.loginRequired }>sign in</a> to add a comment or a reply.
     </div>
 
-    <umedia-entry-list if={ !entry.thread || entry.thread.id === entry.topic.id } id="umedia-comments" items={ items } ancestor={ entry }></umedia-entry-list>
+    <umedia-entry-list id="umedia-comments" items={ items } ancestor={ entry }></umedia-entry-list>
 
   </div>
   

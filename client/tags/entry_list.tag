@@ -76,11 +76,20 @@
      else return {cursor: self.items[self.items.length - 1].id}
    }
 
+   function getListType(ancestor) {
+     if (!ancestor.thread) return 'topic'
+     else if (ancestor.thread && ancestor.thread.id === ancestor.topic.id) return 'thread'
+     else if (ancestor.thread) return 'replies'
+   }
+
    function initQuery(query) {
+     var listType = self.ancestor && getListType(self.ancestor)
+     debug('initQuery listType', listType)
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
-     else if (self.ancestor && !self.ancestor.thread) query.topic = getTopicId(self.ancestor)
-     else if (self.ancestor && self.ancestor.thread) query.thread = getThreadId(self.ancestor)
+     else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
+     else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
+     else if (listType === 'replies') query.parent = self.ancestor.id
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 

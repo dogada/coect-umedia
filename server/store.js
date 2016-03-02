@@ -52,7 +52,7 @@ function listWhere(opts, done) {
   var flow = tflow([
     function() {
       //list_url
-      var where = firstItem(opts, ['topic', 'thread', 'list', 'owner', 'type'])
+      var where = firstItem(opts, ['parent', 'topic', 'thread', 'list', 'owner', 'type'])
       // FIX: switch to timeline
       if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       

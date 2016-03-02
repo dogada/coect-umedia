@@ -318,13 +318,14 @@ function purge(req, res) {
 function list(req, res) {
   var flow = tflow([
     () => {
-      var parentId = req.query.thread || req.query.topic
+      var parentId = req.query.parent || req.query.thread || req.query.topic
       if (parentId) Entry.get(parentId, flow)
       else flow.next()
     },
     (parent) => {
       if (req.query.thread) flow.next({list: parent.list, thread: req.query.thread})
       else if (req.query.topic) flow.next({list: parent.list, topic: req.query.topic})
+      else if (req.query.parent) flow.next({list: parent.list, parent: parent.id})
       else if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag && c/:id
       else if (req.query.list) flow.next({list: req.query.list, tag: req.query.tag})
       else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
