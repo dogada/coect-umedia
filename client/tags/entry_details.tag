@@ -2,6 +2,7 @@
   <div class="umedia-entry-details">
     <coect-breadcrumbs if={ breadcrumbs.length } items={ breadcrumbs } />
 
+    <umedia-entry if={ cite } entry={ cite } cite="1"></umedia-entry>
     <umedia-entry entry={ entry } detail="1"></umedia-entry>
 
     <p if={ entry.type == 'reply' }>View 
@@ -23,6 +24,7 @@
  var self = this
  self.mixin('umedia-context')
  var entry = self.entry = self.opts.entry
+ if (entry.parent && entry.topic && entry.parent.id !== entry.topic.id) self.cite = entry.parent
  self.permissions = opts.permissions || {}
  self.items = []
  self.breadcrumbs = opts.breadcrumbs || [

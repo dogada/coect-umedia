@@ -1,5 +1,5 @@
 <umedia-entry>
-  <div id="e{entry.id}" class="h-entry media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
+  <div id="e{entry.id}" class="{opts.cite ? 'h-cite' : 'h-entry'} media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
     
     <h1 if={ title && opts.detail } class="p-name">{ title }</h1>
     <h2 if={ title && !opts.detail } class="p-name">{ title }</h2>
@@ -42,7 +42,7 @@
 
       </aside>
     
-      <article class="e-content">
+      <article class={ opts.cite ? 'p-name' : 'e-content' }>
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
@@ -79,20 +79,23 @@
 
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
-   var entry = self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
-   self.meta = self.coect.object.assign(
-     {}, entry.list && entry.list.meta || {}, entry.meta || {})
-   debug('entry meta', entry.name, self.meta)
-   self.webmention = entry.link && entry.link.webmention
+   var entry = self.entry = self.opts.entry || self.opts.state &&  self.opts.state.entry
+   debug('cite=', opts.cite, 'detail=', opts.detail, entry)
+   if (entry) { //workaround for Riot issues with evaluating tags with if={false}
+     self.meta = self.coect.object.assign(
+       {}, entry.list && entry.list.meta || {}, entry.meta || {})
+     debug('entry meta', entry.name, self.meta)
+     self.webmention = entry.link && entry.link.webmention
 
-   debug('bridgy', self.coect.bool(self.meta.bridy))
+     debug('bridgy', self.coect.bool(self.meta.bridy))
+     
+     self.doc = self.wpml.doc(entry.text || '')
+     self.title = self.doc.meta.title
+     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
-   self.doc = self.wpml.doc(entry.text || '')
-   self.title = self.doc.meta.title
-   self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
-
-   self.replyToUrl = self.meta.reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
-   debug('type', self.type, self.replyToUrl)
+     self.replyToUrl = self.meta.reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
+     debug('type', self.type, self.replyToUrl)
+   }
 
    self.actionName = function(type) {
      //self.debug('actionName', type, webmType)
@@ -153,15 +156,15 @@
      }))
    }
 
-   if (self.entry.created) {
+   if (entry && entry.created) {
      // self.created is ISO string on client-side and Date on server-side
-     var d = new Date(self.webmention && self.webmention.published || self.entry.created)
+     var d = new Date(self.webmention && self.webmention.published || entry.created)
      self.createdLocaleStr = d.toLocaleString()
      self.createdISOStr = d.toISOString()
      self.createdAgeStr = self.getAge(d) //getAge is from mixin
    }
 
-   if (typeof window !== 'undefined') {
+   if (entry && typeof window !== 'undefined') {
      self.canChange = Site.umedia.canChangeEntry(self.entry)
      self.canBroadcast = Site.umedia.canBroadcast(self.entry)
    }

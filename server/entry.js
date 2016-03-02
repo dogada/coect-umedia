@@ -254,7 +254,9 @@ function detail(req, res, next) {
       channel = Channel.pick(channel)
       var related = Array.from(new Set([entry.thread, entry.topic])).filter(v => v)
       if (entry.parent && entry.parent !== channel.id) related.push(entry.parent)
-      var fields = Entry.listFields.filter(v => (v !== 'text'))
+      //var fields = Entry.listFields.filter(v => (v !== 'text'))
+      // FIX: text is required for reply only 
+      var fields = Entry.listFields
       debug('related ids', related)
       Entry.table().select(fields).whereIn('id', related).asCallback(flow.join(entry, channel))
     },
