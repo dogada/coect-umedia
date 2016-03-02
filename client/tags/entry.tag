@@ -25,7 +25,7 @@
           class="u-in-reply-to">{ meta.reply_to_name || coect.util.truncateUrl(replyToUrl) }</a>
         
         <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
-            <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr }</time>
+            <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr } ago</time>
         </a>
         
         <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
