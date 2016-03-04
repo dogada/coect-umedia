@@ -21,8 +21,7 @@
         <span if={ action }>{ action }</span>
         
         <a if={ parentUrl } href={ parentUrl }>{ parentName || 'Noname' }</a>
-        <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to">s</a>
-        
+
         <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr } ago</time>
         </a>
@@ -46,11 +45,24 @@
       </article>
 
       <aside class="entry-actions coect-meta">
-       <a if={ type != 'like' } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
+        <span>
+          <a if={ type != 'like' } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
+        </span>
 
-       <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
-       <a if={ meta.twitter_url } class="u-syndication" rel="syndication" href={ meta.twitter_url }>t</a>
-       <a if={ source } class="u-syndication" rel="syndication" href={ source }>s</a>
+        <span>
+          <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to"
+             title="In reply to"><i class="fa fa-external-link-square"></i></a>
+        </span>
+        
+
+        <span>
+          <a if={ meta.facebook_url } class="u-syndication" rel="syndication"
+             href={ meta.facebook_url }><i class="fa fa-facebook"></i></a>
+          <a if={ meta.twitter_url } class="u-syndication" rel="syndication" 
+             href={ meta.twitter_url }><i class="fa fa-twitter"></i></a>
+          <a if={ source } class="u-syndication" rel="syndication" 
+             href={ source }><i class="fa fa-{ sourceIcon(source) }"></i></a>
+        </span>
 
        <span if={ canChange }>
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
@@ -94,7 +106,7 @@
      return ''
    }
 
-   if (entry) { //workaround for Riot issues with evaluating tags with if={false}
+   if (entry) { //workaround for Riot 2.3 issues with evaluating tags with if={false}
      self.meta = self.coect.object.assign(
        {}, entry.list && entry.list.meta || {}, entry.meta || {})
      debug('entry meta', entry.name, self.meta)
@@ -107,9 +119,12 @@
      self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
      self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
-     if (self.type == 'reply' || self.type == 'webmention') {
+     if (self.type == 'post' && self.replyToUrl) {
+       self.parentUrl = self.replyToUrl
+       self.parentName = self.meta.reply_to_name || self.coect.util.truncateUrl(self.replyToUrl)
+     } else if (self.type == 'reply' || self.type == 'webmention') {
        self.parentUrl = self.url.entry(entry.parent)
-       self.parentName = self.meta.reply_to_name || self.replyToUrl && coect.util.truncateUrl(self.replyToUrl)
+       self.parentName = self.meta.reply_to_name
      } else if (opts.list_name) {
        self.parentUrl = self.url.entry(entry.channel)
        self.parentName = entry.list.name
@@ -118,7 +133,11 @@
      debug('type', self.type, 'action', self.action, 'parent', self.parentUrl, 'replyTo', self.replyToUrl)
    }
 
-   
+   self.sourceIcon = function(url) {
+     if (/^https?:\/\/twitter.com/.test(url)) return 'twitter'
+     if (/^https?:\/\/(\w+\.)?facebook.com/.test(url)) return 'facebook'
+     return 'external-link'
+   }
 
 
    self.isRestricted = function(entry) {
