@@ -38,15 +38,6 @@ function checkListParent(req, done) {
   ], done);
 }
 
-function recipientMeta(parent, recipient) {
-  var meta = {}
-  var wm = parent.link && parent.link.webmention && parent.link.webmention
-  if (wm) meta.reply_to = wm.url || wm.source
-  if (parent.model === Entry.MODEL) meta.reply_to_name = recipient && recipient.name
-  debug('parentMeta', meta, parent.type, recipient)
-  return meta
-}
-
 function validate(req, parent, channel, type, meta, done) {
   debug(`validate type=${type}`, Entry.getTypeSchema(type))
   debug(`parent ${parent.model} ${parent.type} ${parent.id}`)
@@ -77,7 +68,7 @@ function checkNewEntry(req, done) {
     function(parent, channel, recipient) {
       if (!req.security.canCreateEntry(req.user, parent, channel)) return this.fail(403, 'Not enough permissions to create')
       validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment',
-               recipientMeta(parent, recipient), this.join(parent, channel))
+               Entry.recipientMeta(parent, recipient), this.join(parent, channel))
     },
   ], done)
 }
@@ -165,7 +156,7 @@ function update(req, res) {
     (entry, channel, parent) => config.User.get(parent.owner, flow.join(entry, channel, parent)),
     function(entry, channel, parent, recipient) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
-      validate(req, parent, channel, entry.type, recipientMeta(parent, recipient), flow.join(entry, channel))
+      validate(req, parent, channel, entry.type, Entry.recipientMeta(parent, recipient), flow.join(entry, channel))
     },
     function(entry, list, doc, form) {
       debug('update form', form)

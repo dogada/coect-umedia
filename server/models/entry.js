@@ -65,5 +65,18 @@ Entry.create = function(form, parent, done) {
   }, parentData(parent), form), parent.list || parent.id, done)
 }
 
+Entry.recipientMeta = function(parent, recipient) {
+  var meta = {}
+  var wm = parent.link && parent.link.webmention
+  if (wm) {
+    meta.reply_to = wm.url || wm.source
+    meta.reply_to_name = wm.author && wm.author.name
+  } else if (parent.model === Entry.MODEL && recipient) {
+    meta.reply_to_name = recipient && recipient.name
+  }
+  debug('parentMeta', parent.model, parent.type, meta)
+  return meta
+}
+
 
 module.exports = Entry

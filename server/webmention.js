@@ -114,6 +114,7 @@ var saveMention = function(parent, form, done) {
         url: url,
         name: form.name,
         text: form.text,
+        meta: form.meta,
         link: form.link,
         owner: owner.id
       }, (parent), flow)
@@ -141,7 +142,7 @@ function webmentionText(type, data) {
   return (type === 'reply' && data.name || '')
 }
 
-var validate = function(wm, done) {
+var validate = function(wm, meta, done) {
   // webhook received data in wm.post, but webmention API uses wm.activity 
   // see examples of actual JSON at
   // https://webmention.io/dashboard and
@@ -165,7 +166,7 @@ var validate = function(wm, done) {
         author: data.author
       }
     }
-  }, {schema: Entry.getTypeSchema(Entry.WEBMENTION)}, done)
+  }, {schema: Entry.getTypeSchema(Entry.WEBMENTION), meta: meta}, done)
 }
 
 exports.onReceive = function(wm, done) {
@@ -175,11 +176,12 @@ exports.onReceive = function(wm, done) {
     (target) => getMentionParent(target, flow),
     (parent) => {
       if (!parent) return flow.fail(400, 'Target without parent ' + wm.target)
-      validate(wm, flow.join(parent))
+      config.User.get(parent.owner, flow.join(parent))
     },
+    (parent, recipient) => validate(wm, Entry.recipientMeta(parent, recipient), flow.join(parent)),
     (parent, doc, form) => saveMention(parent, form, flow)
   ], done)
-} 
+}
 
 // FIX: use task queue and return HTTP/1.1 202 Accepted
 exports.webmentionIoHook = function (req, res) {
