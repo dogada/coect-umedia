@@ -92,6 +92,37 @@ class EntryStore extends Store {
       }
     ], done)
   }
+
+  updateCounters(entry, done) {
+    var t = () => Entry.table(entry.id)
+    debug('updateCounters', entry.access, entry)
+    var flow = tflow([
+      () => {
+        t().update({
+          rating: t().count('*').where('parent', entry.parent)
+        }).where('id', entry.parent).asCallback(flow)
+      },
+      () => {
+        if (entry.parent === entry.topic || entry.parent === entry.thread) return flow.next() 
+        t().update({
+          child_count: t().count('*').where('parent', entry.parent).andWhere('access', '>', Access.MODERATION),
+        }).where('id', entry.parent).asCallback(flow)
+      },
+      () => {
+        if (!entry.topic) return flow.next() 
+        var q = t().update({
+          child_count: t().count('*').where('topic', entry.topic).andWhere('access', '>', Access.MODERATION),
+        }).where('id', entry.topic).asCallback(flow)
+      },
+      () => {
+        if (!entry.thread || entry.thread === entry.topic) return flow.next() 
+        var q = t().update({
+          child_count: t().count('*').where('thread', entry.thread).andWhere('access', '>', Access.MODERATION)
+        }).where('id', entry.thread).asCallback(flow)
+      },
+      () => flow.next(entry)
+    ], done)
+  }
 }
 
 class ChannelStore extends Store {

@@ -8,7 +8,7 @@ var Access = coect.Access
 var Entry = require('./models/entry')
 var Channel = require('./models/channel')
 var Entity = require('./models/entity')
-
+var store = require('./store')
 
 var parsers = null
 
@@ -118,7 +118,8 @@ var saveMention = function(parent, form, done) {
         owner: owner.id
       }, (parent), flow)
     },
-    (id) => Entry.get(id, flow)
+    (id) => Entry.get(id, flow),
+    (entry) => store.entry.updateCounters(entry, flow)
   ], done)
 }
 

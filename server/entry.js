@@ -110,25 +110,6 @@ function saveNewEntry(req, parent, list, form, done) {
   }, parent, done)
 }
 
-function updateCounters(entry, done) {
-  var query;
-  if (entry.thread) {
-    // update comment's reply count
-    query = Entry.table(entry.thread).update({
-      child_count: Entry.raw('child_count + 1'),
-      rating: Entry.raw('rating + 1')
-    }).where({id: entry.thread})
-  }
-  else {
-    // update channels' post count
-    query = Entry.table(entry.parent).update({
-      child_count: Entry.raw('child_count + 1'),
-      version: entry.version
-    }).where({id: entry.parent})
-  }
-  return query.asCallback(done)
-}
-
 function create(req, res) {
   debug('create user=', req.user.id)
   //FIX: load and verify ids and access rights
@@ -145,7 +126,7 @@ function create(req, res) {
     },
     function(entry) {
       debug('created entry', entry)
-      updateCounters(entry, flow.send(entry))
+      store.entry.updateCounters(entry, flow)
     },
     function(entry) {
       Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
@@ -206,9 +187,8 @@ function update(req, res) {
       debug('updated', id)
       Entry.get(id, this)
     },
-    function(entry) {
-      Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
-    },
+    (entry) => store.entry.updateCounters(entry, flow),
+    (entry) => Entity.fillUsers([entry], req.app.userCache, flow.send(entry)),
   ], coect.json.response(res))
 }
 
@@ -229,8 +209,9 @@ function moderate(req, res) {
       var data = {
         access: (req.params.action === 'accept' ? req.security.getDesiredAccess(entry, parent, channel) : Access.REJECTED)
       }
-      Entry.update(entry.id, data, this.send(data))
-    }
+      Entry.update(entry.id, data, this.send(data, entry))
+    },
+    (data, entry) => store.entry.updateCounters(entry, flow.send(data)),
   ], coect.json.response(res))
 }
 
