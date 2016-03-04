@@ -1,21 +1,21 @@
 <umedia-entry>
-  <div id="e{entry.id}" class="{opts.cite ? 'h-cite' : 'h-entry'} media umedia-entry {entry.highlighted ? 'highlighted' : ''}">
+  <div id="e{entry.id}" class={'h-entry': hentry, 'h-cite': opts.cite, 'p-comment': opts.comment, 'highlighted': entry.highlighted, 'media umedia-entry': 1}>
     
     <h1 if={ title && opts.detail } class="p-name">{ title }</h1>
     <h2 if={ title && !opts.detail } class="p-name">{ title }</h2>
 
     <div class="media-left">
-      <a href={ url.user(entry.owner) }>
+      <a class="p-author h-card" href={ url.user(entry.owner) }>
         <img class="media-object" width="32" height="32" 
-             title={ entry.owner.name || entry.owner.id }
-             src={ url.avatar(entry.owner, 32) } alt="">
+             alt={ entry.owner.name } title={ entry.owner.name }
+             src={ url.avatar(entry.owner, 32) }>
       </a>
     </div>
 
     <div class="media-body">
 
       <aside class="entry-meta coect-meta">
-        <a class="p-author h-card umedia-display-name" href="{ url.user(entry.owner) }"
+        <a class="umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         
         <a if={ action && actionUrl } rel="nofollow" href={ actionUrl } target="_blank">{ action }</a>
@@ -42,12 +42,12 @@
 
       </aside>
     
-      <article class={ opts.cite ? 'p-name' : 'e-content' }>
+      <article class={ (hentry || opts.detail) ? 'e-content': 'p-content' }>
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
       <aside class="entry-actions coect-meta">
-       <a if={ !opts.detail } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
+       <a if={ type != 'like' } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
 
        <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
        <a if={ meta.twitter_url } class="u-syndication" rel="syndication" href={ meta.twitter_url }>t</a>
@@ -76,11 +76,14 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-
+   var opts = self.opts
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
-   var entry = self.entry = self.opts.entry || self.opts.state &&  self.opts.state.entry
-   debug('cite=', opts.cite, 'detail=', opts.detail, entry)
+   var entry = self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   self.hentry = opts.hentry || (!opts.cite && !opts.comment && !opts.detail)
+   debug('h-entry', self.hentry, 'cite=', opts.cite, 'comment', opts.comment, 'detail=', opts.detail, entry)
+
+
    if (entry) { //workaround for Riot issues with evaluating tags with if={false}
      self.meta = self.coect.object.assign(
        {}, entry.list && entry.list.meta || {}, entry.meta || {})
@@ -93,10 +96,13 @@
      self.title = self.doc.meta.title
      self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
-     self.replyToUrl = self.meta.reply_to || (self.type === 'reply') && self.url.entry(entry.parent)
+     self.replyToUrl = self.meta.reply_to || (self.type === 'reply') &&
+     self.url.entry(entry.parent)
+     
      debug('type', self.type, self.replyToUrl)
    }
 
+   
    self.actionName = function(type) {
      //self.debug('actionName', type, webmType)
      if (type === 'reply') return 'replied'
@@ -132,8 +138,8 @@
    }
 
    self.commentsLabel = function(entry) {
-     if (entry.type == 'reply') return 'Reply'
-     else return 'Replies (' + (entry.child_count || 0) + ')'
+     if (!entry.child_count) return 'Reply'
+     else return 'Replies (' + entry.child_count + ')'
    }
 
    self.moderate = function(e) {

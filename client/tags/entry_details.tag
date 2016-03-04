@@ -1,8 +1,8 @@
 <umedia-entry-details>
-  <div class="umedia-entry-details">
+  <div class="umedia-entry-details h-entry">
     <coect-breadcrumbs if={ breadcrumbs.length } items={ breadcrumbs } />
 
-    <umedia-entry if={ cite } entry={ cite } cite="1"></umedia-entry>
+    <umedia-entry if={ cite } entry={ cite } cite="1" class="p-in-reply-to"></umedia-entry>
     <umedia-entry entry={ entry } detail="1"></umedia-entry>
 
     <p if={ entry.type == 'reply' }>View 
@@ -16,7 +16,8 @@
       Please <a onclick={ Site.account.loginRequired }>sign in</a> to add a comment or a reply.
     </div>
 
-    <umedia-entry-list id="umedia-comments" items={ items } ancestor={ entry }></umedia-entry-list>
+    <umedia-entry-list id="umedia-comments" items={ items } 
+      ancestor={ entry } comment="1" cite="1"></umedia-entry-list>
 
   </div>
   
@@ -32,7 +33,7 @@
    {name: entry.list.name, url: self.url.channel(entry.list)},
  ]
  if (entry.topic && self.breadcrumbs && self.breadcrumbs.length) {
-   self.breadcrumbs.push({name: self.coect.util.truncate(entry.parent.name, 30), url: self.url.entry(entry.parent)})
+   self.breadcrumbs.push({name: self.coect.util.truncate(entry.topic.name, 30), url: self.url.entry(entry.topic)})
  }
 </script>
 

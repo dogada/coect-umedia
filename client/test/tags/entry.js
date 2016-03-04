@@ -39,7 +39,7 @@ describe(TAG, function() {
       text: '!title: Hello title\nh2: Hello world!\nLook at: http://www.coect.net'
     }
     var tag = env.mount(TAG, {entry: entry, detail: '1'})
-    $('.h-entry h1.p-name', tag.root).should.have.text('Hello title')
+    $('h1.p-name', tag.root).should.have.text('Hello title')
     $('a.u-url', tag.root).should.have.attr('href', '/e/e4')
     $('a.u-url time', tag.root).should.have.attr('datetime', entry.created)
     $('.wpml h2', tag.root).should.have.text('Hello world!')
@@ -68,8 +68,7 @@ describe(TAG, function() {
     }
     var tag = env.mount(TAG, {entry: entry})
     $('.wpml h2', tag.root).should.have.text('Hello world!')
-    $('a.p-author', tag.root).should.have.attr('href', '/u/U1')
-    $('a.h-card', tag.root).should.have.attr('href', '/u/U1')
+    $('a.h-card.p-author', tag.root).should.have.attr('href', '/u/U1')
     $('.media-body a.umedia-display-name', tag.root).should.have.text('U1')
   })
 

@@ -26,9 +26,9 @@ describe(TAG, function() {
       expect(tag.items[1]).property('id', 'e2')
       expect(tag.hasMore).to.be.false
 
-      expect($('.umedia-entry-list ul li', tag.root)).to.have.length(2)
-      $('#ee1 h2', tag.root).should.have.text('Hello world')
-      $('#ee2 p', tag.root).should.contain('Just a comment')
+      expect($('.umedia-entry-list ul.h-feed li', tag.root)).to.have.length(2)
+      $('#ee1.h-entry h2', tag.root).should.have.text('Hello world')
+      $('#ee2.h-entry p', tag.root).should.contain('Just a comment')
     }
     checkHtml()
     done()

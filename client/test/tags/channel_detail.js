@@ -26,9 +26,9 @@ describe('umedia-channel-detail', function() {
       $('.coect-breadcrumbs li a span', tag.root).should.have.text('User2')
       $('h1', tag.root).should.have.text('Fake channel')
 
-      expect($('.umedia-entry-list ul li', tag.root)).to.have.length(2)
-      $('#ee1 .wpml p', tag.root).should.have.text('First entry')
-      $('#ee2 .wpml p', tag.root).should.contain('Second entry')
+      expect($('.umedia-entry-list ul.h-feed li', tag.root)).to.have.length(2)
+      $('#ee1.h-entry .wpml p', tag.root).should.have.text('First entry')
+      $('#ee2.h-entry .wpml p', tag.root).should.contain('Second entry')
     }
 
     // wait for ajax response and then check tag state

@@ -1,5 +1,6 @@
 <umedia-entry-list>
-  <div if={ items.length } class="umedia-entry-list h-feed">
+  items: {items.length } {items}
+  <div if={ items.length } class="umedia-entry-list">
     <div>
       <ul class="list-inline actions">
         <li if={ ancestor || opts.category }>
@@ -32,9 +33,11 @@
     </div>
 
     <div>
-      <ul class="list-unstyled entries">
-        <li each={e in items}>
-          <umedia-entry entry={ e } ancestor={ parent.ancestor || parent.channel } />
+      <ul class="{'list-unstyled entries h-feed': 1, 'p-comments': opts.comment }">
+        <li each={ e in items }>
+          <umedia-entry entry={ e }
+          ancestor={ parent.ancestor || parent.channel }
+          comment={ parent.opts.comment } cite={ parent.opts.cite } />
         </li>
       </ul>
 

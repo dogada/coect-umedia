@@ -19,21 +19,24 @@ var POST = {
 
 describe(TAG, function() {
   before(function() {
-    env.fakeGET('/e?order=last&count=10&thread=ID1', COMMENTS)
+    env.fakeGET('/e?order=last&count=10&topic=ID1', {items: COMMENTS})
   })
 
   it('should show post with comments', function(done) {
     var tag = env.mount(TAG, {entry: POST, thread: [POST]})
 
     expect(tag.permissions).eql({})
-    $('.coect-breadcrumbs li:first-child a span', tag.root).should.have.text('User4')
+    $('.h-entry .coect-breadcrumbs li:first-child a span', tag.root).should.have.text('User4')
     $('.coect-breadcrumbs li:first-child a', tag.root).should.have.attr('href', '/u/U4')
     $('.coect-breadcrumbs li:nth-child(2) a span', tag.root).should.have.text('List1')
     $('.coect-breadcrumbs li:nth-child(2) a', tag.root).should.have.attr('href', '/c/L1')
 
-    $('#eID1 h1', tag.root).should.have.text('Hello world!')
-    $('#eID1 p', tag.root).should.contain('See more')
-    $('#eID1 p a', tag.root).should.have.attr('href', 'http://www.coect.net')
+    $('.h-entry #eID1 h1.p-name', tag.root).should.have.text('Hello world!')
+    $('#eID1 .e-content p', tag.root).should.contain('See more')
+    $('#eID1 .e-content p a', tag.root).should.have.attr('href', 'http://www.coect.net')
+
+    $('.h-entry .h-feed.p-comments .h-cite.p-comment', tag.root).should.have.length(2)
+    $('ul.h-feed li:first-child .h-cite .p-content', tag.root).should.contain('First comment')
     done()
   })
 
