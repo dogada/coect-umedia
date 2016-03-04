@@ -18,11 +18,10 @@
         <a class="umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         
-        <a if={ action && actionUrl } rel="nofollow" href={ actionUrl } target="_blank">{ action }</a>
-        <span if={ action && !actionUrl }>{ action }</span>
+        <span if={ action }>{ action }</span>
         
-        <a if={ replyToUrl } href={ replyToUrl } 
-          class="u-in-reply-to">{ meta.reply_to_name || coect.util.truncateUrl(replyToUrl) }</a>
+        <a if={ parentUrl } href={ parentUrl }>{ parentName || 'Noname' }</a>
+        <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to">s</a>
         
         <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr } ago</time>
@@ -51,6 +50,7 @@
 
        <a if={ meta.facebook_url } class="u-syndication" rel="syndication" href={ meta.facebook_url }>fb</a>
        <a if={ meta.twitter_url } class="u-syndication" rel="syndication" href={ meta.twitter_url }>t</a>
+       <a if={ source } class="u-syndication" rel="syndication" href={ source }>s</a>
 
        <span if={ canChange }>
          <a href={ url.entry(entry.id, 'edit') }>Edit</a>
@@ -83,29 +83,9 @@
    self.hentry = opts.hentry || (!opts.cite && !opts.comment && !opts.detail)
    debug('h-entry', self.hentry, 'cite=', opts.cite, 'comment', opts.comment, 'detail=', opts.detail, entry)
 
-
-   if (entry) { //workaround for Riot issues with evaluating tags with if={false}
-     self.meta = self.coect.object.assign(
-       {}, entry.list && entry.list.meta || {}, entry.meta || {})
-     debug('entry meta', entry.name, self.meta)
-     self.webmention = entry.link && entry.link.webmention
-
-     debug('bridgy', self.coect.bool(self.meta.bridy))
-     
-     self.doc = self.wpml.doc(entry.text || '')
-     self.title = self.doc.meta.title
-     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
-
-     self.replyToUrl = self.meta.reply_to || (self.type === 'reply') &&
-     self.url.entry(entry.parent)
-     
-     debug('type', self.type, self.replyToUrl)
-   }
-
-   
-   self.actionName = function(type) {
+   self.actionName = function(type, replyTo) {
      //self.debug('actionName', type, webmType)
-     if (type === 'reply') return 'replied'
+     if (type === 'reply' || replyTo) return 'to'
      else if (type === 'like') return 'liked'
      else if (type === 'repost') return 'reposted'
      else if (type === 'bookmark') return 'bookmarked'
@@ -114,10 +94,32 @@
      return ''
    }
 
-   self.action = self.actionName(self.type)
-   // post with external reply_to
-   if (self.replyToUrl && !self.action) self.action = 'in reply to'
-   if (self.webmention && self.webmention.url) self.actionUrl = self.webmention.url
+   if (entry) { //workaround for Riot issues with evaluating tags with if={false}
+     self.meta = self.coect.object.assign(
+       {}, entry.list && entry.list.meta || {}, entry.meta || {})
+     debug('entry meta', entry.name, self.meta)
+     self.webmention = entry.link && entry.link.webmention
+     self.source = entry.source || self.webmention && self.webmention.url
+     debug('bridgy', self.coect.bool(self.meta.bridy))
+     
+     self.doc = self.wpml.doc(entry.text || '')
+     self.title = self.doc.meta.title
+     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
+
+     self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
+     if (self.type == 'reply' || self.type == 'webmention') {
+       self.parentUrl = self.url.entry(entry.parent)
+       self.parentName = self.meta.reply_to_name || self.replyToUrl && coect.util.truncateUrl(self.replyToUrl)
+     } else if (opts.list_name) {
+       self.parentUrl = self.url.entry(entry.channel)
+       self.parentName = entry.list.name
+     }
+     self.action = self.actionName(self.type, self.replyToUrl)
+     debug('type', self.type, 'action', self.action, 'parent', self.parentUrl, 'replyTo', self.replyToUrl)
+   }
+
+   
+
 
    self.isRestricted = function(entry) {
      if ([Access.MODERATION, Access.REJECTED,
@@ -127,7 +129,7 @@
    }
 
    self.displayName = function(user) {
-     return user.name || user.username || user.id
+     return user.name || 'Noname'
    }
 
    self.expand = function(e) {

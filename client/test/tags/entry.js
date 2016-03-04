@@ -69,7 +69,7 @@ describe(TAG, function() {
     var tag = env.mount(TAG, {entry: entry})
     $('.wpml h2', tag.root).should.have.text('Hello world!')
     $('a.h-card.p-author', tag.root).should.have.attr('href', '/u/U1')
-    $('.media-body a.umedia-display-name', tag.root).should.have.text('U1')
+    $('.media-body a.umedia-display-name', tag.root).should.have.text('Noname')
   })
 
 })

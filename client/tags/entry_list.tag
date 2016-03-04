@@ -20,12 +20,12 @@
 
 
         <li if={ ancestor && ancestor.type == 'post' }>
-          <button onclick={ toggleThreaded } type="button" 
+          <button onclick={ flatMode } type="button" 
                   class="btn btn-xs btn-default{ active(!query.thread) }">Flat</button>
         </li>
 
         <li if={ ancestor && ancestor.type == 'post' }>
-          <button onclick={ toggleThreaded } type="button" 
+          <button onclick={ threadedMode } type="button" 
                   class="btn btn-xs btn-default{ active(query.thread) }">Threaded</button>
         </li>
         
@@ -139,16 +139,19 @@
      load(true)
    }
 
-   self.toggleThreaded = function() {
-     debug('toggleT', self.query)
-     if (!self.query.thread) {
-       delete self.query.topic
-       self.query.thread = getThreadId(self.ancestor)
-     } else {
-       delete self.query.thread
-       self.query.topic = getTopicId(self.ancestor)
-     }
-     debug('after', self.query)
+   self.flatMode = function() {
+     debug('flatMode', self.query)
+     if (!self.query.thread) return
+     delete self.query.thread
+     self.query.topic = getTopicId(self.ancestor)
+     load()
+   }
+
+   self.threadedMode = function() {
+     debug('threadedMode', self.query)
+     if (!self.query.topic) return
+     delete self.query.topic
+     self.query.thread = getThreadId(self.ancestor)
      load()
    }
 
