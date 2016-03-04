@@ -22,7 +22,7 @@
         
         <a if={ parentUrl } href={ parentUrl }>{ parentName || 'Noname' }</a>
 
-        <a class="u-url" href={ url.entry(entry) } title={ createdLocaleStr }>
+        <a class="u-url permalink" href={ url.entry(entry) } title={ createdLocaleStr }>
             <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr } ago</time>
         </a>
         
@@ -45,22 +45,21 @@
       </article>
 
       <aside class="entry-actions coect-meta">
-        <span>
-          <a if={ type != 'like' } href={ url.entry(entry) }>{ commentsLabel(entry) }</a>
+        <span if={ hasCounters } >
+          <a href={ url.entry(entry) } title="Comments"><i class="fa fa-comments"></i> { entry.child_count }</a>
         </span>
 
-        <span>
-          <a if={ replyToUrl } href={ replyToUrl } class="u-in-reply-to"
+        <span if={ replyToUrl }>
+          <a href={ replyToUrl } class="u-in-reply-to"
              title="In reply to"><i class="fa fa-external-link-square"></i></a>
         </span>
-        
 
         <span>
           <a if={ meta.facebook_url } class="u-syndication" rel="syndication"
              href={ meta.facebook_url }><i class="fa fa-facebook"></i></a>
           <a if={ meta.twitter_url } class="u-syndication" rel="syndication" 
              href={ meta.twitter_url }><i class="fa fa-twitter"></i></a>
-          <a if={ source } class="u-syndication" rel="syndication" 
+          <a if={ source } class="u-syndication" rel="syndication" title="Source url"
              href={ source }><i class="fa fa-{ sourceIcon(source) }"></i></a>
         </span>
 
@@ -130,6 +129,7 @@
        self.parentName = entry.list.name
      }
      self.action = self.actionName(self.type, self.replyToUrl)
+     self.hasCounters = (self.type == 'post' || self.type == 'reply')
      debug('type', self.type, 'action', self.action, 'parent', self.parentUrl, 'replyTo', self.replyToUrl)
    }
 
