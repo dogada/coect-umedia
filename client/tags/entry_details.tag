@@ -33,7 +33,9 @@
    {name: entry.list.name, url: self.url.channel(entry.list)},
  ]
  if (entry.topic && self.breadcrumbs && self.breadcrumbs.length) {
-   self.breadcrumbs.push({name: self.coect.util.truncate(entry.topic.name, 30), url: self.url.entry(entry.topic)})
+   self.breadcrumbs.push({
+     name: self.coect.util.truncate(entry.topic.name, 40),
+     url: self.url.entry(entry.topic)})
  }
 </script>
 

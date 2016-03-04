@@ -1,5 +1,5 @@
 <umedia-entry-list>
-  items: {items.length } {items}
+
   <div if={ items.length } class="umedia-entry-list">
     <div>
       <ul class="list-inline actions">
