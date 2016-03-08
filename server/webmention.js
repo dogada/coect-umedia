@@ -1,4 +1,5 @@
 var crypto = require('crypto')
+var striptags = require('striptags')
 var debug = require('debug')('umedia:webmention')
 var tflow = require('tflow')
 var Url = require('url')
@@ -98,7 +99,7 @@ var mentionHash = function(parent, sourceUrl) {
 
 var saveMention = function(parent, form, done) {
   debug('save', form, parent)
-  var url = mentionHash(parent, form.link.webmention.url)
+  var url = mentionHash(parent, form.link.webmention.source)
   debug('url', url)
   var flow = tflow([
     () => Entry.findOne({url: url, list: parent.list || parent.id}, flow),
@@ -124,61 +125,92 @@ var saveMention = function(parent, form, done) {
   ], done)
 }
 
-function webmentionType(post) {
-  if (post['like-of']) return 'like'
-  else if (post['in-reply-to']) return 'reply'
-  else if (post['repost-of']) return 'repost'
-  else if (post['bookmark-of']) return 'bookmark'
-  else if (post.rsvp) return 'rsvp'
-  else return 'link'
+function webmentionName(parsed) {
+  var target = coect.util.truncateUrl(parsed.target)
+  if (parsed.author && parsed.author.name) return `${target} ${parsed.type} by ${parsed.author.name}`
+  else return `${target} ${parsed.type}`
 }
 
-function webmentionName(type, data) {
-  if (data.author && data.author.name) return `webmention ${type} by ${data.author.name}`
-  else return `webmention ${type}`
+function html2wpml(html) {
+  return striptags(html) 
 }
 
-function webmentionText(type, data) {
-  return (type === 'reply' && data.name || '')
+
+function webmentionText(parsed) {
+  if (parsed.type !== 'reply') return ''
+  return parsed.text || parsed.name
 }
 
-var validate = function(wm, meta, done) {
-  // webhook received data in wm.post, but webmention API uses wm.activity 
-  // see examples of actual JSON at
-  // https://webmention.io/dashboard and
-  // http://webmention.io/api/mentions?target=http://indiewebcamp.com
-  // only id, source and target are mandatory, rest of fields are optional
-  var type = wm.activity && wm.activity.type || webmentionType(wm.post)
-  var data = wm.data || wm.post
-  debug('validate type', type)
+var validate = function(parsed, meta, done) {
   Entry.validate({
-    name: webmentionName(type, data),
-    text: webmentionText(type, data),
+    name: webmentionName(parsed),
+    text: webmentionText(parsed),
     link: {
-      webmention: {
-        id: wm.id, // undefined for web hook's data
-        type: type,
-        url: data.url,
-        source: wm.source,
-        target: wm.target,
-        verified: wm.verified_date, // undefined for web hook's data
-        published: data.published,
-        author: data.author
-      }
+      webmention: parsed
     }
   }, {schema: Entry.getTypeSchema(Entry.WEBMENTION), meta: meta}, done)
 }
 
-exports.onReceive = function(wm, done) {
-  debug('onReceive', wm.source, wm)
+function webmentionType(wmType) {
+  switch (wmType) {
+  case 'in-reply-to': return 'reply'
+  case 'like-of': return 'like'
+  case 'repost-of': return 'repost'
+  case 'bookmark-of': return 'bookmark'
+  case 'rsvp': return 'rsvp'
+  }
+  return 'mention'
+}
+
+
+/*
+  Return webmention in a standard format with source, target, type
+  and optional published, name, author, html, text.
+  webhook received data in wm.post, but /api/webmentions uses wm.activity and
+  /api/webmentions.jf2 don't have source and target.
+  See examples of actual JSON at
+  https://webmention.io/dashboard
+  http://webmention.io/api/mentions?target=http://indiewebcamp.com
+  https://webmention.io/api/mentions.jf2?domain=dogada.org
+*/
+function parse(wm, done) {
   var flow = tflow([
-    () => exports.getTarget(wm.target, flow),
-    (target) => getMentionParent(target, flow),
-    (parent) => {
-      if (!parent) return flow.fail(400, 'Target without parent ' + wm.target)
-      config.User.get(parent.owner, flow.join(parent))
+    () => {
+      var data = wm.data || wm.post || wm
+      var type = wm.activity && wm.activity.type || webmentionType(data['wm-property'])
+      var target = wm.target || data.target || data['wm-property'] && data[data['wm-property']]
+      var source = data.url || wm.source
+  
+      if (!type) return flow.fail(400, 'Unknown webmention type')
+      if (!source) return flow.fail(400, 'No webmention source')
+      if (!target) return flow.fail(400, 'No webmention target')
+      var html = (typeof data.content === 'object' ? data.content.value : data.content) || ''
+      var parsed = {
+        type, source, target,
+        author: data.author,
+        published: data.published,
+        name: data.name,
+        html: html,
+        text: html2wpml(html)
+      }
+      debug('parse parsed', parsed)
+      flow.next(parsed)
+    }
+  ], done)
+  
+}
+
+exports.onReceive = function(wm, done) {
+  debug('onReceive', wm)
+  var flow = tflow([
+    () => parse(wm, flow),
+    (parsed) => exports.getTarget(parsed.target, flow.join(parsed)),
+    (parsed, target) => getMentionParent(target, flow.join(parsed)),
+    (parsed, parent) => {
+      if (!parent) return flow.fail(400, 'Target without parent')
+      config.User.get(parent.owner, flow.join(parsed, parent))
     },
-    (parent, recipient) => validate(wm, Entry.recipientMeta(parent, recipient), flow.join(parent)),
+    (parsed, parent, recipient) => validate(parsed, Entry.recipientMeta(parent, recipient), flow.join(parent)),
     (parent, doc, form) => saveMention(parent, form, flow)
   ], done)
 }

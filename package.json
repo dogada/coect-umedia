@@ -44,6 +44,7 @@
     "object-apply": "~1.0.1",
     "object-assign": "~4.0.1",
     "request": "~2.69.0",
+    "striptags": "~2.1.1",
     "tflow": "^0.4.1"
   },
   "peerDependencies": {

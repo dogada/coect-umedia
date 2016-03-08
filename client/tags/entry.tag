@@ -101,7 +101,7 @@
      else if (type === 'repost') return 'reposted'
      else if (type === 'bookmark') return 'bookmarked'
      else if (type === 'rsvp') return 'rsvp'
-     else if (type === 'link') return 'mentioned'
+     else if (type === 'mention' || type === 'link') return 'mentioned'
      return ''
    }
 
