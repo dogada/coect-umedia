@@ -14,7 +14,7 @@
 
     <div class="media-body">
 
-      <aside class="entry-meta coect-meta">
+      <aside class="entry-header coect-meta">
         <a class="umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
         
@@ -40,13 +40,29 @@
 
       </aside>
     
+      <div class="entry-tags coect-meta">
+        <ul if={ entry.tags } class="list-inline">
+          <li each={ t, i in entry.tags }>
+            <a href="{ url.category(t) }" class="p-category">{ t }</a>
+          </li>
+        </ul>
+      </div>
+
       <article class={ (hentry || opts.detail) ? 'e-content': 'p-content' }>
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
-      <aside class="entry-actions coect-meta">
+      <aside class="entry-footer coect-meta">
+
+        <span if={ hasCounters }>
+          <a onclick={ like } title="Like it!"><i
+            class={"like fa fa-heart": 1, "liked": entry.liked }></i></a>
+          <a if={ entry.like_count } href="{ url.entry(entry) }/?likes">{ entry.like_count }</a>
+        </span>
+
         <span if={ hasCounters } >
-          <a href={ url.entry(entry) } title="Comments"><i class="fa fa-comments"></i> { entry.child_count }</a>
+          <a href={ url.entry(entry) } title="Comments"><i class="comments fa
+          fa-comments"></i> { entry.child_count || "" }</a>
         </span>
 
         <span if={ replyToUrl }>
@@ -71,12 +87,10 @@
          <a onclick={ broadcast }>Broadcast</a>
        </span>
 
+       <span if={ hasCounters } class="pull-right">
+         <a onclick={ save } title="Bookmark it!"><i class={"fa fa-bookmark": 1,  "saved": entry.saved}></i></a>
+       </span>
 
-       <ul if={ entry.tags } class="coect-tags pull-right list-inline">
-         <li each={ t, i in entry.tags }>
-           <a href="{ url.category(t) }" class="p-category label label-default">{ t }</a>
-         </li>
-       </ul>
       </aside>
 
       <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
@@ -175,6 +189,23 @@
      ))
    }
    
+   self.best = function(action, flag) {
+     var method = (self.entry[flag || action + 'd'] ? 'del' : 'post')
+     self.store.entry[method](self.url.entry(self.entry.id, action), Site.callback(
+       function(data) {
+         self.update({entry: $.extend(self.entry, data)})
+       }
+     ))
+   }
+   
+   self.like = function(e) {
+     self.best('like')
+   }
+
+   self.save = function(e) {
+     self.best('save')
+   }
+
    self.broadcast = function(e) {
      self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
@@ -197,8 +228,6 @@
    }
   </script>
 
-  <style scoped>
-   .restricted { color: grey }
-   h2 { margin-top: 0 }
+  <style>
   </style>
 </umedia-entry>

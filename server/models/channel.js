@@ -61,21 +61,27 @@ Channel.schema = Object.assign({}, Entity.schema, {
 /**
    Return or create mentions channel for a user.
 */
-Channel.getOrCreateMentions = function(user, done) {
+Channel.getOrCreateType = function(user, type, done) {
   var flow = tflow([
-    () => Channel.findOne({owner: user.id, type: Channel.MENTIONS}, flow),
-    (channel) => {
-      if (channel) return flow.complete(channel)
+    () => {
+      if (user.getListId(type)) return Channel.get(user.getListId(type), flow)
       Channel.create({
         model: Channel.MODEL,
-        type: Channel.MENTIONS,
-        name: 'Mentions',
-        url: Channel.makeUrl(user.username, Channel.MENTIONS),
+        type: type,
+        name: type.toUpperCase(),
+        url: Channel.makeUrl(user.username, type),
         owner: user.id,
         access: Access.HIDDEN
       }, user.id, flow)
     },
-    (id) => Channel.get(id, flow)
+    (channelOrId) => {
+      if (channelOrId.id) return flow.complete(channelOrId)
+      else Channel.get(channelOrId, flow)
+    },
+    (channel) => {
+      user.setListId(type, channel.id)
+      user.save(flow)
+    }
   ], done)
 }
 

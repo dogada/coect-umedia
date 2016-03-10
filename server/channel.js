@@ -152,6 +152,7 @@ function permissions(req, res) {
   ], coect.json.response(res))
 }
 
+
 module.exports = {
   create,
   data,

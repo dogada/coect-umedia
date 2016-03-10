@@ -37,6 +37,11 @@ class Entity extends Model {
 
 }
 
+Entity.LIST = 'list'
+Entity.ENTRY = 'entry'
+Entity.LIKE = 'like'
+
+
 Entity.getChildType = function(data) {
   switch (data.type) {
   case 'channel': return 'post'
@@ -132,6 +137,44 @@ Entity.fillUsers = function(entries, cache, done) {
       }
       this.next(entries)
     }
+  ], done)
+}
+
+function list2map(items, key) {
+  var map = {}
+  for (var item of items) map[item[key || 'id']] = item
+  return map
+}
+
+Entity.appendUserFlags = function(items, user, done) {
+  debug('appendUserFlags', items.length)
+  var listId = user.getListId(Entity.LIKE)
+  var ids = items.map(item => item.id)
+  var flow = tflow([
+    () => {
+      if (!listId) return flow.complete(items)
+      Entity.table(listId).whereIn('ref', ids).andWhere('list', listId).select('ref', 'access').asCallback(flow)
+    },
+    (likes) => {
+      debug('found likes', likes.length)
+      var likeMap = list2map(likes, 'ref')
+      for (var entity of items) {
+        var like = likeMap[entity.id]
+        if (like) entity[(like.access >= Access.EVERYONE ? 'liked' : 'saved')] = true
+      }
+      flow.next(items)
+    }
+  ], done)
+}
+
+/**
+   Update items in-place. Append user info and 'liked', 'saved' flags.
+*/
+Entity.postprocess = function(req, items, done) {
+  debug('postprocess', items.length)
+  var flow = tflow([
+    () => Entity.fillUsers(items, req.app.userCache, flow),
+    () => Entity.appendUserFlags(items, req.user, flow)
   ], done)
 }
 

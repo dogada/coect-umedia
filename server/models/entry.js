@@ -17,12 +17,20 @@ class Entry extends Entity {
 }
 
 Entry.MODEL = 'entry'
+
 Entry.POST = 'post'
 Entry.COMMENT = 'comment'
 Entry.REPLY = 'reply'
 Entry.WEBMENTION = 'webmention'
 
-Entry.listFields = ['id', 'type', 'owner', 'name', 'text', 'url', 'access', 'count', 'child_count', 'created', 'list', 'parent', 'recipient', 'link', 'tags', 'meta', 'topic', 'thread', 'model']
+Entry.listFields = [
+  'id', 'model', 'type', 'owner', 'name', 'text', 'url', 'access',
+  'count', 'child_count', 'like_count',
+  'created', 'link', 'tags', 'meta',
+  'list', 'parent', 'recipient', 'topic', 'thread',
+  'source', 'target', 'ref'
+]
+
 Entry.detailFields = Entry.listFields.concat(['version'])
 
 Entry.postSchema = Object.assign({}, Entity.schema, {

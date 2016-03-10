@@ -123,6 +123,19 @@ class EntryStore extends Store {
       () => flow.next(entry)
     ], done)
   }
+
+  updateLikeCount(entry, done) {
+    var t = () => Entry.table(entry.id)
+    debug('updateLikeCount', entry.id, entry.like_count)
+    var flow = tflow([
+      () => {
+        t().update({
+          like_count: t().count('*').where({ref: entry.id, rel: Entity.LIKE}).andWhere('access', Access.EVERYONE)
+        }).where('id', entry.id).asCallback(flow)
+      },
+    ], done)
+  }
+
 }
 
 class ChannelStore extends Store {
@@ -168,6 +181,7 @@ class ChannelStore extends Store {
       }
     ], done)
   }
+
 }
 
 module.exports = {

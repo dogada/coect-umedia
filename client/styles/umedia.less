@@ -29,9 +29,37 @@
     color: #000;
 }
 
-.entry-meta, .entry-actions {
-    color: #555;
-    margin-bottom: 5px;
+.entry-tags {
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+.entry-header, .entry-footer {
+    margin-bottom: 4px;
+}
+
+.entry-header a.permalink {
+    margin-left: 14px;
+    color: @meta_color;
+}
+
+.entry-footer {
+    margin-top: 6px;
+}
+
+.entry-footer a {
+    color: @meta_color;
+}
+
+.entry-tags a {
+    color: @color;
+    background: @bg_color;
+    padding: 2px 4px;
+    letter-spacing: 0.05em;
+}
+
+.entry-footer span {
+    margin-right: 1em;
 }
 
 .umedia-entries-header {
@@ -85,7 +113,15 @@ ol.breadcrumb {
 
 
 
-.entry-actions span {
-    margin-right: 1em;
-}
 
+
+.umedia-entry {
+    .restricted { color: grey }
+    .saved, .liked { color: #ff0000 }
+    h2 { margin-top: 0 }
+    
+    blockquote ~ .coect-reply-to {
+        margin-top: -20px;
+        margin-bottom: 20px;
+    }
+}

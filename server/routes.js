@@ -9,6 +9,7 @@ var user = require('./user')
 var category = require('./category')
 var webmention = require('./webmention')
 var broadcast = require('./broadcast')
+var like = require('./like')
 
 function loginRequired(req, res, next) {
   debug('loginRequired', req.isAuthenticated())
@@ -51,6 +52,10 @@ module.exports = function(r) {
 
   r.route('/e/:id/:action(accept|reject)')
     .post(loginRequired, entry.moderate)
+
+  r.route('/e/:id/:action(like|save)')
+    .post(loginRequired, like.likeEntry)
+    .delete(loginRequired, like.unlikeEntry)
 
   r.route('/e/:id/broadcast')
     .post(loginRequired, broadcast.broadcast)

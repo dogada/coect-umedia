@@ -19,9 +19,9 @@ function appendClass(attrs, klass) {
 // http://indiewebcamp.com/in-reply-to
 exports['reply-to'] = function (data) {
   var attrs = coect.object.assign({title: 'In reply to'}, data.attrs || {})
-  appendClass(attrs, 'coect-reply-to')
+  appendClass(attrs, 'coect-reply-to coect-meta')
   return tag('div', attrs, [
-    tag('span', {'class': 'glyphicon glyphicon-share-alt'}, ' '),
+    tag('span', {'class': 'fa fa-hand-o-right'}, ' '),
     tag('a', {href: data.value, 'class': 'u-in-reply-to'}, escape(data.value))
   ])
 }

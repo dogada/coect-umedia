@@ -15,6 +15,7 @@ var Access = coect.Access
 var config = require('./config')
 var store = require('./store')
 var riot = require('riot')
+var misc = require('./misc')
 
 /**
    Load list and parent and check that they match each other.
@@ -125,29 +126,11 @@ function create(req, res) {
   ], coect.json.response(res))
 }
 
-function entryWhere(req) {
-  if (req.params.id) return {id: req.params.id}
-  else return {url: [req.params.username, req.params.cslug, req.params.eslug].join('/')}
-}
-
-
-function getEntryAndChannel(req, done) {
-  let flow = tflow([
-    () => Entry.get(entryWhere(req), {select: '*'}, flow),
-    (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry)),
-    (entry, channel) => {
-      if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
-      if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
-      flow.next(entry, channel)
-    }
-  ], done)
-}
-
 function update(req, res) {
   debug('update', req.body)
   var flow = tflow([
     function() {
-      getEntryAndChannel(req, flow)
+      misc.getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       if (entry.type === 'post') this.next(entry, channel, channel)
@@ -188,7 +171,7 @@ function moderate(req, res) {
   debug('moderate', req.params)
   var flow = tflow([
     function() {
-      getEntryAndChannel(req, flow)
+      misc.getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       if (entry.parent === channel.id) flow.next(entry, channel, channel)
@@ -206,11 +189,10 @@ function moderate(req, res) {
   ], coect.json.response(res))
 }
 
-
 function data(req, res, done) {
   debug('data xhr=', req.xhr, req.params)
   var flow = tflow([
-    () => getEntryAndChannel(req, flow),
+    () => misc.getEntryAndChannel(req, flow),
     (entry, channel) => flow.next(Entry.pick(entry))
   ], coect.json.response(res, done))
 }
@@ -219,7 +201,7 @@ function detail(req, res, next) {
   debug('detail xhr=', req.xhr, req.path, req.params, req.query)
   var flow = tflow([
     function() {
-      getEntryAndChannel(req, flow)
+      misc.getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       entry = Entry.pick(entry)
@@ -233,7 +215,7 @@ function detail(req, res, next) {
       Entry.table().select(fields).whereIn('id', related).asCallback(flow.join(entry, channel))
     },
     function(entry, channel, related) {
-      Entity.fillUsers(related.concat(entry, channel), req.app.userCache, flow.join(entry, channel))
+      Entity.postprocess(req, related.concat(entry, channel), flow.join(entry, channel))
     },
     function(entry, channel, related) {
       debug(`related.length=${related.length}`)
@@ -271,7 +253,7 @@ function detail(req, res, next) {
 function trash(req, res) {
   debug('remove params', req.params)
   var flow = tflow([
-    () => getEntryAndChannel(req, flow),
+    () => misc.getEntryAndChannel(req, flow),
     (entry, channel) => req.security.canTrashEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
     (entry) => Entry.update(entry.id, {access: Access.TRASH}, flow)
   ], coect.json.response(res))
@@ -283,7 +265,7 @@ function trash(req, res) {
 function purge(req, res) {
   debug('purge params', req.params)
   var flow = tflow([
-    () => getEntryAndChannel(req, flow),
+    () => misc.getEntryAndChannel(req, flow),
     (entry, channel) => req.security.canPurgeEntry(req.user, entry, channel) ? flow.next(entry) : flow.fail(403, 'Forbidden'),
     (entry) => Entry.remove(entry.id, flow)
   ], coect.json.response(res))
@@ -315,7 +297,7 @@ function list(req, res) {
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow),
-    (entries) => Entity.fillUsers(entries, req.app.userCache, flow.send({items: entries}))
+    (entries) => Entity.postprocess(req, entries, flow.send({items: entries})),
   ], coect.json.response(res))
 }
 
@@ -327,6 +309,5 @@ module.exports = {
   trash,
   purge,
   list,
-  moderate,
-  getEntryAndChannel
+  moderate
 }

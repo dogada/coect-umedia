@@ -79,7 +79,7 @@ var getMentionParent = function(target, done) {
   var flow = tflow([
     function() {
       if (target instanceof Entity) flow.next(target)
-      else if (target.username) Channel.getOrCreateMentions(target, flow)
+      else if (target.username) Channel.getOrCreateType(target, Channel.MENTIONS, flow)
       else {
         console.error('Invalid webmention target', (typeof target), target, target.constructor)
         flow.fail(500, 'No parent for target ' + ' ' +
