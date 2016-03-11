@@ -57,7 +57,7 @@ function listWhere(opts, done) {
       if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       
       // show top-level entries (posts) only
-      if ((where.owner || where.list) && !opts.tag && !opts.model) where.topic = null
+      if ((where.owner || where.list) && !opts.tag && !opts.model && !opts.my) where.topic = null
       if (opts.model) where.model = opts.model
       this.next(where, opts.tag)
     }

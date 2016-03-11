@@ -91,6 +91,7 @@ var urls = {
   channel: prefixOrUrl(base, 'c'),
   user: prefixOrUrl(base, 'u'),
   category: prefixOrUrl(base, 't'),
+  my: prefixOrUrl(base, 'my'),
   avatar: Site.account.avatar
 }
 

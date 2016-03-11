@@ -19,6 +19,8 @@ function baseRoutes(route, url) {
 
   route(url.category(':category'), handlers.category.detail)
 
+  route(url.my(':filter'), handlers.my.like)
+  route(url.my(), handlers.my.like)
 }
 
 /**
@@ -54,6 +56,7 @@ function newspaperRoutes(route, prefix) {
 
 module.exports = function(route, opts) {
   baseRoutes(route, opts.url)
+
   function prefix(path) {
     return opts.url.base({url: path})
   }

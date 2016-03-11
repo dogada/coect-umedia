@@ -90,6 +90,7 @@
      debug('initQuery listType', listType)
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
+     else if (opts.my) query.my = opts.my
      else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
      else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
      else if (listType === 'replies') query.parent = self.ancestor.id

@@ -28,7 +28,7 @@ Entry.listFields = [
   'count', 'child_count', 'like_count',
   'created', 'link', 'tags', 'meta',
   'list', 'parent', 'recipient', 'topic', 'thread',
-  'source', 'target', 'ref'
+  'source', 'target', 'ref', 'rel'
 ]
 
 Entry.detailFields = Entry.listFields.concat(['version'])
