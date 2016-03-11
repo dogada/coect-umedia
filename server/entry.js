@@ -92,6 +92,7 @@ function saveNewEntry(req, parent, list, form, done) {
     type: type,
     access: form.access,
     name: form.name,
+    head: form.head,
     tags: getTags(form, type),
     text: form.text,
     data: data,
@@ -147,8 +148,8 @@ function update(req, res) {
       if (entryData.access || _.size(form.accessData)) entryData.access = form.accessData
       Entry.update(entry.id, _.omit({
         name: form.name,
-        head: doc.head,
-        text: doc.text,
+        head: form.head,
+        text: form.text,
         access: form.access,
         tags: getTags(form, entry.type),
         data: entryData,
@@ -292,7 +293,7 @@ function list(req, res) {
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {
-      for (let param of ['cursor', 'offset', 'count', 'order']) opts[param] = req.query[param]
+      for (let param of ['cursor', 'offset', 'count', 'order', 'view']) opts[param] = req.query[param]
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },

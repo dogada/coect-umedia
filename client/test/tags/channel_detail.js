@@ -11,8 +11,16 @@ describe('umedia-channel-detail', function() {
   before(function() {
     env.fakeGET('/c/listId', FAKE_CHANNEL)
     env.fakeGET('/e?order=last&count=10&list=listId', {items: [
-      {id: 'e1', text: 'First entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
-      {id: 'e2', text: 'Second entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
+      {id: 'e1', 
+       text: 'First entry',
+       head: 'First entry',
+       list: FAKE_CHANNEL, 
+       owner: FAKE_CHANNEL.owner},
+      {id: 'e2', 
+       text: 'Second entry', 
+       head: 'Second entry',
+       list: FAKE_CHANNEL, 
+       owner: FAKE_CHANNEL.owner},
     ]})
   })
 

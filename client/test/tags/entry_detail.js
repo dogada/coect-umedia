@@ -19,7 +19,7 @@ var POST = {
 
 describe(TAG, function() {
   before(function() {
-    env.fakeGET('/e?order=last&count=10&topic=ID1', {items: COMMENTS})
+    env.fakeGET('/e?order=last&count=10&topic=ID1&view=full', {items: COMMENTS})
   })
 
   it('should show post with comments', function(done) {

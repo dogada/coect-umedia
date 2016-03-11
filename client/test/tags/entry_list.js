@@ -7,10 +7,14 @@ describe(TAG, function() {
 
   before(function() {
     env.fakeGET('/e?order=last&count=10', {items: [
-      {id: 'e1', text: 'h2: Hello world\nBye.', 
+      {id: 'e1',
+       text: 'h2: Hello world\nBye.',
+       head: 'Hello world',
        user: {id: 'U1', name: 'User1', username: 'user1', avatar: ''}
       },
-      {id: 'e2', text: 'Just a comment',
+      {id: 'e2', 
+       text: 'Just a comment',
+       head: 'Just a comment',
        user: {id: 'U2', name: 'User2', username: 'user2', avatar: 'http://site.com/1.jpg'}
       }
     ]})
@@ -27,7 +31,7 @@ describe(TAG, function() {
       expect(tag.hasMore).to.be.false
 
       expect($('.umedia-entry-list ul.h-feed li', tag.root)).to.have.length(2)
-      $('#ee1.h-entry h2', tag.root).should.have.text('Hello world')
+      $('#ee1.h-entry p', tag.root).should.have.text('Hello world')
       $('#ee2.h-entry p', tag.root).should.contain('Just a comment')
     }
     checkHtml()

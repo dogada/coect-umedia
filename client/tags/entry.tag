@@ -2,7 +2,7 @@
   <div id="e{entry.id}" class={'h-entry': hentry, 'h-cite': opts.cite, 'p-comment': opts.comment, 'highlighted': entry.highlighted, 'media umedia-entry': 1}>
     
     <h1 if={ title && opts.detail } class="p-name">{ title }</h1>
-    <h2 if={ title && !opts.detail } class="p-name">{ title }</h2>
+    <h2 if={ title && !opts.detail }><a class="p-name" href={ url.entry(entry) }>{ title }</a></h2>
 
     <div class="media-left">
       <a class="p-author h-card" href={ url.user(entry.owner) }>
@@ -48,9 +48,13 @@
         </ul>
       </div>
 
-      <article class={ (hentry || opts.detail) ? 'e-content': 'p-content' }>
+      <article class="entry-content { (hentry || opts.detail) ? 'e-content': 'p-content' }">
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
+
+      <div if={ summaryView } class="coect-meta read-more">
+        <a href={ url.entry(entry) }>Read more…</a>
+      </div>
 
       <p if={ entry.ref } class="coect-meta">Referenced entry 
         <a href={ url.entry(entry.ref) }>{ entry.ref }</a> 
@@ -60,7 +64,7 @@
       <aside class="entry-footer coect-meta">
 
         <span if={ hasCounters }>
-          <a onclick={ like } title="Like it!"><i
+          <a href="#" onclick={ like } title="Like it!"><i
             class={"like fa fa-heart": 1, "liked": entry.liked }></i></a>
           <a if={ entry.like_count } href="{ url.entry(entry) }/?likes">{ entry.like_count }</a>
         </span>
@@ -93,7 +97,7 @@
        </span>
 
        <span if={ hasCounters } class="pull-right">
-         <a onclick={ save } title="Bookmark it!"><i class={"fa fa-bookmark": 1,  "saved": entry.saved}></i></a>
+         <a href="#" onclick={ save } title="Bookmark it!"><i class={"fa fa-bookmark": 1,  "saved": entry.saved}></i></a>
        </span>
 
       </aside>
@@ -132,8 +136,11 @@
      self.source = entry.source || self.webmention && self.webmention.url
      debug('bridgy', self.coect.bool(self.meta.bridy))
      
-     self.doc = self.wpml.doc(entry.text || '')
-     self.title = self.doc.meta.title
+     self.summaryView = (opts.view === 'summary')
+     var content = (self.summaryView ? entry.head || entry.name : entry.text) || ''
+     debug('summaryView', self.summaryView)
+     self.doc = self.wpml.doc(content)
+     self.title = self.doc.meta.title || entry.meta && entry.meta.title
      self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
      self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
@@ -233,6 +240,4 @@
    }
   </script>
 
-  <style>
-  </style>
 </umedia-entry>

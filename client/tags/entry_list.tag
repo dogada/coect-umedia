@@ -37,7 +37,8 @@
         <li each={ e in items }>
           <umedia-entry entry={ e }
           ancestor={ parent.ancestor || parent.channel }
-          comment={ parent.opts.comment } cite={ parent.opts.cite } />
+          comment={ parent.opts.comment } cite={ parent.opts.cite } 
+          view={ parent.view } />
         </li>
       </ul>
 
@@ -56,6 +57,9 @@
    self.ancestor = opts.ancestor
    self.items = opts.items || []
    self.hasMore = false
+   self.view = opts.view || 'summary'
+   self.debug('entry_list view', self.view, opts.view)
+   
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
@@ -98,6 +102,7 @@
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 
      if (opts.category) query.tag = opts.category
+     if (opts.view) query.view = opts.view
      return query
    }
 

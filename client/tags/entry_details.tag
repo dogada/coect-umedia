@@ -17,7 +17,7 @@
     </div>
 
     <umedia-entry-list id="umedia-comments" items={ items } 
-      ancestor={ entry } comment="1" cite="1"></umedia-entry-list>
+      ancestor={ entry } comment="1" cite="1" view="full"></umedia-entry-list>
 
   </div>
   

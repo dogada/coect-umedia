@@ -14,13 +14,27 @@ describe(TAG, function() {
   before(function() {
     // will be loaded by entry-list
     env.fakeGET('/e?order=last&count=10&tag=A+category', {items: [
-      {id: 'e1', text: '!tags: Test, demo\nFirst entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
-      {id: 'e2', text: '!tags: Test\nSecond entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
+      {id: 'e1',
+       text: '!tags: Test, demo\nFirst entry',
+       head: 'First entry',
+       list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
+      {id: 'e2',
+       text: '!tags: Test\nSecond entry',
+       head: 'Second entry',
+       list: FAKE_CHANNEL,
+       owner: FAKE_CHANNEL.owner}
     ]})
 
     env.fakeGET('/e?order=last&count=10&list=listId&tag=Channel+category', {items: [
-      {id: 'e1', text: '!tags: Test, demo\nFirst entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
-      {id: 'e2', text: '!tags: Test\nSecond entry', list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
+      {id: 'e1',
+       text: '!tags: Test, demo\nFirst entry',
+       head: 'First entry',
+       list: FAKE_CHANNEL, owner: FAKE_CHANNEL.owner},
+      {id: 'e2',
+       text: '!tags: Test\nSecond entry',
+       head: 'Second entry',
+       list: FAKE_CHANNEL,
+       owner: FAKE_CHANNEL.owner}
     ]})
 
   })

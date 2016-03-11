@@ -17,6 +17,12 @@ function nameFromContent(content) {
   }
 }
 
+function summaryFromContent(content) {
+  for (var i = 0, node; (node = content[i++]); ) {
+    if (/^(summary)$/.test(node.name)) return nodeText(node)
+  }
+}
+
 function parseTags(meta) {
   if (!meta.tags) return
   var tags = meta.tags.split(',').slice(0, 3).map(t => t.trim())
@@ -29,12 +35,13 @@ exports.parse = function(text, opts, done) {
   var meta = parsed.attrs
   var content = parsed.value
   var name = meta.name || coect.util.truncate(meta.title || nameFromContent(content) || '', opts.maxNameLength || 70)
-
+  var summary = summaryFromContent(content) || nameFromContent(content)
   debug('content', content.length, name)
+  debug('summary', summary)
   done(null, {
     meta: meta,
     name: name,
-    head: null,
+    head: summary,
     tags: parseTags(meta),
     content: content,
     text: text

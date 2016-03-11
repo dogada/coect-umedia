@@ -98,7 +98,7 @@ Entity.validate = function(data, opts, done) {
       wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength}, this)
     },
     function(doc) {
-      var form = Object.assign({name: doc.name}, 
+      var form = Object.assign({name: doc.name, head: doc.head}, 
                                doc.meta,
                                {meta: Object.assign({}, opts.meta, doc.meta)},
                                {tags: doc.tags}, data)

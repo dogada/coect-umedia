@@ -24,7 +24,9 @@ Entry.REPLY = 'reply'
 Entry.WEBMENTION = 'webmention'
 
 Entry.listFields = [
-  'id', 'model', 'type', 'owner', 'name', 'text', 'url', 'access',
+  'id', 'model', 'type', 'owner', 
+  'name', 'head', 'text', 
+  'url', 'access',
   'count', 'child_count', 'like_count',
   'created', 'link', 'tags', 'meta',
   'list', 'parent', 'recipient', 'topic', 'thread',
