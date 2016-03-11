@@ -147,12 +147,14 @@ function list2map(items, key) {
 }
 
 Entity.appendUserFlags = function(items, user, done) {
-  debug('appendUserFlags', items.length)
-  var listId = user.getListId(Entity.LIKE)
-  var ids = items.filter(item => !item.ref).map(item => item.id)
+  debug('appendUserFlags', items.length, user && user.id)
   var flow = tflow([
     () => {
+      if (!user) return flow.complete(items)
+      var listId = user.getListId(Entity.LIKE)
       if (!listId) return flow.complete(items)
+      var ids = items.filter(item => !item.ref).map(item => item.id)
+      if (!ids.length) return flow.complete(items)
       Entity.table(listId).whereIn('ref', ids).andWhere('list', listId).select('ref', 'access').asCallback(flow)
     },
     (likes) => {
