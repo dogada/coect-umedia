@@ -298,7 +298,8 @@ function list(req, res) {
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow),
-    (entries) => Entity.postprocess(req, entries, flow.send({items: entries})),
+    (entries) => Entity.postprocess(req, entries, flow),
+    (entries) => flow.next({items: entries})
   ], coect.json.response(res))
 }
 

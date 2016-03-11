@@ -149,7 +149,7 @@ function list2map(items, key) {
 Entity.appendUserFlags = function(items, user, done) {
   debug('appendUserFlags', items.length)
   var listId = user.getListId(Entity.LIKE)
-  var ids = items.map(item => item.id)
+  var ids = items.filter(item => !item.ref).map(item => item.id)
   var flow = tflow([
     () => {
       if (!listId) return flow.complete(items)
@@ -167,14 +167,38 @@ Entity.appendUserFlags = function(items, user, done) {
   ], done)
 }
 
+Entity.resolveRefs = function(items, done) {
+  debug('resolveRefs', items.length)
+
+  var ids = items.map(item => item.ref).filter(id => id)
+  var flow = tflow([
+    () => {
+      if (!ids.length) return flow.complete(items)
+      Entity.table().whereIn('id', ids).asCallback(flow)
+    },
+    (refs) => {
+      debug(`found ${refs.length} refs from ${ids.length}`)
+      var objects = list2map(refs, 'id')
+      var resolved = items.map(item => {
+        if (!item.ref) return item
+        var obj = objects[item.ref]
+        if (obj && obj.access >= item.access) return obj
+        return item
+      })
+      flow.next(resolved)
+    }
+  ], done)
+}
+
 /**
    Update items in-place. Append user info and 'liked', 'saved' flags.
 */
 Entity.postprocess = function(req, items, done) {
   debug('postprocess', items.length)
   var flow = tflow([
-    () => Entity.fillUsers(items, req.app.userCache, flow),
-    () => Entity.appendUserFlags(items, req.user, flow)
+    () => Entity.resolveRefs(items, flow),
+    (resolved) => Entity.fillUsers(resolved, req.app.userCache, flow),
+    (filled) => Entity.appendUserFlags(filled, req.user, flow)
   ], done)
 }
 

@@ -21,6 +21,10 @@ var upsert = function(visible, user, entity, done) {
   var access = (visible ? Access.EVERYONE : Access.HIDDEN)
   debug('create', visible, access, user, entity)
   var flow = tflow([
+    () => {
+      if (entity.ref) flow.fail(400, 'Can\'t like a reference.')
+      else flow.next()
+    },
     () => Channel.getOrCreateType(user, Entity.LIKE, flow),
     (list) => Entity.findOne({
       list: list.id,

@@ -52,6 +52,11 @@
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
+      <p if={ entry.ref } class="coect-meta">Referenced entry 
+        <a href={ url.entry(entry.ref) }>{ entry.ref }</a> 
+        was not found or deleted.
+      </p>
+
       <aside class="entry-footer coect-meta">
 
         <span if={ hasCounters }>
@@ -143,7 +148,7 @@
        self.parentName = entry.list.name
      }
      self.action = self.actionName(self.type, self.replyToUrl)
-     self.hasCounters = (self.type == 'post' || self.type == 'reply')
+     self.hasCounters = !entry.ref && (self.type == 'post' || self.type == 'reply')
      debug('type', self.type, 'action', self.action, 'parent', self.parentUrl, 'replyTo', self.replyToUrl)
    }
 
