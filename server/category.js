@@ -26,10 +26,16 @@ exports.detail = function (req, res, next) {
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts, channel)),
-    (opts, channel, entries) => Entity.fillUsers(channel ? entries.concat(channel) : entries,
-                                                 req.app.userCache, flow.send(opts, channel, entries)),
+    (opts, channel, entries) => Entity.postprocess(req, (channel ? entries.concat(channel) : entries),
+                                                   flow.join(opts, channel)),
     (opts, channel, entries) => flow.next({
-      content: {tag: 'coect-category-detail', opts: {items: entries, category: opts.tag, channel}},
+      content: {
+        tag: 'coect-category-detail', opts: {
+          items: entries.filter(e => e.model !== Channel.MODEL),
+          category: opts.tag,
+          channel: channel
+        }
+      },
       title:  (channel ? channel.name + ' / ' + opts.tag : opts.tag),
       //canonicalUrl: req.coect.urls.user(user)
     })

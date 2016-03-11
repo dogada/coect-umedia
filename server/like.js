@@ -43,7 +43,8 @@ var upsert = function(visible, user, entity, done) {
         model: entity.model,
         type: entity.type,
         access: access,
-        tags: entity.tags
+        // for own likes don't duplicate tags
+        tags: (entity.owner !== user.id ? entity.tags : null)
       }, user.id, flow)
       else Entity.update(like.id, {access: access}, flow)
     },
