@@ -100,6 +100,7 @@ function saveNewEntry(req, parent, list, form, done) {
     // custom urls are allowed for posts only
     url: (type === 'post' ? Entry.makeUrl(list.url, form.slug) : null),
     owner: req.user.id,
+    recipient: (parent && parent.owner !== req.user.id ? parent.owner : null)
   }, parent, done)
 }
 
@@ -275,6 +276,7 @@ function purge(req, res) {
 function list(req, res) {
   var flow = tflow([
     () => {
+      if (req.query.my && !req.user) return flow.fail(400, 'User required.')
       var parentId = req.query.parent || req.query.thread || req.query.topic
       if (parentId) Entry.get(parentId, flow)
       else flow.next()
@@ -288,7 +290,10 @@ function list(req, res) {
       else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
       else if (req.query.owner) flow.next({owner: req.query.owner, model: 'entry'})
       else if (req.query.tag) flow.next({tag: req.query.tag})
-      else if (req.query.my) flow.next({list: req.user.getListId(req.query.my), my: req.query.my})
+      else if (req.query.my === Channel.NOTIFICATIONS) flow.next({recipient: req.user.id, my: req.query.my})
+      else if (req.query.my) flow.next({list: req.user.getListId(req.query.my),
+                                        owner: req.user.id,
+                                        my: req.query.my})
       else if (req.query.type && req.user && req.user.isAdmin()) flow.next({type: req.query.type})
       else flow.fail(400, 'Unknown query')
     },

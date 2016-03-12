@@ -52,8 +52,7 @@ function parentData(parent) {
   debug('parentData', parent)
   var data = {
     parent: parent.id,
-    list: parent.list || parent.id,
-    recipient: (parent.model === 'entry' ? parent.owner: null)
+    list: parent.list || parent.id
   }
   if (parent.model !== 'channel') {
     data.topic = parent.topic || parent.id
@@ -82,7 +81,7 @@ Entry.recipientMeta = function(parent, recipient) {
     meta.reply_to = wm.url || wm.source
     meta.reply_to_name = wm.author && wm.author.name
   } else if (parent.model === Entry.MODEL && recipient) {
-    meta.reply_to_name = recipient && recipient.name
+    meta.reply_to_name = recipient.name
   }
   debug('parentMeta', parent.model, parent.type, meta)
   return meta

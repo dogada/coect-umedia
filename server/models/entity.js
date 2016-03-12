@@ -186,13 +186,12 @@ Entity.resolveRefs = function(items, done) {
     (refs) => {
       debug(`found ${refs.length} refs from ${ids.length}`)
       var objects = list2map(refs, 'id')
-      var resolved = items.map(item => {
-        if (!item.ref) return item
+      for (var item of items) {
+        if (!item.ref) continue
         var obj = objects[item.ref]
-        if (obj && obj.access >= item.access) return obj
-        return item
-      })
-      flow.next(resolved)
+        if (obj && obj.access >= item.access) Object.assign(item, obj)
+      }
+      flow.next(items)
     }
   ], done)
 }

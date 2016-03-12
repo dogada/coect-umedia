@@ -42,7 +42,7 @@ var upsert = function(visible, user, entity, done) {
         ref: entity.id,
         rel: Entity.LIKE,
         name: '',
-        recipient: entity.owner,
+        recipient: (entity.owner !== user.id ? entity.owner : null),
         model: entity.model,
         type: entity.type,
         access: access,
