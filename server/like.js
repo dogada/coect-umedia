@@ -23,6 +23,7 @@ var upsert = function(visible, user, entity, done) {
   var flow = tflow([
     () => {
       if (entity.ref) flow.fail(400, 'Can\'t like a reference.')
+      else if (entity.owner === user.id && access > Access.HIDDEN) flow.fail(400, 'Can\'t like own content.') 
       else if (entity.access <= Access.HIDDEN) flow.fail(400, 'Can\'t like hidden, deleted and admin only entities.')
       else flow.next()
     },
