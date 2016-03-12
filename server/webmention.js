@@ -121,7 +121,7 @@ var saveMention = function(parent, form, done) {
       }, (parent), flow)
     },
     (id) => Entry.get(id, flow),
-    (entry) => store.entry.updateCounters(entry, flow)
+    (entry) => store.entry.updateChildCount(entry, flow)
   ], done)
 }
 

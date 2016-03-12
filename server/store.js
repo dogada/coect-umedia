@@ -31,7 +31,7 @@ function filterByAccess(q, user, access) {
 }
 
 function listOrder(order) {
-  if (order === 'top') return ['rating', 'desc']
+  if (order === 'top') return ['like_count', 'desc']
   else if (order === 'first') return ['id', 'asc']
   else return ['id', 'desc']
 }
@@ -95,15 +95,10 @@ class EntryStore extends Store {
     ], done)
   }
 
-  updateCounters(entry, done) {
+  updateChildCount(entry, done) {
     var t = () => Entry.table(entry.id)
-    debug('updateCounters', entry.access, entry)
+    debug('updateChildCount', entry.access, entry)
     var flow = tflow([
-      () => {
-        t().update({
-          rating: t().count('*').where('parent', entry.parent)
-        }).where('id', entry.parent).asCallback(flow)
-      },
       () => {
         if (entry.parent === entry.topic || entry.parent === entry.thread) return flow.next() 
         t().update({

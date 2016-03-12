@@ -119,7 +119,7 @@ function create(req, res) {
     },
     function(entry) {
       debug('created entry', entry)
-      store.entry.updateCounters(entry, flow)
+      store.entry.updateChildCount(entry, flow)
     },
     function(entry) {
       Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
@@ -162,7 +162,7 @@ function update(req, res) {
       debug('updated', id)
       Entry.get(id, this)
     },
-    (entry) => store.entry.updateCounters(entry, flow),
+    (entry) => store.entry.updateChildCount(entry, flow),
     (entry) => Entity.fillUsers([entry], req.app.userCache, flow.send(entry)),
   ], coect.json.response(res))
 }
@@ -186,7 +186,7 @@ function moderate(req, res) {
       }
       Entry.update(entry.id, data, this.send(data, entry))
     },
-    (data, entry) => store.entry.updateCounters(entry, flow.send(data)),
+    (data, entry) => store.entry.updateChildCount(entry, flow.send(data)),
   ], coect.json.response(res))
 }
 
