@@ -65,7 +65,8 @@ Channel.getOrCreateType = function(user, type, done) {
   var flow = tflow([
     () => {
       if (user.getListId(type)) return Channel.get(user.getListId(type), flow)
-      Channel.create({
+      else if (type === Entity.MAIN && user.blog) return flow.next(user.blog)
+      else Channel.create({
         model: Channel.MODEL,
         type: type,
         name: type.toUpperCase(),

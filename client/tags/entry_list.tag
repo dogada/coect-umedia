@@ -84,20 +84,21 @@
    }
 
    function getListType(ancestor) {
-     if (!ancestor.thread) return 'topic'
+     if (ancestor.model === 'channel') return 'channel'
+     else if (!ancestor.thread) return 'topic'
      else if (ancestor.thread && ancestor.thread.id === ancestor.topic.id) return 'thread'
      else if (ancestor.thread) return 'replies'
    }
 
    function initQuery(query) {
      var listType = self.ancestor && getListType(self.ancestor)
-     debug('initQuery listType', listType)
+     debug('initQuery listType', listType, self.ancestor)
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
      else if (opts.my) query.my = opts.my
      else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
      else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
-     else if (listType === 'replies') query.parent = self.ancestor.id
+     else if (listType === 'replies' || listType === 'channel') query.parent = self.ancestor.id
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 

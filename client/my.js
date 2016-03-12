@@ -1,6 +1,8 @@
 'use strict';
 
-exports.like = function () {
-  Site.mountTag('umedia-entry-list', {my: 'like', view: 'summary'}, 'Content liked or bookmarked by me')
+exports.index = function () {
+  Site.mountTag('umedia-entry-list',
+                {my: 'main', view: 'summary'},
+                'Own entries, likes and bookmarks.')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }

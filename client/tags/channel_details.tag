@@ -5,7 +5,7 @@
 
     <umedia-channel channel={ channel }></umedia-channel>
     <umedia-entry-editor if={ permissions.post } ancestor={ channel } items={ items } />
-    <umedia-entry-list list={ channel.id } channel={ channel } items={ items } />
+    <umedia-entry-list ancestor={ channel } items={ items } />
   </div>
 
   <script>

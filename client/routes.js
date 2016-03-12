@@ -19,8 +19,8 @@ function baseRoutes(route, url) {
 
   route(url.category(':category'), handlers.category.detail)
 
-  route(url.my(':filter'), handlers.my.like)
-  route(url.my(), handlers.my.like)
+  route(url.my(':filter'), handlers.my.index)
+  route(url.my(), handlers.my.index)
 }
 
 /**

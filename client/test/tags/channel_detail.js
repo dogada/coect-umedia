@@ -1,7 +1,8 @@
 var env = require('../env')
 
 var FAKE_CHANNEL = {
-  id: 'listId', 
+  id: 'listId',
+  model: 'channel',
   name: 'Fake channel',
   text: 'h4: Subheader\n See more: http://www.coect.net',
   owner: {name: 'User2', id: 'U2'}
@@ -10,7 +11,7 @@ var FAKE_CHANNEL = {
 describe('umedia-channel-detail', function() {
   before(function() {
     env.fakeGET('/c/listId', FAKE_CHANNEL)
-    env.fakeGET('/e?order=last&count=10&list=listId', {items: [
+    env.fakeGET('/e?order=last&count=10&parent=listId', {items: [
       {id: 'e1', 
        text: 'First entry',
        head: 'First entry',

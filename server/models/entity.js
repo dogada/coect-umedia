@@ -40,6 +40,7 @@ class Entity extends Model {
 Entity.LIST = 'list'
 Entity.ENTRY = 'entry'
 Entity.LIKE = 'like'
+Entity.MAIN = 'main'
 
 
 Entity.getChildType = function(data) {
@@ -155,7 +156,7 @@ Entity.appendUserFlags = function(items, user, done) {
   var flow = tflow([
     () => {
       if (!user) return flow.complete(items)
-      var listId = user.getListId(Entity.LIKE)
+      var listId = user.getListId(Entity.MAIN)
       if (!listId) return flow.complete(items)
       var ids = items.filter(item => !item.ref).map(item => item.id)
       if (!ids.length) return flow.complete(items)

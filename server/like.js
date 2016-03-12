@@ -25,7 +25,7 @@ var upsert = function(visible, user, entity, done) {
       if (entity.ref) flow.fail(400, 'Can\'t like a reference.')
       else flow.next()
     },
-    () => Channel.getOrCreateType(user, Entity.LIKE, flow),
+    () => Channel.getOrCreateType(user, Entity.MAIN, flow),
     (list) => Entity.findOne({
       list: list.id,
       ref: entity.id,
@@ -57,7 +57,7 @@ var upsert = function(visible, user, entity, done) {
 }
 
 var remove = function(user, entity, done) {
-  var listId = user.getListId(Entity.LIKE)
+  var listId = user.getListId(Entity.MAIN)
   debug('remove', user, entity)
   var flow = tflow([
     () => {
