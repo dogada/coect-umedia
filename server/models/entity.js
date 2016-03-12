@@ -51,28 +51,32 @@ Entity.getChildType = function(data) {
 }
 
 
+Entity.MAX_NAME_LENGTH = 100
+Entity.MAX_TEXT_LENGTH = 1000
+Entity.SLUG_LENGTH = 50
+
 Entity.schema = {
 
   name: {
     isLength: {
-      options: [3, 100],
-      errorMessage: 'Name must be between 3 and 100 chars long'
+      options: [3, Entity.MAX_NAME_LENGTH],
+      errorMessage: `Name must be between 3 and ${Entity.MAX_NAME_LENGTH} chars long`
     }
   },
 
   text: {
     optional: true,
     isLength: {
-      options: [3, 1000],
-      errorMessage: 'Text must be between 3 and 1000 chars long'
+      options: [3, Entity.MAX_TEXT_LENGTH],
+      errorMessage: `Text must be between 3 and ${Entity.MAX_TEXT_LENGTH} chars long`
     }
   },
 
   slug: {
     optional: true,
     isLength: {
-      options: [3, 50],
-      errorMessage: 'Slug must be between 3 and 50 chars long'
+      options: [3, Entity.MAX_SLUG_LENGTH],
+      errorMessage: `Slug must be between 3 and ${Entity.MAX_SLUG_LENGTH} chars long`
     },
     matches: {
       options: [/^[a-z]+[a-z\d\-]*$/],

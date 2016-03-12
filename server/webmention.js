@@ -126,6 +126,7 @@ var saveMention = function(parent, form, done) {
 }
 
 function webmentionName(parsed) {
+  if (parsed.type === 'reply') return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
   var target = coect.util.truncateUrl(parsed.target)
   if (parsed.author && parsed.author.name) return `${target} ${parsed.type} by ${parsed.author.name}`
   else return `${target} ${parsed.type}`
@@ -138,7 +139,7 @@ function html2wpml(html) {
 
 function webmentionText(parsed) {
   if (parsed.type !== 'reply') return ''
-  return parsed.text || parsed.name
+  return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_TEXT_LENGTH)
 }
 
 var validate = function(parsed, meta, done) {
