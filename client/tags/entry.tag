@@ -22,9 +22,11 @@
         
         <a if={ parentUrl } href={ parentUrl }>{ parentName || 'Noname' }</a>
 
-        <a class="u-url permalink" href={ url.entry(entry) } title={ createdLocaleStr }>
-            <time class="dt-published" datetime={ createdISOStr }>{ createdAgeStr } ago</time>
-        </a>
+        <a 
+          class="u-url permalink" href={ url.entry(entry) } 
+          title={ createdLocaleStr }><time 
+          class="dt-published"
+          datetime={ createdISOStr }>{ createdAgeStr } ago</time></a>
         
         <span if="{ entry.access == Access.MODERATION }" onclick={ moderate } class="restricted"
               title="The entry is awaiting for moderation.">moderation</span>
@@ -52,7 +54,7 @@
         <umedia-wpml doc={ doc }></umedia-wpml>
       </article>
 
-      <div if={ summaryView } class="coect-meta read-more">
+      <div if={ showReadMore } class="coect-meta read-more">
         <a href={ url.entry(entry) }>Read more…</a>
       </div>
 
@@ -113,7 +115,9 @@
    var opts = self.opts
    var Access = self.Access = require('coect').Access
    self.ancestor = self.opts.ancestor
-   var entry = self.entry = self.opts.entry || self.opts.state && self.opts.state.entry
+   var entry = self.entry = self.opts.entry || self.opts.state &&
+   self.opts.state.entry
+
    self.hentry = opts.hentry || (!opts.cite && !opts.comment && !opts.detail)
    debug('h-entry', self.hentry, 'cite=', opts.cite, 'comment', opts.comment, 'detail=', opts.detail, entry)
 
@@ -129,18 +133,21 @@
    }
 
    if (entry) { //workaround for Riot 2.3 issues with evaluating tags with if={false}
+     var entryMeta = entry.meta || {}
      self.meta = self.coect.object.assign(
-       {}, entry.list && entry.list.meta || {}, entry.meta || {})
+       {}, entry.list && entry.list.meta || {}, entryMeta)
      debug('entry meta', entry.name, self.meta)
      self.webmention = entry.link && entry.link.webmention
      self.source = entry.source || self.webmention && self.webmention.url
      debug('bridgy', self.coect.bool(self.meta.bridy))
      
      self.summaryView = (opts.view === 'summary')
-     var content = (self.summaryView ? entry.head || entry.name : entry.text) || ''
+     var hasContent = entryMeta.p_count === undefined || entryMeta.p_count > 0
+     self.showReadMore = self.summaryView && (entryMeta.p_count === undefined || entryMeta.p_count > 1)
+     var content = (self.summaryView ? entry.head : hasContent && entry.text) || entry.name || ''
      debug('summaryView', self.summaryView)
      self.doc = self.wpml.doc(content)
-     self.title = self.doc.meta.title || entry.meta && entry.meta.title
+     self.title = self.doc.meta.title || entryMeta && entryMeta.title
      self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
 
      self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
@@ -221,7 +228,7 @@
    self.broadcast = function(e) {
      self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
-       self.coect.object.assign(self.entry.meta, data.meta)
+       self.entry.meta = self.coect.object.assign({}, self.entry.meta || {}, data.meta)
        Site.flash(JSON.stringify(data.results))
      }))
    }

@@ -5,7 +5,6 @@ var debug = require('debug')('umedia:wpml')
 var wpml = require('wpml')
 var coect = require('coect')
 
-
 function nodeText(node) {
   while (node && node.block) node = node.value[0]
   return (node && node.value)
@@ -32,12 +31,12 @@ function parseTags(meta) {
 
 exports.parse = function(text, opts, done) {
   var parsed = wpml.parse(text)
-  var meta = parsed.attrs
   var content = parsed.value
-  var name = meta.name || coect.util.truncate(meta.title || nameFromContent(content) || '', opts.maxNameLength || 70)
+  var meta = coect.object.assign({}, {p_count: content.length}, parsed.attrs)
+  var name = meta.name || coect.util.truncate(meta.title || nameFromContent(content) || '',
+                                              opts.maxNameLength)
   var summary = summaryFromContent(content) || nameFromContent(content)
-  debug('content', content.length, name)
-  debug('summary', summary)
+  debug('content.length', content.length, 'name.length', name.length, name)
   done(null, {
     meta: meta,
     name: name,

@@ -99,7 +99,7 @@ Entity.validate = function(data, opts, done) {
 
   tflow([
     function() {
-      wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength}, this)
+      wpml.parse(data.text || '', {maxNameLength: opts.maxNameLength || Entity.MAX_NAME_LENGTH}, this)
     },
     function(doc) {
       var form = Object.assign({name: doc.name, head: doc.head}, 
