@@ -54,7 +54,8 @@ class UmediaAccessPolicy extends Access {
     if (access > Access.ADMIN && channel) access = Math.min(
       access, this.accessInsideChannel(user, channel))
     // don't show items in trash by default even if user can see them
-    if (!opts || !opts.all) access = Math.max(access, Access.TRASH + 1)
+    if (opts && opts.min) access = Math.max(access, opts.min)
+    else if (!opts || !opts.all) access = Math.max(access, Access.TRASH + 1)
     return access
   }
 

@@ -56,7 +56,7 @@
    var opts = self.opts
    self.ancestor = opts.ancestor
    self.items = opts.items || []
-   self.hasMore = false
+   self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
    self.debug('entry_list view', self.view, opts.view)
    

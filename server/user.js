@@ -4,6 +4,7 @@ var debug = require('debug')('umedia:user')
 var tflow = require('tflow')
 var coect = require('coect')
 
+var Entity = require('./models/entity')
 var store = require('./store')
 
 exports.detail = function(req, res, next) {
@@ -15,8 +16,9 @@ exports.detail = function(req, res, next) {
       else req.coect.User.get({username: p.username}, flow)
     },
     (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
-    (user, channels) => store.entry.list(req, req.security.getUserAccess(req.user),
+    (user, channels) => store.entry.list(req, req.security.getUserAccess(req.user, null, {min: coect.Access.REJECTED}),
                                          {owner: user.id, model: 'entry'}, flow.join(user, channels)),
+    (user, channels, entries) => Entity.postprocess(req, entries, flow.join(user, channels)),
     (user, channels, entries) => flow.next({
       content: {tag: 'umedia-profile', opts: {user, entries}}, 
       sidebar: {tag: 'coect-channel-feed', opts: {items: channels}},

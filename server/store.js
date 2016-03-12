@@ -77,7 +77,9 @@ class EntryStore extends Store {
         q = q.select(Entry.listFields)
         q = q.where(where)
         if (tag) q = q.andWhere('tags', '@>', JSON.stringify([tag]))
+        //FIX:
         if (where.model) q = q.andWhere('type', '<>', 'webmention')
+        if (where.model) q = q.whereNull('ref')
         // if user isn't a root in a channel filter by access
         if (access > Access.ROOT) q = filterByAccess(q, user, access)
         if (opts.cursor) {
