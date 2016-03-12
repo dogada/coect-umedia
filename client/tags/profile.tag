@@ -18,7 +18,7 @@
     </div>
     
     <div if={ opts.entries.length } >
-      <h2>Recent entries</h2>
+      <h4 class="coect-section-header">Recent entries</h4>
       <umedia-entry-list items={ opts.entries } frozen="true" />
 
     </div>
