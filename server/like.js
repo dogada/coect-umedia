@@ -11,18 +11,19 @@ var misc = require('./misc')
 
 function likeStatus(access, likeCount) {
   return {
-    liked: (access === Access.EVERYONE),
+    liked: (access > Access.HIDDEN),
     saved: (access === Access.HIDDEN),
     like_count: likeCount
   }
 }
 
 var upsert = function(visible, user, entity, done) {
-  var access = (visible ? Access.EVERYONE : Access.HIDDEN)
+  var access = (visible ? entity.access : Access.HIDDEN)
   debug('create', visible, access, user, entity)
   var flow = tflow([
     () => {
       if (entity.ref) flow.fail(400, 'Can\'t like a reference.')
+      else if (entity.access <= Access.HIDDEN) flow.fail(400, 'Can\'t like hidden, deleted and admin only entities.')
       else flow.next()
     },
     () => Channel.getOrCreateType(user, Entity.MAIN, flow),
@@ -33,7 +34,8 @@ var upsert = function(visible, user, entity, done) {
     }, flow.join(list)),
     (list, like) => {
       if (like && like.access === access) return flow.complete(likeStatus(access))
-      else if (!like) Entity.create({
+      else if (like) Entity.update(like.id, {access: access}, flow)
+      else Entity.create({
         list: list.id,
         owner: user.id,
         ref: entity.id,
@@ -46,7 +48,7 @@ var upsert = function(visible, user, entity, done) {
         // for own likes don't duplicate tags
         tags: (entity.owner !== user.id ? entity.tags : null)
       }, user.id, flow)
-      else Entity.update(like.id, {access: access}, flow)
+
     },
     () => store.entry.updateLikeCount(entity, flow),
     () => Entity.table(entity.id).select('like_count').where('id', entity.id).first().asCallback(flow),
