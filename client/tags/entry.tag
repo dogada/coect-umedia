@@ -121,12 +121,16 @@
    self.hentry = opts.hentry || (!opts.cite && !opts.comment && !opts.detail)
    debug('h-entry', self.hentry, 'cite=', opts.cite, 'comment', opts.comment, 'detail=', opts.detail, entry)
 
+   function yourType() {
+     return (Site.user && Site.user.id === entry.recipient ? ' your ' + entry.type : '')
+   }
+
    self.actionName = function(type, replyTo) {
      //self.debug('actionName', type, webmType)
      if (type === 'reply' || replyTo) return 'to'
-     else if (type === 'like') return 'liked'
-     else if (type === 'repost') return 'reposted'
-     else if (type === 'bookmark') return 'bookmarked'
+     else if (type === 'like') return 'liked' + yourType()
+     else if (type === 'repost') return 'reposted' + yourType()
+     else if (type === 'bookmark') return 'bookmarked' + yourType()
      else if (type === 'rsvp') return 'rsvp'
      else if (type === 'mention' || type === 'link') return 'mentioned'
      return ''
