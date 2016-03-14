@@ -11,8 +11,8 @@ var misc = require('./misc')
 
 function likeStatus(access, likeCount) {
   return {
-    liked: (access > Access.HIDDEN),
-    saved: (access === Access.HIDDEN),
+    user_liked: (access > Access.HIDDEN),
+    user_saved: (access === Access.HIDDEN),
     like_count: likeCount
   }
 }
@@ -41,7 +41,7 @@ var upsert = function(visible, user, entity, done) {
         owner: user.id,
         ref: entity.id,
         rel: Entity.LIKE,
-        name: '',
+        name: entity.name,
         recipient: (entity.owner !== user.id ? entity.owner : null),
         model: entity.model,
         type: entity.type,

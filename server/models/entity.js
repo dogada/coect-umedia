@@ -167,7 +167,7 @@ Entity.appendUserFlags = function(items, user, done) {
       var likeMap = list2map(likes, 'ref')
       for (var entity of items) {
         var like = likeMap[entity.id]
-        if (like) entity[(like.access >= Access.EVERYONE ? 'liked' : 'saved')] = true
+        if (like) entity['user_' + (like.access > Access.HIDDEN ? 'liked' : 'saved')] = true
       }
       flow.next(items)
     }

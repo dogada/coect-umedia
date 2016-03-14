@@ -67,7 +67,7 @@
 
         <span if={ hasCounters }>
           <a href="#" onclick={ like } title="Like it!"><i
-            class={"like fa fa-heart": 1, "liked": entry.liked }></i></a>
+            class={"like fa fa-heart": 1, "liked": entry.user_liked }></i></a>
           <a if={ entry.like_count } href="{ url.entry(entry) }/?likes">{ entry.like_count }</a>
         </span>
 
@@ -99,7 +99,8 @@
        </span>
 
        <span if={ hasCounters } class="pull-right">
-         <a href="#" onclick={ save } title="Bookmark it!"><i class={"fa fa-bookmark": 1,  "saved": entry.saved}></i></a>
+         <a href="#" onclick={ save } title="Bookmark it!"><i
+           class={"fa fa-bookmark": 1,  "saved": entry.user_saved}></i></a>
        </span>
 
       </aside>
