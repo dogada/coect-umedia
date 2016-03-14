@@ -199,12 +199,16 @@ Entity.resolveRefs = function(items, done) {
 /**
    Update items in-place. Append user info and 'liked', 'saved' flags.
 */
-Entity.postprocess = function(req, items, done) {
+Entity.postprocess = function(req, items, opts, done) {
   debug('postprocess', items.length)
+  if (!done && typeof opts === 'function') {
+    done = opts
+    opts = {}
+  }
   var flow = tflow([
-    () => Entity.resolveRefs(items, flow),
-    (resolved) => Entity.fillUsers(resolved, req.app.userCache, flow),
-    (filled) => Entity.appendUserFlags(filled, req.user, flow)
+    () => opts.refs ? flow.next(items) : Entity.resolveRefs(items, flow),
+    (items) => Entity.fillUsers(items, req.app.userCache, flow),
+    (items) => Entity.appendUserFlags(items, req.user, flow)
   ], done)
 }
 

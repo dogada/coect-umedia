@@ -20,7 +20,7 @@
         
         <span if={ action }>{ action }</span>
         
-        <a if={ parentUrl } href={ parentUrl }>{ parentName || 'Noname' }</a>
+        <a if={ objectUrl } href={ objectUrl }>{ objectName || 'Noname' }</a>
 
         <a 
           class="u-url permalink" href={ url.entry(entry) } 
@@ -58,9 +58,8 @@
         <a href={ url.entry(entry) }>Read more…</a>
       </div>
 
-      <p if={ entry.ref } class="coect-meta">Referenced entry 
-        <a href={ url.entry(entry.ref) }>{ entry.ref }</a> 
-        was not found or deleted.
+      <p if={ type != 'like' && entry.ref } class="coect-meta">Referenced entry 
+        <a href={ url.entry(entry.ref) }>{ entry.ref }</a> was not found or deleted.
       </p>
 
       <aside class="entry-footer coect-meta">
@@ -133,6 +132,40 @@
      return ''
    }
 
+   function initHeader() {
+     self.action = self.actionName(self.type, self.replyToUrl)
+     if (self.type == 'post' && self.replyToUrl) {
+       self.objectUrl = self.replyToUrl
+       self.objectName = self.meta.reply_to_name || self.coect.util.truncateUrl(self.replyToUrl)
+     } else if (self.type == 'reply' || self.type == 'webmention') {
+       self.objectUrl = self.url.entry(entry.parent)
+       self.objectName = self.meta.reply_to_name
+     } else if (opts.list_name) {
+       self.objectUrl = self.url.entry(entry.channel)
+       self.objectName = entry.list.name
+     } else if (entry.ref) {
+       self.objectUrl = self.url.entry(entry.ref)
+       self.objectName = entry.name
+     }
+
+     if (entry.created) {
+       // self.created is ISO string on client-side and Date on server-side
+       var d = new Date(self.webmention && self.webmention.published || entry.created)
+       self.createdLocaleStr = d.toLocaleString()
+       self.createdISOStr = d.toISOString()
+       self.createdAgeStr = self.getAge(d) //getAge is from mixin
+     }
+   }
+
+   function initContent() {
+     var hasContent = entryMeta.p_count === undefined || entryMeta.p_count > 0
+     var content = (self.summaryView ? entry.head : entry.text) || entry.head || entry.name || ''
+     if (entry.ref) content = ''
+     self.doc = self.wpml.doc(content)
+     self.title = self.doc.meta.title || entryMeta && entryMeta.title
+     self.showReadMore = self.summaryView && entry.text && (entryMeta.p_count === undefined || entryMeta.p_count > 1)
+   }
+
    if (entry) { //workaround for Riot 2.3 issues with evaluating tags with if={false}
      var entryMeta = entry.meta || {}
      self.meta = self.coect.object.assign(
@@ -140,31 +173,16 @@
      debug('entry meta', entry.name, self.meta)
      self.webmention = entry.link && entry.link.webmention
      self.source = entry.source || self.webmention && self.webmention.url
-     debug('bridgy', self.coect.bool(self.meta.bridy))
+     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
+     if (entry.rel == 'like') self.type = 'like'
+     self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
      
      self.summaryView = (opts.view === 'summary')
-     var hasContent = entryMeta.p_count === undefined || entryMeta.p_count > 0
-     self.showReadMore = self.summaryView && (entryMeta.p_count === undefined || entryMeta.p_count > 1)
-     var content = (self.summaryView ? entry.head : hasContent && entry.text) || entry.name || ''
      debug('summaryView', self.summaryView)
-     self.doc = self.wpml.doc(content)
-     self.title = self.doc.meta.title || entryMeta && entryMeta.title
-     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
-
-     self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
-     if (self.type == 'post' && self.replyToUrl) {
-       self.parentUrl = self.replyToUrl
-       self.parentName = self.meta.reply_to_name || self.coect.util.truncateUrl(self.replyToUrl)
-     } else if (self.type == 'reply' || self.type == 'webmention') {
-       self.parentUrl = self.url.entry(entry.parent)
-       self.parentName = self.meta.reply_to_name
-     } else if (opts.list_name) {
-       self.parentUrl = self.url.entry(entry.channel)
-       self.parentName = entry.list.name
-     }
-     self.action = self.actionName(self.type, self.replyToUrl)
+     initContent()
+     initHeader()
      self.hasCounters = !entry.ref && (self.type == 'post' || self.type == 'reply')
-     debug('type', self.type, 'action', self.action, 'parent', self.parentUrl, 'replyTo', self.replyToUrl)
+     debug('type', self.type, 'action', self.action, 'parent', self.objectUrl, 'replyTo', self.replyToUrl)
    }
 
    self.sourceIcon = function(url) {
@@ -210,7 +228,7 @@
    }
    
    self.best = function(action, flag) {
-     var method = (self.entry[flag || action + 'd'] ? 'del' : 'post')
+     var method = (self.entry[flag || 'user_' + action + 'd'] ? 'del' : 'post')
      self.store.entry[method](self.url.entry(self.entry.id, action), Site.callback(
        function(data) {
          self.update({entry: $.extend(self.entry, data)})
@@ -234,13 +252,6 @@
      }))
    }
 
-   if (entry && entry.created) {
-     // self.created is ISO string on client-side and Date on server-side
-     var d = new Date(self.webmention && self.webmention.published || entry.created)
-     self.createdLocaleStr = d.toLocaleString()
-     self.createdISOStr = d.toISOString()
-     self.createdAgeStr = self.getAge(d) //getAge is from mixin
-   }
 
    if (entry && typeof window !== 'undefined') {
      self.canChange = Site.umedia.canChangeEntry(self.entry)

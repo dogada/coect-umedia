@@ -237,7 +237,7 @@ function detail(req, res, next) {
       flow.next(entry)
     }
   ], coect.janus(req, res, next, function(entry) {
-    debug('entry', (typeof entry.created), entry.created)
+    debug('entry', (typeof entry.created), entry.created, entry)
     res.render('index', {
       title: entry.name,
       canonicalUrl: entry.url,
@@ -303,8 +303,8 @@ function list(req, res) {
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
-    (opts, channel, access) => store.entry.list(req.user, access, opts, flow),
-    (entries) => Entity.postprocess(req, entries, flow),
+    (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts)),
+    (opts, entries) => Entity.postprocess(req, entries, {refs: (opts.my === 'notifications')}, flow),
     (entries) => flow.next({items: entries})
   ], coect.json.response(res))
 }
