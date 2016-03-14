@@ -3,17 +3,17 @@
   <div if={ items.length } class="umedia-entry-list">
     <div>
       <ul class="list-inline actions">
-        <li if={ ancestor || opts.category }>
+        <li if={ sorting.last }>
           <button onclick={ last } type="button" 
                   class="btn btn-xs btn-default{ active(query.order == 'last') }">Last</button>
         </li>
         
-        <li if={ ancestor || opts.category }>
+        <li if={ sorting.first }>
           <button onclick={ first } type="button" 
                   class="btn btn-xs btn-default{ active(query.order == 'first')}">First</button>
         </li>
 
-        <li if={ ancestor }>
+        <li if={ sorting.top }>
           <button onclick={ top } type="button" 
                   class="btn btn-xs btn-default{ active(query.order == 'top')}">Top</button>
         </li>
@@ -42,7 +42,9 @@
         </li>
       </ul>
 
-      <a if={ hasMore } href="#" onclick={ more }>Load more</a>
+      <div if={ hasMore }>
+        <a href="#" onclick={ more }>Load more</a>
+      </div>
     </div>
 
   </div>
@@ -59,7 +61,12 @@
    self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
    self.debug('entry_list view', self.view, opts.view)
-   
+   self.sorting = opts.sorting || {
+     first: self.ancestor || opts.category,
+     last: self.ancestor || opts.category,
+     top: self.ancestor || opts.category
+   }
+
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
@@ -117,11 +124,11 @@
      debug('url', url)
 
      self.store.entry.get(url, Site.callback(function(data) {
-       debug('loaded data', data && data.length)
+       debug('loaded data', data.items && data.items.length + ', requested ', self.query.count)
        // update self.items in-place because it may be shared with parent tag like entry_detail
        if (!append) self.items.splice(0, self.items.length)
        self.items.push.apply(self.items, data.items)
-       self.hasMore = (data.length >= self.query.count)
+       self.hasMore = (data.items.length >= self.query.count)
        self.update()
      }))
    }
