@@ -58,7 +58,7 @@
         <a href={ url.entry(entry) }>Read more…</a>
       </div>
 
-      <p if={ entry.model == 'repost' } class="coect-meta">Referenced entry 
+      <p if={ entry.model == 'repost' && !entry.name } class="coect-meta">Referenced entry 
         <a href={ url.entry(entry.ref) }>{ entry.ref }</a> was not found or deleted.
       </p>
 
@@ -67,7 +67,7 @@
         <span if={ hasCounters }>
           <a href="#" onclick={ like } title="Like it!"><i
             class={"like fa fa-heart": 1, "liked": entry.user_liked }></i></a>
-          <a if={ entry.like_count } href="{ url.entry(entry) }/?likes">{ entry.like_count }</a>
+          <a if={ entry.like_count } href="#">{ entry.like_count }</a>
         </span>
 
         <span if={ hasCounters } >
@@ -132,7 +132,8 @@
      else if (entry.model === 'repost') return 'reposted' + yourType()
      else if (entry.type === 'bookmark') return 'bookmarked' + yourType()
      else if (entry.type === 'rsvp') return 'rsvp'
-     else if (entry.type === 'mention' || entry.type === 'link') return 'mentioned'
+     else if (entry.type === 'mention') return 'mentioned'
+     else if (entry.type === 'link' || entry.type === 'webmention') return 'mentioned'
      return ''
    }
 
@@ -150,6 +151,10 @@
      } else if (opts.list_name) {
        self.objectUrl = self.url.entry(entry.channel)
        self.objectName = entry.list.name
+     } else if (entry.source && entry.link.target) {
+       self.objectUrl = entry.source
+       debug('entry.source', entry.source)
+       self.objectName = self.coect.util.truncateUrl(entry.link.target)
      }
 
      if (entry.created) {
