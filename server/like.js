@@ -31,26 +31,26 @@ var upsert = function(visible, user, entity, done) {
     (list) => Entity.findOne({
       list: list.id,
       ref: entity.id,
-      rel: Entity.LIKE,
+      owner: user.id,
+      model: Entity.LIKE,
     }, flow.join(list)),
     (list, like) => {
-      debug('exitsing like access', like && like.access)
+      debug('existing like access', like && like.access)
       if (like && like.access === access) return flow.complete(likeStatus(access))
       else if (like) Entity.update(like.id, {access: access}, flow)
       else Entity.create({
         list: list.id,
         owner: user.id,
         ref: entity.id,
-        rel: Entity.LIKE,
+        model: Entity.LIKE,
+        type: entity.type,
         name: entity.name,
         recipient: (visible && entity.owner !== user.id ? entity.owner : null),
-        model: entity.model,
-        type: entity.type,
         access: access,
         // for own likes don't duplicate tags
         tags: (entity.owner !== user.id ? entity.tags : null)
       }, user.id, flow)
-
+      
     },
     () => store.entry.updateLikeCount(entity, flow),
     () => Entity.table(entity.id).select('like_count').where('id', entity.id).first().asCallback(flow),
@@ -69,7 +69,8 @@ var remove = function(user, entity, done) {
       Entity.remove({
         list: listId,
         ref: entity.id,
-        rel: Entity.LIKE
+        model: Entity.LIKE,
+        owner: user.id
       }, flow)
     },
     (res) => {

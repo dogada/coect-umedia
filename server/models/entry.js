@@ -21,7 +21,7 @@ Entry.MODEL = 'entry'
 Entry.POST = 'post'
 Entry.COMMENT = 'comment'
 Entry.REPLY = 'reply'
-Entry.WEBMENTION = 'webmention'
+
 
 Entry.listFields = [
   'id', 'model', 'type', 'owner', 
@@ -30,7 +30,7 @@ Entry.listFields = [
   'count', 'child_count', 'like_count',
   'created', 'link', 'tags', 'meta',
   'list', 'parent', 'recipient', 'topic', 'thread',
-  'source', 'target', 'ref', 'rel'
+  'source', 'target', 'ref'
 ]
 
 Entry.detailFields = Entry.listFields.concat(['version'])
@@ -67,18 +67,20 @@ Entry.makeVersion = function() {
 }
 
 Entry.create = function(form, parent, done) {
-  Entity.create(Object.assign({
-    model: Entry.MODEL,
-    version: Entry.makeVersion(),
-    data: form.data || {},
-  }, parentData(parent), form), parent.list || parent.id, done)
+  Entity.create(
+    Object.assign({
+      model: form.model || Entry.MODEL,
+      version: Entry.makeVersion(),
+      data: form.data || {},
+    }, parent && parentData(parent) || {}, form),
+    form.list || parent.list || parent.id, done)
 }
 
 Entry.recipientMeta = function(parent, recipient) {
   var meta = {}
   var wm = parent.link && parent.link.webmention
   if (wm) {
-    meta.reply_to = wm.url || wm.source
+    meta.reply_to = parent.source
     meta.reply_to_name = wm.author && wm.author.name
   } else if (parent.model === Entry.MODEL && recipient) {
     meta.reply_to_name = recipient.name

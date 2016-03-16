@@ -125,16 +125,30 @@ class EntryStore extends Store {
 
   updateLikeCount(entry, done) {
     var t = () => Entry.table(entry.id)
-    debug('updateLikeCount', entry.id, entry.like_count)
+    var entryId = entry.id || entry
+    debug('updateLikeCount', entryId, entry.like_count)
     var flow = tflow([
       () => {
         t().update({
-          like_count: t().count('*').where({ref: entry.id, rel: Entity.LIKE}).andWhere('access', Access.EVERYONE)
-        }).where('id', entry.id).asCallback(flow)
+          like_count: t().count('*').where({ref: entryId, model: Entity.LIKE}).andWhere('access', '>', Access.HIDDEN)
+        }).where('id', entry.id).asCallback(flow.send(entry))
       },
     ], done)
   }
 
+  /**
+     Update like_count, comment_count, reply_count, repost_count, etc.
+   */
+  updateCounters(entry, done) {
+    var flow = tflow([
+      () => this.updateLikeCount(entry, flow),
+    ], done)
+  }
+
+  updateParentCounters(entry, done) {
+    if (entry.model === Entity.ENTRY) this.updateChildCount(entry, done)
+    else if (entry.model === Entity.LIKE) this.updateLikeCount(entry.ref, done)
+  }
 }
 
 class ChannelStore extends Store {

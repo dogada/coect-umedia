@@ -39,8 +39,13 @@ class Entity extends Model {
 
 Entity.LIST = 'list'
 Entity.ENTRY = 'entry'
-Entity.LIKE = 'like'
+
 Entity.MAIN = 'main'
+
+Entity.LIKE = 'like'
+Entity.REPOST = 'repost'
+Entity.WEBMENTION = 'webmention'
+
 
 
 Entity.getChildType = function(data) {
@@ -129,15 +134,16 @@ function webmentionOwner(id, author) {
 }
 
 Entity.fillUsers = function(entries, cache, done) {
-  debug('fillUsers', entries.length)
+  debug('fillUsers', entries.length. entries)
   tflow([
     function() {
-      cache.getUsers(Array.from(new Set(entries.map(e => e.owner))), this)
+      cache.getUsers(Array.from(new Set(entries.map(e => e.owner))).filter(id => id), this)
     },
     function(users) {
       debug('found users', Object.keys(users))
       for (let e of entries) {
-        if (e.type === 'webmention') e.owner = webmentionOwner(e.owner, e.link && e.link.webmention.author || {})
+        debug('e', e)
+        if (!e.owner) e.owner = webmentionOwner(e.owner, e.link && e.link.author || {})
         else e.owner = users[e.owner] || {id : e.owner}
       }
       this.next(entries)
@@ -160,14 +166,17 @@ Entity.appendUserFlags = function(items, user, done) {
       if (!listId) return flow.complete(items)
       var ids = items.filter(item => !item.ref).map(item => item.id)
       if (!ids.length) return flow.complete(items)
-      Entity.table(listId).whereIn('ref', ids).andWhere('list', listId).select('ref', 'access').asCallback(flow)
+      Entity.table(listId).whereIn('ref', ids).andWhere('list', listId)
+        .andWhere('owner', user.id).select('ref', 'model', 'access').asCallback(flow)
     },
-    (likes) => {
-      debug('found likes', likes.length)
-      var likeMap = list2map(likes, 'ref')
+    (links) => {
+      debug('found links', links.length)
+      var linkMap = list2map(links, 'ref')
       for (var entity of items) {
-        var like = likeMap[entity.id]
-        if (like) entity['user_' + (like.access > Access.HIDDEN ? 'liked' : 'saved')] = true
+        var link = linkMap[entity.id]
+        if (!link) continue
+        if (link.model === Entity.LIKE) entity['user_' + (link.access > Access.HIDDEN ? 'liked' : 'saved')] = true
+        debug('link', link.ref, link.access, entity.name, entity.user_liked, entity.user_saved)
       }
       flow.next(items)
     }

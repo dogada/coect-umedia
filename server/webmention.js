@@ -75,11 +75,11 @@ exports.getTarget = function(targetUrl, done) {
   ], done)
 }
 
-var getMentionParent = function(target, done) {
+var getMentionObject = function(target, done) {
   var flow = tflow([
     function() {
       if (target instanceof Entity) flow.next(target)
-      else if (target.username) Channel.getOrCreateType(target, Channel.MENTIONS, flow)
+      else if (target.username) Channel.getOrCreateType(target, Channel.MAIN, flow)
       else {
         console.error('Invalid webmention target', (typeof target), target, target.constructor)
         flow.fail(500, 'No parent for target ' + ' ' +
@@ -89,44 +89,23 @@ var getMentionParent = function(target, done) {
   ], done);
 }
 
-var mentionHash = function(parent, sourceUrl) {
-  debug('mentionHash', parent.owner, sourceUrl)
-  var hash = crypto.createHash('sha256')
-  hash.update(sourceUrl)
-  return `!${parent.owner}/${hash.digest('hex')}`
-}
-
-
-var saveMention = function(parent, form, done) {
-  debug('save', form, parent)
-  var url = mentionHash(parent, form.link.webmention.source)
-  debug('url', url)
+var saveMention = function(form, done) {
+  debug('save', form, form.list, form.parent)
   var flow = tflow([
-    () => Entry.findOne({url: url, list: parent.list || parent.id}, flow),
+    () => Entry.findOne({source: form.source, recipient: form.recipient, list: form.list}, flow),
     (entry) => {
       if (entry) flow.complete({id: entry.id, created: entry.created})
       else flow.next()
     },
-    () => getMentionsOwner(flow),
-    (owner) => {
-      Entry.create({
-        type: Entry.WEBMENTION,
-        access: Access.MODERATION,
-        url: url,
-        name: form.name,
-        text: form.text,
-        meta: form.meta,
-        link: form.link,
-        owner: owner.id
-      }, (parent), flow)
-    },
+    () => Entry.create(form, form.parent, flow),
     (id) => Entry.get(id, flow),
-    (entry) => store.entry.updateChildCount(entry, flow)
+    (entry) => store.entry.updateParentCounters(entry, flow)
   ], done)
 }
 
-function webmentionName(parsed) {
-  if (parsed.type === 'reply') return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
+function webmentionName(parsed, model, object) {
+  if (model === Entity.ENTRY) return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
+  if (object.name) return object.name
   var target = coect.util.truncateUrl(parsed.target)
   if (parsed.author && parsed.author.name) return `${target} ${parsed.type} by ${parsed.author.name}`
   else return `${target} ${parsed.type}`
@@ -137,32 +116,67 @@ function html2wpml(html) {
 }
 
 
-function webmentionText(parsed) {
-  if (parsed.type !== 'reply') return ''
+function webmentionText(parsed, model) {
+  if (model !== Entity.ENTRY) return ''
   return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_TEXT_LENGTH)
 }
 
-var validate = function(parsed, meta, done) {
-  Entry.validate({
-    name: webmentionName(parsed),
-    text: webmentionText(parsed),
-    link: {
-      webmention: parsed
-    }
-  }, {schema: Entry.getTypeSchema(Entry.WEBMENTION), meta: meta}, done)
-}
-
-function webmentionType(wmType) {
+function webmentionType(wmType, object) {
   switch (wmType) {
-  case 'in-reply-to': return 'reply'
-  case 'like-of': return 'like'
-  case 'repost-of': return 'repost'
-  case 'bookmark-of': return 'bookmark'
+  case 'in-reply-to': return (object.thread ? 'reply' : 'comment')
   case 'rsvp': return 'rsvp'
+  case 'like-of': return object.type
+  case 'bookmark-of': return object.type
+  case 'repost-of': return object.type
   }
-  return 'mention'
+  return Entity.WEBMENTION
 }
 
+function webmentionModel(wmType) {
+  switch (wmType) {
+  case 'in-reply-to': return Entity.ENTRY
+  case 'like-of': return Entity.LIKE
+  case 'bookmark-of': return Entity.LIKE
+  case 'repost-of': return Entity.REPOST
+  }
+  return Entity.WEBMENTION
+}
+
+function webmentionParent(model, object) {
+  // put in parent-child chain only entries with text content
+  // incomming webmention reposts notifications aren't shown with comments by default
+  if (model === Entity.ENTRY) return object.id
+}
+
+function webmentionRef(model, object) {
+  // save link to original entry that was liked, reposted
+  if (model === Entity.LIKE || model === Entity.REPOST) return object.id
+}
+
+function webmentionAccess(model, object) {
+  if (model === Entity.LIKE || model === Entity.REPOST) return object.access
+  return Access.MODERATION
+}
+
+function validate(parsed, object, recipient, done) {
+  var model = webmentionModel(parsed.type)
+  var type = webmentionType(parsed.type, object)
+  var meta = Entry.recipientMeta(object, recipient)
+  var list = object.list || object.id // Use recipient.inbox after migration
+  Entry.validate({
+    owner: null, // find owner by author.url if possible?
+    list, model, type,
+    parent: webmentionParent(model, object),
+    ref: webmentionRef(model, object),
+    name: webmentionName(parsed, model, object),
+    text: webmentionText(parsed, model),
+    recipient: recipient.id,
+    source: parsed.source,
+    target: parsed.target,
+    access: webmentionAccess(model, object),
+    link: parsed,
+  }, {schema: Entry.getTypeSchema(type), meta: meta}, done)
+}
 
 /*
   Return webmention in a standard format with source, target, type
@@ -178,16 +192,17 @@ function parse(wm, done) {
   var flow = tflow([
     () => {
       var data = wm.data || wm.post || wm
-      var type = wm.activity && wm.activity.type || webmentionType(data['wm-property'])
-      var target = wm.target || data.target || data['wm-property'] && data[data['wm-property']]
+      var wmType = data['wm-property']
+      var target = wm.target || data.target || wmType && data[wmType]
       var source = data.url || wm.source
-  
-      if (!type) return flow.fail(400, 'Unknown webmention type')
+      
+      if (!wmType) return flow.fail(400, 'No webmention type')
       if (!source) return flow.fail(400, 'No webmention source')
       if (!target) return flow.fail(400, 'No webmention target')
       var html = (typeof data.content === 'object' ? data.content.value : data.content) || ''
       var parsed = {
-        type, source, target,
+        type: wmType,
+        source, target,
         author: data.author,
         published: data.published,
         name: data.name,
@@ -206,13 +221,13 @@ exports.onReceive = function(wm, done) {
   var flow = tflow([
     () => parse(wm, flow),
     (parsed) => exports.getTarget(parsed.target, flow.join(parsed)),
-    (parsed, target) => getMentionParent(target, flow.join(parsed)),
-    (parsed, parent) => {
-      if (!parent) return flow.fail(400, 'Target without parent')
-      config.User.get(parent.owner, flow.join(parsed, parent))
+    (parsed, target) => getMentionObject(target, flow.join(parsed)),
+    (parsed, object) => {
+      if (!object) return flow.fail(400, 'Target without parent')
+      config.User.get(object.owner, flow.join(parsed, object))
     },
-    (parsed, parent, recipient) => validate(parsed, Entry.recipientMeta(parent, recipient), flow.join(parent)),
-    (parent, doc, form) => saveMention(parent, form, flow)
+    (parsed, object, recipient) => validate(parsed, object, recipient, flow),
+    (doc, form) => saveMention(form, flow)
   ], done)
 }
 

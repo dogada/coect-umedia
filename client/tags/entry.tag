@@ -58,7 +58,7 @@
         <a href={ url.entry(entry) }>Read more…</a>
       </div>
 
-      <p if={ type != 'like' && entry.ref } class="coect-meta">Referenced entry 
+      <p if={ entry.model == 'repost' } class="coect-meta">Referenced entry 
         <a href={ url.entry(entry.ref) }>{ entry.ref }</a> was not found or deleted.
       </p>
 
@@ -71,8 +71,8 @@
         </span>
 
         <span if={ hasCounters } >
-          <a href={ url.entry(entry) } title="Comments"><i class="comments fa
-          fa-comments"></i> { entry.child_count || "" }</a>
+          <a href={ url.entry(entry) } title="Comments"><i class="comments fa fa-comments"></i>
+            { entry.child_count || "" }</a>
         </span>
 
         <span if={ replyToUrl }>
@@ -125,31 +125,31 @@
      return (Site.user && Site.user.id === entry.recipient ? ' your ' + entry.type : '')
    }
 
-   self.actionName = function(type, replyTo) {
+   self.actionName = function() {
      //self.debug('actionName', type, webmType)
-     if (type === 'reply' || replyTo) return 'to'
-     else if (type === 'like') return 'liked' + yourType()
-     else if (type === 'repost') return 'reposted' + yourType()
-     else if (type === 'bookmark') return 'bookmarked' + yourType()
-     else if (type === 'rsvp') return 'rsvp'
-     else if (type === 'mention' || type === 'link') return 'mentioned'
+     if (entry.type === 'comment' || entry.type === 'reply' || self.replyToUrl) return 'to'
+     else if (entry.model === 'like') return 'liked' + yourType()
+     else if (entry.model === 'repost') return 'reposted' + yourType()
+     else if (entry.type === 'bookmark') return 'bookmarked' + yourType()
+     else if (entry.type === 'rsvp') return 'rsvp'
+     else if (entry.type === 'mention' || entry.type === 'link') return 'mentioned'
      return ''
    }
 
    function initHeader() {
-     self.action = self.actionName(self.type, self.replyToUrl)
-     if (self.type == 'post' && self.replyToUrl) {
+     self.action = self.actionName()
+     if (entry.ref) {
+       self.objectUrl = self.url.entry(entry.ref)
+       self.objectName = entry.name
+     } else if (entry.type == 'post' && self.replyToUrl) {
        self.objectUrl = self.replyToUrl
        self.objectName = self.meta.reply_to_name || self.coect.util.truncateUrl(self.replyToUrl)
-     } else if (self.type == 'reply' || self.type == 'webmention') {
+     } else if (entry.type == 'reply' || entry.type == 'comment') {
        self.objectUrl = self.url.entry(entry.parent)
        self.objectName = self.meta.reply_to_name
      } else if (opts.list_name) {
        self.objectUrl = self.url.entry(entry.channel)
        self.objectName = entry.list.name
-     } else if (entry.ref) {
-       self.objectUrl = self.url.entry(entry.ref)
-       self.objectName = entry.name
      }
 
      if (entry.created) {
@@ -175,18 +175,16 @@
      self.meta = self.coect.object.assign(
        {}, entry.list && entry.list.meta || {}, entryMeta)
      debug('entry meta', entry.name, self.meta)
-     self.webmention = entry.link && entry.link.webmention
-     self.source = entry.source || self.webmention && self.webmention.url
-     self.type = self.webmention && self.webmention.type || (entry.type === 'comment' ? 'reply' : entry.type)
-     if (entry.rel == 'like') self.type = 'like'
+     self.source = entry.source
+     self.webmention = entry.source && entry.link
      self.replyToUrl = self.meta.reply_to || entry.parent && entry.parent.source
-     
      self.summaryView = (opts.view === 'summary')
      debug('summaryView', self.summaryView)
      initContent()
      initHeader()
-     self.hasCounters = !entry.ref && (self.type == 'post' || self.type == 'reply')
-     debug('type', self.type, 'action', self.action, 'parent', self.objectUrl, 'replyTo', self.replyToUrl)
+     self.hasCounters = (entry.model == 'entry')
+     debug('counters', self.hasCounters, 'action', self.action,
+           'objectUrl', self.objectUrl, 'replyTo', self.replyToUrl)
    }
 
    self.sourceIcon = function(url) {

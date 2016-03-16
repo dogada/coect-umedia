@@ -120,7 +120,7 @@ function create(req, res) {
     },
     function(entry) {
       debug('created entry', entry)
-      store.entry.updateChildCount(entry, flow)
+      store.entry.updateParentCounters(entry, flow)
     },
     function(entry) {
       Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
@@ -163,7 +163,7 @@ function update(req, res) {
       debug('updated', id)
       Entry.get(id, this)
     },
-    (entry) => store.entry.updateChildCount(entry, flow),
+    (entry) => store.entry.updateCounters(entry, flow),
     (entry) => Entity.fillUsers([entry], req.app.userCache, flow.send(entry)),
   ], coect.json.response(res))
 }
@@ -187,7 +187,7 @@ function moderate(req, res) {
       }
       Entry.update(entry.id, data, this.send(data, entry))
     },
-    (data, entry) => store.entry.updateChildCount(entry, flow.send(data)),
+    (data, entry) => store.entry.updateParentCounters(entry, flow.send(data)),
   ], coect.json.response(res))
 }
 
@@ -237,7 +237,7 @@ function detail(req, res, next) {
       flow.next(entry)
     }
   ], coect.janus(req, res, next, function(entry) {
-    debug('entry', (typeof entry.created), entry.created, entry)
+    debug('entry', (typeof entry.created), entry.created)
     res.render('index', {
       title: entry.name,
       canonicalUrl: entry.url,
