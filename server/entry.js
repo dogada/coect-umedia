@@ -140,7 +140,7 @@ function update(req, res) {
     },
     (entry, channel, parent) => config.User.get(parent.owner, flow.join(entry, channel, parent)),
     function(entry, channel, parent, recipient) {
-      if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Forbidden')
+      if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Update is forbidden')
       validate(req, parent, channel, entry.type, Entry.recipientMeta(parent, recipient), flow.join(entry, channel))
     },
     function(entry, list, doc, form) {

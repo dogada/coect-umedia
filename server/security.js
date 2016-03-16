@@ -154,6 +154,7 @@ class UmediaAccessPolicy extends Access {
 
   canUserChange(user, entry, channel) {
     // FIX check entity.acl too
+    debug('canChange', user.isRoot())
     if (user.isRoot()) return true
     if (user.isAdmin() && user.id === entry.owner && entry.access >= Access.ADMIN) return true
     return (entry.access > Access.DELETED && entry.owner === user.id)
