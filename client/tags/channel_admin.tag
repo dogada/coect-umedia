@@ -4,13 +4,13 @@
       <tr each={ items }>
         <td>{ name }</td>
         <td>
-          <a href="{ parent.url.channel() }/{ id }/edit">
-            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+          <a href="{ parent.url.channel() }/{ id }/edit" title="Edit">
+            <span class="fa fa-pencil" aria-hidden="true"></span>
           </a>
         </td>
         <td>
-          <a href="./" onclick={ parent.remove }>
-            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+          <a href="./" onclick={ parent.remove } title="Remove">
+            <span class="fa fa-remove" aria-hidden="true"></span>
           </a>
         </td>
       </tr>
