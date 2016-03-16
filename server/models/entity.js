@@ -142,7 +142,6 @@ Entity.fillUsers = function(entries, cache, done) {
     function(users) {
       debug('found users', Object.keys(users))
       for (let e of entries) {
-        debug('e', e)
         if (!e.owner) e.owner = webmentionOwner(e.owner, e.link && e.link.author || {})
         else e.owner = users[e.owner] || {id : e.owner}
       }
@@ -183,6 +182,7 @@ Entity.appendUserFlags = function(items, user, done) {
   ], done)
 }
 
+
 Entity.resolveRefs = function(items, done) {
   debug('resolveRefs', items.length)
 
@@ -205,6 +205,29 @@ Entity.resolveRefs = function(items, done) {
   ], done)
 }
 
+Entity.resolveNames = function(items, done) {
+  debug('resolveRefNames', items.length)
+
+  var ids = items.map(item => item.ref).filter(id => id)
+  var flow = tflow([
+    () => {
+      if (!ids.length) return flow.complete(items)
+      Entity.table().whereIn('id', ids).select('id', 'name', 'access').asCallback(flow)
+    },
+    (refs) => {
+      debug(`found ${refs.length} refs from ${ids.length}`)
+      var objects = list2map(refs, 'id')
+      for (var item of items) {
+        if (!item.ref) continue
+        var obj = objects[item.ref]
+        debug('obj.name', obj.access, item.access, obj.name, item.name)
+        if (obj && obj.access >= item.access) item.name = obj.name || item.name
+      }
+      flow.next(items)
+    }
+  ], done)
+}
+
 /**
    Update items in-place. Append user info and 'liked', 'saved' flags.
 */
@@ -215,7 +238,7 @@ Entity.postprocess = function(req, items, opts, done) {
     opts = {}
   }
   var flow = tflow([
-    () => opts.refs ? flow.next(items) : Entity.resolveRefs(items, flow),
+    () => Entity[opts.refs ? 'resolveNames' : 'resolveRefs'](items, flow),
     (items) => Entity.fillUsers(items, req.app.userCache, flow),
     (items) => Entity.appendUserFlags(items, req.user, flow)
   ], done)

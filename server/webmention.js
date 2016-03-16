@@ -103,18 +103,14 @@ var saveMention = function(form, done) {
   ], done)
 }
 
-function webmentionName(parsed, model, object) {
-  if (model === Entity.ENTRY) return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
-  if (object.name) return object.name
-  var target = coect.util.truncateUrl(parsed.target)
-  if (parsed.author && parsed.author.name) return `${target} ${parsed.type} by ${parsed.author.name}`
-  else return `${target} ${parsed.type}`
-}
-
 function html2wpml(html) {
   return striptags(html) 
 }
 
+function webmentionName(parsed, model, object) {
+  if (model === Entity.ENTRY) return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
+  return coect.util.truncateUrl(parsed.target)
+}
 
 function webmentionText(parsed, model) {
   if (model !== Entity.ENTRY) return ''
