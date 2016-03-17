@@ -6,7 +6,7 @@ var _ = require('lodash')
 var coect = require('coect')
 var Entry = require('./models').Entry
 var Access = coect.Access
-var getEntryAndChannel = require('./entry').getEntryAndChannel
+var misc = require('./misc')
 var config = require('./config')
 
 const BROADCAST_SERVICES = ['facebook', 'twitter', 'instagram', 'flickr']
@@ -103,7 +103,7 @@ exports.broadcast = function(req, res, next) {
   debug('broadcast', req.params)
   var flow = tflow([
     function() {
-      getEntryAndChannel(req, flow)
+      misc.getEntryAndChannel(req, flow)
     },
     function(entry, channel) {
       if (entry.access !== Access.EVERYONE) return flow.fail(400, 'Need everyone access.')
