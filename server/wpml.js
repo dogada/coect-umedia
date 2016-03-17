@@ -5,6 +5,8 @@ var debug = require('debug')('umedia:wpml')
 var wpml = require('wpml')
 var coect = require('coect')
 
+var MAX_ENTRY_TAG_COUNT = 5
+
 function nodeText(node) {
   while (node && node.block) node = node.value[0]
   return (node && node.value)
@@ -24,7 +26,7 @@ function summaryFromContent(content) {
 
 function parseTags(meta) {
   if (!meta.tags) return
-  var tags = meta.tags.split(',').slice(0, 3).map(t => t.trim())
+  var tags = meta.tags.split(',').slice(0, MAX_ENTRY_TAG_COUNT).map(t => t.trim())
   return Array.from(new Set(tags))
 }
 
