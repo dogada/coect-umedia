@@ -109,6 +109,7 @@
      else if (opts.list) query.list = opts.list
      else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
 
+     if (opts.model) query.model = opts.model
      if (opts.category) query.tag = opts.category
      if (opts.view) query.view = opts.view
      return query

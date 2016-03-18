@@ -294,7 +294,10 @@ function list(req, res) {
       else if (req.query.my) flow.next({list: req.user.getListId(req.query.my),
                                         owner: req.user.id,
                                         my: req.query.my})
-      else if (req.query.type && req.user && req.user.isAdmin()) flow.next({type: req.query.type})
+      else if ((req.query.type || req.query.model) && req.user && req.user.isAdmin()) flow.next({
+        type: req.query.type,
+        model: req.query.model
+      })
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {
@@ -304,7 +307,8 @@ function list(req, res) {
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts)),
-    (opts, entries) => Entity.postprocess(req, entries, {refs: (opts.my === 'notifications')}, flow),
+    (opts, entries) => Entity.postprocess(req, entries, {
+      refs: (opts.my === 'notifications' || opts.model || opts.type)}, flow),
     (entries) => flow.next({items: entries})
   ], coect.json.response(res))
 }

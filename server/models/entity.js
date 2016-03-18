@@ -220,7 +220,6 @@ Entity.resolveNames = function(items, done) {
       for (var item of items) {
         if (!item.ref) continue
         var obj = objects[item.ref]
-        debug('obj.name', obj.access, item.access, obj.name, item.name)
         if (obj && obj.access >= item.access) item.name = obj.name || item.name
       }
       flow.next(items)

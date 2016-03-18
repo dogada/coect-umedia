@@ -127,9 +127,9 @@
 
    self.actionName = function() {
      //self.debug('actionName', type, webmType)
-     if (entry.type === 'comment' || entry.type === 'reply' || self.replyToUrl) return 'to'
-     else if (entry.model === 'like') return 'liked' + yourType()
+     if (entry.model === 'like') return (entry.access == Access.HIDDEN ? 'saved': 'liked') + yourType()
      else if (entry.model === 'repost') return 'reposted' + yourType()
+     else if (entry.type === 'comment' || entry.type === 'reply' || self.replyToUrl) return 'to'
      else if (entry.type === 'bookmark') return 'bookmarked' + yourType()
      else if (entry.type === 'rsvp') return 'rsvp'
      else if (entry.type === 'mention') return 'mentioned'

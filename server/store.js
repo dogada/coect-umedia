@@ -53,14 +53,13 @@ function listWhere(opts, done) {
     function() {
       //list_url
       var where = firstItem(opts, ['parent', 'topic', 'thread', 'list', 'owner', 'type', 'recipient'])
-      // FIX: switch to timeline
-      if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
-      
       // // show top-level entries (posts) only
       // if ((where.owner || where.list) && !opts.tag && !opts.model &&
       // !opts.my) where.topic = null
       if (opts.my && opts.owner) where.owner = opts.owner
       if (opts.model) where.model = opts.model
+      // FIX: switch to timeline
+      if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       this.next(where, opts.tag)
     }
   ], done)
@@ -79,9 +78,6 @@ class EntryStore extends Store {
         q = q.select(Entry.listFields)
         q = q.where(where)
         if (tag) q = q.andWhere('tags', '@>', JSON.stringify([tag]))
-        //FIX: migrate webm
-        if (where.model) q = q.andWhere('type', '<>', 'webmention')
-        if (where.model) q = q.whereNull('ref')
         // if user isn't a root in a channel filter by access
         if (access > Access.ROOT) q = filterByAccess(q, user, access)
         if (opts.cursor) {
