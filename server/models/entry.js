@@ -21,6 +21,7 @@ Entry.MODEL = 'entry'
 Entry.POST = 'post'
 Entry.COMMENT = 'comment'
 Entry.REPLY = 'reply'
+Entry.MAX_POST_TEXT_LENGTH = 50000
 
 
 Entry.listFields = [
@@ -38,11 +39,20 @@ Entry.detailFields = Entry.listFields.concat(['version'])
 Entry.postSchema = Object.assign({}, Entity.schema, {
   text: {
     isLength: {
-      options: [3, 50000],
-      errorMessage: 'Text must be between 3 and 50,000 chars long'
+      options: [3, Entry.MAX_POST_TEXT_LENGTH],
+      errorMessage: `Text must be between 3 and ${Entry.MAX_POST_TEXT_LENGTH} chars long`
     }
   }
 })
+
+Entry.webmentionSchema = {
+  text: {
+    isLength: {
+      options: [0, Entity.MAX_TEXT_LENGTH],
+      errorMessage: `Text must be between 3 and ${Entity.MAX_TEXT_LENGTH} chars long`
+    }
+  }
+}
 
 Entry.getTypeSchema = function(type) {
   return (type === Entry.POST ? Entry.postSchema : Entry.schema)
@@ -78,14 +88,14 @@ Entry.create = function(form, parent, done) {
 
 Entry.recipientMeta = function(parent, recipient) {
   var meta = {}
-  var wm = parent.link && parent.link.webmention
-  if (wm) {
+  var wm = parent.link
+  if (parent.source && wm) {
     meta.reply_to = parent.source
     meta.reply_to_name = wm.author && wm.author.name
   } else if (parent.model === Entry.MODEL && recipient) {
     meta.reply_to_name = recipient.name
   }
-  debug('parentMeta', parent.model, parent.type, meta)
+  debug('recipientMeta', parent.model, parent.type, meta)
   return meta
 }
 

@@ -125,9 +125,11 @@ class EntryStore extends Store {
     debug('updateLikeCount', entryId, entry.like_count)
     var flow = tflow([
       () => {
-        t().update({
+        var q = t().update({
           like_count: t().count('*').where({ref: entryId, model: Entity.LIKE}).andWhere('access', '>', Access.HIDDEN)
-        }).where('id', entry.id).asCallback(flow.send(entry))
+        }).where('id', entryId)
+        debug('SQL', q.toString())
+        q.asCallback(flow.send(entry))
       },
     ], done)
   }
@@ -142,8 +144,10 @@ class EntryStore extends Store {
   }
 
   updateParentCounters(entry, done) {
+    debug('updateParentCounters', entry.model, entry.ref)
     if (entry.model === Entity.ENTRY) this.updateChildCount(entry, done)
-    else if (entry.model === Entity.LIKE) this.updateLikeCount(entry.ref, done)
+    else if (entry.ref && entry.model === Entity.LIKE) this.updateLikeCount(entry.ref, done)
+    else done(null)
   }
 }
 

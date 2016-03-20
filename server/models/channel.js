@@ -62,6 +62,7 @@ Channel.schema = Object.assign({}, Entity.schema, {
    Return or create mentions channel for a user.
 */
 Channel.getOrCreateType = function(user, type, done) {
+  debug('getOrCreateType', type, (typeof user), user, user.getListId && user.getListId(type))
   var flow = tflow([
     () => {
       if (user.getListId(type)) return Channel.get(user.getListId(type), flow)
@@ -80,8 +81,9 @@ Channel.getOrCreateType = function(user, type, done) {
       else Channel.get(channelOrId, flow)
     },
     (channel) => {
+      debug('new user channel', type, channel.id)
       user.setListId(type, channel.id)
-      user.save(flow)
+      user.constructor.update(user.id, {data: user.data}, flow.send(channel))
     }
   ], done)
 }

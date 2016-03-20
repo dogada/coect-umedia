@@ -1,6 +1,7 @@
 var crypto = require('crypto')
 var striptags = require('striptags')
 var debug = require('debug')('umedia:webmention')
+var _ = require('lodash')
 var tflow = require('tflow')
 var Url = require('url')
 var coect = require('coect')
@@ -33,10 +34,11 @@ function makeParsers() {
   }
 }
 
-var getMentionsOwner = function (done) {
+var getDefaultMentionsOwner = function (done) {
+  debug('getMentionsOwner')
   var flow = tflow([
     () => {
-      config.User.find({orderBy: ['id'], limit: 1, modelize: true}, flow)
+      config.User.find({orderBy: ['id'], limit: 1, select: '*', modelize: true}, flow)
     },
     (users) => {
       if (users[0]) flow.next(users[0]) 
@@ -48,58 +50,52 @@ var getMentionsOwner = function (done) {
 /**
    Find entry or channel that will act as parent for webmention.
 */
-exports.getTarget = function(targetUrl, done) {
+exports.getObject = function(targetUrl, done) {
   if (!parsers) parsers = makeParsers()
   var flow = tflow([
     () => {
       var parsed = Url.parse(targetUrl)
       if (parsed.host !== config.host) return flow.fail(400, 'Invalid target host: ' + targetUrl)
       var pathname = parsed.pathname
-      debug('getTarget', targetUrl, pathname, parsers.username, parsers.username.exec(pathname))
+      debug('getObject', targetUrl, pathname, parsers.username)
+      debug('getObject entryId', parsers.entryId.exec(pathname), parsers.entryId)
+      debug('getObject entryUrl', parsers.entryId.exec(pathname))
+      debug('getObject username', parsers.username.exec(pathname))
       var match;
       if ((match = parsers.entryId.exec(pathname))) {
         Entry.findOne(match[1], flow)
       } else if ((match = parsers.entryUrl.exec(pathname))) {
         Entry.findOne({url: match[1] + '/' + match[2] + '/' + match[3]}, flow)
       } else if ((match = parsers.username.exec(pathname))) {
-        config.User.findOne({username: match[1]}, flow)
+        config.User.findOne({username: match[1]}, {select: '*'}, flow)
       } else {
-        getMentionsOwner(flow)
+        flow.next(null)
       }
     },
-    (parent) => {
-      // store mention in global mentions channel if user was not found
-      if (!parent) getMentionsOwner(done)
-      else done(null, parent)
+    (object) => {
+      debug('object', object)
+      if (!object) {
+        console.error('Object not found ', targetUrl, (typeof object))
+        flow.next(null)
+      }
+      else if (object instanceof Entity) flow.next(object)
+      else if (object.username) Channel.getOrCreateType(object, Channel.MAIN, flow)
     }
   ], done)
 }
 
-var getMentionObject = function(target, done) {
+exports.getTarget = function(targetUrl, done) {
   var flow = tflow([
-    function() {
-      if (target instanceof Entity) flow.next(target)
-      else if (target.username) Channel.getOrCreateType(target, Channel.MAIN, flow)
-      else {
-        console.error('Invalid webmention target', (typeof target), target, target.constructor)
-        flow.fail(500, 'No parent for target ' + ' ' +
-                  (target.constructor && target.constructor.name) + ' ' + target.id)
-      }
-    }
-  ], done);
-}
-
-var saveMention = function(form, done) {
-  debug('save', form, form.list, form.parent)
-  var flow = tflow([
-    () => Entry.findOne({source: form.source, recipient: form.recipient, list: form.list}, flow),
-    (entry) => {
-      if (entry) flow.complete({id: entry.id, created: entry.created})
-      else flow.next()
+    () => exports.getObject(targetUrl, flow),
+    (object) => {
+      if (object) config.User.get(object.owner, flow.join(object))
+      else getDefaultMentionsOwner(flow.join(object))
     },
-    () => Entry.create(form, form.parent, flow),
-    (id) => Entry.get(id, flow),
-    (entry) => store.entry.updateParentCounters(entry, flow)
+    (object, recipient) => {
+      if (!recipient) return flow.fail('No recipient for', targetUrl)
+      if (object) return flow.next(object, recipient, object.list || object.id)
+      return Channel.getOrCreateType(recipient, Channel.MAIN, flow.join(object, recipient))
+    }
   ], done)
 }
 
@@ -107,9 +103,9 @@ function html2wpml(html) {
   return striptags(html) 
 }
 
-function webmentionName(parsed, model, object) {
+function webmentionName(parsed, model) {
   if (model === Entity.ENTRY) return coect.util.truncate(parsed.text || parsed.name, Entity.MAX_NAME_LENGTH)
-  return coect.util.truncateUrl(parsed.target)
+  return ''
 }
 
 function webmentionText(parsed, model) {
@@ -150,28 +146,30 @@ function webmentionRef(model, object) {
 }
 
 function webmentionAccess(model, object) {
-  if (model === Entity.LIKE || model === Entity.REPOST) return object.access
+  if (object && (model === Entity.LIKE || model === Entity.REPOST)) return object.access
   return Access.MODERATION
 }
 
-function validate(parsed, object, recipient, done) {
+function validate(parsed, object, recipient, inbox, done) {
+  debug('validate', parsed, object, recipient, inbox)
   var model = webmentionModel(parsed.type)
-  var type = webmentionType(parsed.type, object)
-  var meta = Entry.recipientMeta(object, recipient)
-  var list = object.list || object.id // Use recipient.inbox after migration
+  var type = object && webmentionType(parsed.type, object) || Entity.WEBMENTION
+  var meta = (object && model === Entity.ENTRY ? Entry.recipientMeta(object, recipient) : {})
+  var list = inbox.id || inbox
+  var schema = Entry[(model === Entity.ENTRY ? 'schema' : 'webmentionSchema')]
   Entry.validate({
     owner: null, // find owner by author.url if possible?
     list, model, type,
-    parent: webmentionParent(model, object),
-    ref: webmentionRef(model, object),
-    name: webmentionName(parsed, model, object),
+    parent: object && webmentionParent(model, object),
+    ref: object && webmentionRef(model, object),
+    name: webmentionName(parsed, model),
     text: webmentionText(parsed, model),
     recipient: recipient.id,
     source: parsed.source,
     target: parsed.target,
     access: webmentionAccess(model, object),
     link: parsed,
-  }, {schema: Entry.getTypeSchema(type), meta: meta}, done)
+  }, {schema, meta}, done)
 }
 
 /*
@@ -209,20 +207,29 @@ function parse(wm, done) {
       flow.next(parsed)
     }
   ], done)
-  
 }
+
+var saveMention = function(form, done) {
+  debug('save', form, form.list, form.parent)
+  var flow = tflow([
+    () => Entry.findOne({source: form.source, recipient: form.recipient, list: form.list}, flow),
+    (entry) => {
+      if (entry) flow.complete({id: entry.id, created: entry.created})
+      else flow.next()
+    },
+    () => Entry.create(_.pick(form, Entry.detailFields), form.parent, flow),
+    (id) => Entry.get(id, flow),
+    (entry) => store.entry.updateParentCounters(entry, flow)
+  ], done)
+}
+
 
 exports.onReceive = function(wm, done) {
   debug('onReceive', wm)
   var flow = tflow([
     () => parse(wm, flow),
     (parsed) => exports.getTarget(parsed.target, flow.join(parsed)),
-    (parsed, target) => getMentionObject(target, flow.join(parsed)),
-    (parsed, object) => {
-      if (!object) return flow.fail(400, 'Target without parent')
-      config.User.get(object.owner, flow.join(parsed, object))
-    },
-    (parsed, object, recipient) => validate(parsed, object, recipient, flow),
+    (parsed, object, recipient, inbox) => validate(parsed, object, recipient, inbox, flow),
     (doc, form) => saveMention(form, flow)
   ], done)
 }
