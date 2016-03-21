@@ -70,7 +70,7 @@ Channel.getOrCreateType = function(user, type, done) {
       else Channel.create({
         model: Channel.MODEL,
         type: type,
-        name: type.toUpperCase(),
+        name: '',
         url: Channel.makeUrl(user.username, type),
         owner: user.id,
         access: Access.HIDDEN

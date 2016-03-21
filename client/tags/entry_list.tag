@@ -49,6 +49,9 @@
 
   </div>
 
+  <p if={ !items.length }>
+    No entries in the list yet.
+  </p>
 
   <script>
    var self = this
