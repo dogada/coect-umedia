@@ -137,7 +137,7 @@ function webmentionModel(wmType) {
 function webmentionParent(model, object) {
   // put in parent-child chain only entries with text content
   // incomming webmention reposts notifications aren't shown with comments by default
-  if (model === Entity.ENTRY) return object.id
+  if (model === Entity.ENTRY && object) return object
 }
 
 function webmentionRef(model, object) {
@@ -160,7 +160,6 @@ function validate(parsed, object, recipient, inbox, done) {
   Entry.validate({
     owner: null, // find owner by author.url if possible?
     list, model, type,
-    parent: object && webmentionParent(model, object),
     ref: object && webmentionRef(model, object),
     name: webmentionName(parsed, model),
     text: webmentionText(parsed, model),
@@ -209,7 +208,7 @@ function parse(wm, done) {
   ], done)
 }
 
-var saveMention = function(form, done) {
+var saveMention = function(form, parent, done) {
   debug('save', form, form.list, form.parent)
   var flow = tflow([
     () => Entry.findOne({source: form.source, recipient: form.recipient, list: form.list}, flow),
@@ -217,7 +216,7 @@ var saveMention = function(form, done) {
       if (entry) flow.complete({id: entry.id, created: entry.created})
       else flow.next()
     },
-    () => Entry.create(_.pick(form, Entry.detailFields), form.parent, flow),
+    () => Entry.create(_.pick(form, Entry.detailFields), parent, flow),
     (id) => Entry.get(id, flow),
     (entry) => store.entry.updateParentCounters(entry, flow)
   ], done)
@@ -229,8 +228,8 @@ exports.onReceive = function(wm, done) {
   var flow = tflow([
     () => parse(wm, flow),
     (parsed) => exports.getTarget(parsed.target, flow.join(parsed)),
-    (parsed, object, recipient, inbox) => validate(parsed, object, recipient, inbox, flow),
-    (doc, form) => saveMention(form, flow)
+    (parsed, object, recipient, inbox) => validate(parsed, object, recipient, inbox, flow.join(object)),
+    (object, doc, form) => saveMention(form, webmentionParent(form.model, object), flow)
   ], done)
 }
 
