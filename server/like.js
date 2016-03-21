@@ -9,6 +9,8 @@ var Access = coect.Access
 var store = require('./store')
 var misc = require('./misc')
 
+var PAGE_SIZE = 100
+
 function likeStatus(access, likeCount) {
   return {
     user_liked: (access > Access.HIDDEN),
@@ -99,5 +101,19 @@ exports.unlikeEntry = function(req, res) {
   var flow = tflow([
     () => misc.getEntryAndChannel(req, flow),
     (entry, channel) => remove(req.user, entry, flow)
+  ], coect.json.response(res))
+}
+
+exports.list = function(req, res) {
+  debug('list', req.params)
+  var flow = tflow([
+    () => misc.getEntryAndChannel(req, flow),
+    (entry, channel) => Entry.table().select('owner', 'link', 'source')
+      .where({model: Entity.LIKE, ref: entry.id})
+      .andWhere('access', '>', Access.HIDDEN)
+      .orderBy('id', 'desc').limit(PAGE_SIZE)
+      .asCallback(flow),
+    (likes) => Entity.fillUsers(likes, req.app.userCache, flow),
+    (likes) => flow.next({items: likes})
   ], coect.json.response(res))
 }

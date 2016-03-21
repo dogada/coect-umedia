@@ -64,10 +64,10 @@
 
       <aside class="entry-footer coect-meta">
 
-        <span if={ hasCounters }>
+        <span if={ hasCounters } class={ active-tab: showLikes }>
           <a href="#" onclick={ like } title="Like it!"><i
             class={"like fa fa-heart": 1, "liked": entry.user_liked }></i></a>
-          <a if={ entry.like_count } href="#">{ entry.like_count }</a>
+          <a if={ entry.like_count } href="#" onclick={ toggleLikes } >{ entry.like_count }</a>
         </span>
 
         <span if={ hasCounters } >
@@ -103,6 +103,18 @@
        </span>
 
       </aside>
+
+      <div if={ showLikes } class="like-list">
+        <ul class="list-inline">
+          <li each={ like in likes }>
+            <a href={ url.user(like.owner) }>
+              <img class="media-object" width="32" height="32" 
+                   alt={ like.owner.name } title={ like.owner.name }
+              src={ url.avatar(like.owner, 32) }>
+            </a>
+          </li>
+        </ul>
+      </div>
 
       <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
 
@@ -249,6 +261,16 @@
 
    self.save = function(e) {
      self.best('save')
+   }
+
+   self.toggleLikes = function(e) {
+     self.showLikes = !self.showLikes
+     if (self.likes) return
+     self.store.entry.get(self.url.entry(self.entry.id, 'likes'), Site.callback(
+       function(data) {
+         self.update({likes: data.items})
+       }
+     ))
    }
 
    self.broadcast = function(e) {

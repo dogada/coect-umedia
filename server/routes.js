@@ -57,6 +57,8 @@ module.exports = function(r) {
     .post(loginRequired, like.likeEntry)
     .delete(loginRequired, like.unlikeEntry)
 
+  r.get('/e/:id/likes', like.list)
+
   r.route('/e/:id/broadcast')
     .post(loginRequired, broadcast.broadcast)
 
@@ -89,5 +91,7 @@ module.exports = function(r) {
     .get(user.detail)
 
   slugRoutes(r)
+
   return r
 }
+
