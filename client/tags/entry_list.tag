@@ -1,7 +1,7 @@
 <umedia-entry-list>
 
   <div if={ items.length } class="umedia-entry-list">
-    <div>
+    <div if={ showActions }>
       <ul class="list-inline actions">
         <li if={ sorting.last }>
           <button onclick={ last } type="button" 
@@ -69,7 +69,7 @@
      last: self.ancestor || opts.category,
      top: self.ancestor || opts.category
    }
-
+   self.showActions = self.ancestor && self.ancestor.type == 'post' || self.sorting.first
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
