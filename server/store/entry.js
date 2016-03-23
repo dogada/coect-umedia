@@ -3,22 +3,13 @@
 var debug = require('debug')('umedia:store')
 var tflow = require('tflow')
 
-var Entity = require('./models').Entity
-var Channel = require('./models').Channel
-var Entry = require('./models').Entry
+var Entity = require('../models').Entity
+var Channel = require('../models').Channel
+var Entry = require('../models').Entry
 
 var coect = require('coect')
 var Access = coect.Access
-
-const MAX_PAGE_SIZE = 20
-const PAGE_SIZE = 10
-
-function pageSize(opts) {
-  return Math.min(MAX_PAGE_SIZE, parseInt(opts.count, 10) || PAGE_SIZE)
-}
-
-class Store {
-}
+var Store = require('./store')
 
 
 /**
@@ -71,7 +62,7 @@ class EntryStore extends Store {
     debug('ES.list access=', access, opts)
     var flow = tflow([
       () => listWhere(opts, flow),
-      function(where, tag) {
+      (where, tag) => {
         debug(`list where=${where} access=${access}`)
 
         var q = Entry.table(where.list)
@@ -86,7 +77,7 @@ class EntryStore extends Store {
         }
         q = q.orderBy.apply(q, listOrder(opts.order))
         if (opts.offset) q = q.offset(parseInt(opts.offset, 10))
-        q = q.limit(pageSize(opts))
+        q = q.limit(this.pageSize(opts))
         debug('list SQL', q.toString().slice(-130))
         q.asCallback(flow)
       }
@@ -151,53 +142,5 @@ class EntryStore extends Store {
   }
 }
 
-class ChannelStore extends Store {
 
-  list(req, opts, done) {
-    debug('channel.list', opts)
-    var flow = tflow([
-      function() {
-        var q = Channel.table(opts.owner)
-          .select(Channel.listFields)
-          .where('model', 'channel')
-        if (opts.owner) q = q.where({owner: opts.owner})
-        if (opts.type) {
-          if (!req.user || !req.user.isAdmin()) return flow.fail(400, 'Admin required')
-          q = q.where({type: opts.type})
-        }
-        var access = req.security.getUserAccess(req.user)
-        // show trashed items by default (use ?all=1 to show them like in ls -a)
-        if (!opts.all) access = Math.max(access, Access.TRASH + 1)
-        debug('access', access)
-        q = q.where('access', '>=', access)
-        q = q.limit(pageSize(req.query))
-        q.asCallback(this)
-      }
-    ], done)
-  }
-
-  withAccess(req, opts, done) {
-    var flow = tflow([
-      () => {
-        if (opts.id || opts.list) flow.next({id: opts.id || opts.list})
-        else if (opts.url) flow.next({url: opts.url})
-        else if (opts.username && opts.cslug) flow.next({url: opts.username + '/' + opts.cslug})
-        else flow.fail('Invalid channel query ' + opts)
-      },
-      (query) => Channel.get(query, {select: Channel.detailFields.concat(['data'])}, flow),
-      (channel) => {
-        if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
-        // clear data that is need only for security check
-        var access = req.security.getUserAccess(req.user, channel, req.query)
-        channel.data = undefined
-        flow.next(channel, access)
-      }
-    ], done)
-  }
-
-}
-
-module.exports = {
-  channel: new ChannelStore(),
-  entry: new EntryStore()
-}
+module.exports = EntryStore
