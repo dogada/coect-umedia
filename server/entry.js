@@ -123,6 +123,10 @@ function create(req, res) {
       store.entry.updateParentCounters(entry, flow)
     },
     function(entry) {
+      if (entry.tags) store.category.addVotes(entry, entry.tags, flow.send(entry))
+      else flow.next(entry)
+    },
+    function(entry) {
       Entity.fillUsers([entry], req.app.userCache, flow.send(entry))
     }
   ], coect.json.response(res))

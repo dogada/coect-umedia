@@ -45,7 +45,8 @@ Entity.MAIN = 'main'
 Entity.LIKE = 'like'
 Entity.REPOST = 'repost'
 Entity.WEBMENTION = 'webmention'
-
+Entity.REF = 'ref'
+Entity.CATEGORY = 'category'
 
 
 Entity.getChildType = function(data) {

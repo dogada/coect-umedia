@@ -2,10 +2,10 @@
 
 var ChannelStore = require('./channel')
 var EntryStore = require('./entry')
-
-console.log('ChannelStre', ChannelStore)
+var CategoryStore = require('./category')
 
 module.exports = {
   channel: new ChannelStore(),
-  entry: new EntryStore()
+  entry: new EntryStore(),
+  category: new CategoryStore()
 }

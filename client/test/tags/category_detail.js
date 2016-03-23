@@ -41,7 +41,7 @@ describe(TAG, function() {
 
   it('should show root category and load recent entries by category name', function(done) {
     var tag = env.mount(TAG, {
-      category: 'A category'
+      category: {name: 'A category'}
     })
 
     function checkHtml() {
@@ -61,7 +61,7 @@ describe(TAG, function() {
 
   it('should show channel category and load recent entries by category name and channel', function(done) {
     var tag = env.mount(TAG, {
-      category: 'Channel category',
+      category: {name: 'Channel category'},
       channel: FAKE_CHANNEL
     })
 

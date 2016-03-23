@@ -1,8 +1,8 @@
 <coect-category-detail>
   <div class="coect-category-detail">
     <coect-breadcrumbs if={ breadcrumbs } items={ breadcrumbs } />
-    <h1 class="top-header"><i class="grey">#</i>{opts.category}</h1>
-    <umedia-entry-list category={ opts.category } 
+    <h1 class="top-header"><i class="grey">#</i>{ category.name }</h1>
+    <umedia-entry-list category={ category.name } 
     list={ opts.channel && opts.channel.id } items={ items } />
   </div>
 
@@ -10,6 +10,7 @@
    var self = this
    self.mixin('umedia-context')
    var opts = self.opts, channel = opts.channel
+   self.category = opts.category
    debug('category_detail', opts)
 
    self.items = self.opts.items || []

@@ -37,6 +37,7 @@
   "author": "Dmytro V. Dogadailo <dvd@dogada.org>",
   "license": "GPL-2.0",
   "dependencies": {
+    "async": "~1.5.2",
     "debug": "~2.2.0",
     "escape-html": "~1.0.3",
     "html-tag": "~0.2.1",
