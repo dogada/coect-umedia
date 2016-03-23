@@ -12,12 +12,13 @@ var store = require('./store')
 exports.detail = function (req, res, next) {
   var flow = tflow([
     () => {
-      if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag
+      var tag = req.params.tag && req.params.tag.toLowerCase()
+      if (req.params.id) flow.next({list: req.params.id, tag: tag}) // c/:id/t/:tag
       else if (req.params.username) flow.next({ // :username/:cslug/t/:tag
         url: req.params.username + '/' + req.params.cslug,
-        tag: req.params.tag
+        tag: tag
       })
-      else if (req.params.tag) flow.next({tag: req.params.tag})
+      else if (req.params.tag) flow.next({tag: tag})
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {

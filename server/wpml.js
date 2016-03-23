@@ -26,7 +26,7 @@ function summaryFromContent(content) {
 
 function parseTags(meta) {
   if (!meta.tags) return
-  var tags = meta.tags.split(',').slice(0, MAX_ENTRY_TAG_COUNT).map(t => t.trim())
+  var tags = meta.tags.split(',').slice(0, MAX_ENTRY_TAG_COUNT).map(t => t.trim().toLowerCase())
   return Array.from(new Set(tags))
 }
 
