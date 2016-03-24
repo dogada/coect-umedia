@@ -58,18 +58,22 @@ function checkNewEntry(req, done) {
   debug('checkNE', req.body)
   var flow = tflow([
     function() {
-      (req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, this)
+      (req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, flow)
     },
     function(parent) {
       debug('checkNE parent=', (typeof parent), parent.type)
-      if (parent.model === Channel.MODEL) return this.next(parent, parent)
-      else return Channel.get(parent.list, {select: '*'}, this.join(parent))
+      if (parent.model === Channel.MODEL) return flow.next(parent, parent)
+      else return Channel.get(parent.list, {select: '*'}, flow.join(parent))
     },
-    (parent, channel) => config.User.get(parent.owner, flow.join(parent, channel)),
+    (parent, channel) => {
+      if (parent.owner) config.User.findOne(parent.owner, flow.join(parent, channel))
+      else flow.next(parent, channel, parent.link && Entity.webmentionOwner(null, parent.link.author))
+    },
     function(parent, channel, recipient) {
-      if (!req.security.canCreateEntry(req.user, parent, channel)) return this.fail(403, 'Not enough permissions to create')
+      if (!req.security.canCreateEntry(req.user, parent, channel)) return flow.fail(403, 'Not enough permissions to create')
       validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment',
-               Entry.recipientMeta(parent, recipient), this.join(parent, channel))
+               (recipient ? Entry.recipientMeta(parent, recipient) : {}),
+               flow.join(parent, channel))
     },
   ], done)
 }
@@ -142,7 +146,10 @@ function update(req, res) {
       if (entry.type === 'post') this.next(entry, channel, channel)
       else Entry.get(entry.parent, this.join(entry, channel))
     },
-    (entry, channel, parent) => config.User.get(parent.owner, flow.join(entry, channel, parent)),
+    (entry, channel, parent) => {
+      if (parent.owner) config.User.get(parent.owner, flow.join)(entry, channel, parent)
+      else flow.next(entry, channel, parent, null)
+    }, 
     function(entry, channel, parent, recipient) {
       if (!req.security.canUserChange(req.user, entry, channel)) return flow.fail(403, 'Update is forbidden')
       validate(req, parent, channel, entry.type, Entry.recipientMeta(parent, recipient), flow.join(entry, channel))

@@ -124,7 +124,7 @@ Entity.makeUrl = function(parentUrl, slug) {
   return (parentUrl && slug ? parentUrl + '/' + slug : null)
 }
 
-function webmentionOwner(id, author) {
+Entity.webmentionOwner = function (id, author) {
   return {
     type: 'webmention',
     id: id,
@@ -143,7 +143,7 @@ Entity.fillUsers = function(entries, cache, done) {
     function(users) {
       debug('found users', Object.keys(users))
       for (let e of entries) {
-        if (!e.owner) e.owner = webmentionOwner(e.owner, e.link && e.link.author || {})
+        if (!e.owner) e.owner = Entity.webmentionOwner(e.owner, e.link && e.link.author || {})
         else e.owner = users[e.owner] || {id : e.owner}
       }
       this.next(entries)
