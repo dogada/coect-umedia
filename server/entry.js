@@ -306,10 +306,11 @@ function list(req, res) {
       else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
       else if (req.query.owner) flow.next({owner: req.query.owner, model: 'entry'})
       else if (req.query.tag) flow.next({tag: req.query.tag})
-      else if (req.query.my === Channel.NOTIFICATIONS) flow.next({recipient: req.user.id, my: req.query.my})
-      else if (req.query.my) flow.next({list: req.user.getListId(req.query.my),
-                                        owner: req.user.id,
-                                        my: req.query.my})
+      else if (req.query.my === Channel.NOTIFICATIONS) flow.next({
+        recipient: req.user.id, my: req.query.my, model: req.query.model, type: req.query.type})
+      else if (req.query.my) flow.next({
+        list: req.user.getListId(req.query.my), owner: req.user.id,
+        model: req.query.model, type: req.query.type, my: req.query.my})
       else if ((req.query.type || req.query.model) && req.user && req.user.isAdmin()) flow.next({
         type: req.query.type,
         model: req.query.model

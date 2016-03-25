@@ -7,10 +7,11 @@ function requireLogin() {
   }
 }
 
-exports.index = function () {
+exports.index = function (ctx) {
   if (requireLogin()) return
   Site.mountTag('umedia-entry-list',
-                {my: 'main'},
+                {my: 'main', filters: true, baseUrl: Site.urls.my,
+                 model: ctx.params.model, type: ctx.params.type},
                 'Own entries, likes and bookmarks')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }

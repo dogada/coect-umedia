@@ -1,8 +1,8 @@
 <umedia-entry-list>
 
-  <div if={ items.length } class="umedia-entry-list">
-    <div if={ showActions } class="clearfix">
-      <ul class="nav nav-tabs actions pull-left">
+  <div class="umedia-entry-list">
+    <div if={ showTabs } class="clearfix">
+      <ul class="nav nav-tabs pull-left">
         <li if={ sorting.last } class="{ active(query.order == 'last') }">
           <a onclick={ last }>Last</a>
         </li>
@@ -14,6 +14,19 @@
         <li if={ sorting.top } class="{ active(query.order == 'top') }">
           <a onclick={ top } >Top</a>
         </li>
+
+        <li if={ opts.filters } class="{ active(!query.model) }">
+          <a href={ baseUrl() }>All</a>
+        </li>
+
+        <li if={ opts.filters } class="{ active(query.model == 'like') }">
+          <a href={ baseUrl('like') }>Like</a>
+        </li>
+
+        <li if={ opts.filters } class="{ active(query.model == 'entry') }">
+          <a href={ baseUrl('entry') }>Entry</a>
+        </li>
+
       </ul>
 
       <div if={ listMode } class="btn-group pull-right" role="group" aria-label="View mode">
@@ -25,7 +38,7 @@
 
     </div>
 
-    <div>
+    <div if={ items.length} >
       <ul class="{'list-unstyled entries h-feed': 1, 'p-comments': opts.comment }">
         <li each={ e in items }>
           <umedia-entry entry={ e }
@@ -42,10 +55,6 @@
 
   </div>
 
-  <p if={ !items.length }>
-    No entries in the list yet.
-  </p>
-
   <script>
    var self = this
    self.mixin('umedia-context')
@@ -56,6 +65,7 @@
    self.items = opts.items || []
    self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
+
    self.debug('entry_list view', self.view, opts.view)
    self.sorting = opts.sorting || {
      first: self.ancestor,
@@ -63,13 +73,15 @@
      top: self.ancestor || opts.category
    }
    self.listMode = (self.ancestor && self.ancestor.type == 'post')
-   self.showActions = self.ancestor && self.ancestor.type == 'post' || self.sorting.last
+   self.showTabs = self.ancestor && self.ancestor.type == 'post' ||
+   self.sorting.last || opts.filters
+   self.baseUrl = opts.baseUrl
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
    })
    debug('initial query', self.query, 'items.length=', self.items.length)
-   debug('sorting', self.sorting)
+   debug('sorting', self.sorting, 'filters', opts.filters, 'showTabs', self.showTabs)
 
    self.active = function(test) {
      return (test ? ' active' : '')
