@@ -16,15 +16,12 @@
         </li>
       </ul>
 
-      <ul if={ pills } class="nav nav-pills pull-right">
-        <li if={ pills.mode } class="{ active(!query.thread) }">
-          <a onclick={ flatMode }>Flat</a>
-        </li>
-
-        <li if={ pills.mode } class="{ active(query.thread) }">
-          <a onclick={ threadedMode }>Threaded</a>
-        </li>
-      </ul>
+      <div if={ listMode } class="btn-group pull-right" role="group" aria-label="View mode">
+        <button type="button" class="btn btn-default { active(!query.thread) }" 
+                onclick={ flatMode } title="Flat view"><i class="fa fa-align-justify"></i></button>
+        <button type="button" class="btn btn-default { active(query.thread) }"
+                onclick={ threadedMode } title="Threaded view"><i class="fa fa-indent"></i></button>
+      </div>
 
     </div>
 
@@ -52,7 +49,7 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-   self.debug('entry_list window=', typeof window)
+   self.debug('entry_list window=', typeof window, self.opts)
 
    var opts = self.opts
    self.ancestor = opts.ancestor
@@ -61,19 +58,18 @@
    self.view = opts.view || 'summary'
    self.debug('entry_list view', self.view, opts.view)
    self.sorting = opts.sorting || {
-     first: self.ancestor || opts.category,
+     first: self.ancestor,
      last: self.ancestor || opts.category,
      top: self.ancestor || opts.category
    }
-   self.pills = {
-     mode: (self.ancestor && self.ancestor.type == 'post')
-   }
-   self.showActions = self.ancestor && self.ancestor.type == 'post' || self.sorting.first
+   self.listMode = (self.ancestor && self.ancestor.type == 'post')
+   self.showActions = self.ancestor && self.ancestor.type == 'post' || self.sorting.last
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
    })
    debug('initial query', self.query, 'items.length=', self.items.length)
+   debug('sorting', self.sorting)
 
    self.active = function(test) {
      return (test ? ' active' : '')

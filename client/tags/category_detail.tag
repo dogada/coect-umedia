@@ -3,7 +3,8 @@
     <coect-breadcrumbs if={ breadcrumbs } items={ breadcrumbs } />
     <umedia-channel channel={ category }></umedia-channel>
     <umedia-entry-list category={ category.name } 
-    list={ opts.channel && opts.channel.id } items={ items } />
+    list={ opts.channel && opts.channel.id } items={ items }
+    sorting={ sorting } />
   </div>
 
   <script>
@@ -11,6 +12,7 @@
    self.mixin('umedia-context')
    var opts = self.opts, channel = opts.channel
    self.category = opts.category
+   self.sorting = {last: true, top: true}
    debug('category_detail', opts)
 
    self.items = self.opts.items || []
