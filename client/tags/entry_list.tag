@@ -1,35 +1,31 @@
 <umedia-entry-list>
 
   <div if={ items.length } class="umedia-entry-list">
-    <div if={ showActions }>
-      <ul class="list-inline actions">
-        <li if={ sorting.last }>
-          <button onclick={ last } type="button" 
-                  class="btn btn-xs btn-default{ active(query.order == 'last') }">Last</button>
+    <div if={ showActions } class="clearfix">
+      <ul class="nav nav-tabs actions pull-left">
+        <li if={ sorting.last } class="{ active(query.order == 'last') }">
+          <a onclick={ last }>Last</a>
         </li>
         
-        <li if={ sorting.first }>
-          <button onclick={ first } type="button" 
-                  class="btn btn-xs btn-default{ active(query.order == 'first')}">First</button>
+        <li if={ sorting.first } class="{ active(query.order == 'first') }">
+          <a onclick={ first }>First</a>
         </li>
 
-        <li if={ sorting.top }>
-          <button onclick={ top } type="button" 
-                  class="btn btn-xs btn-default{ active(query.order == 'top')}">Top</button>
+        <li if={ sorting.top } class="{ active(query.order == 'top') }">
+          <a onclick={ top } >Top</a>
         </li>
-
-
-        <li if={ ancestor && ancestor.type == 'post' }>
-          <button onclick={ flatMode } type="button" 
-                  class="btn btn-xs btn-default{ active(!query.thread) }">Flat</button>
-        </li>
-
-        <li if={ ancestor && ancestor.type == 'post' }>
-          <button onclick={ threadedMode } type="button" 
-                  class="btn btn-xs btn-default{ active(query.thread) }">Threaded</button>
-        </li>
-        
       </ul>
+
+      <ul if={ pills } class="nav nav-pills pull-right">
+        <li if={ pills.mode } class="{ active(!query.thread) }">
+          <a onclick={ flatMode }>Flat</a>
+        </li>
+
+        <li if={ pills.mode } class="{ active(query.thread) }">
+          <a onclick={ threadedMode }>Threaded</a>
+        </li>
+      </ul>
+
     </div>
 
     <div>
@@ -68,6 +64,9 @@
      first: self.ancestor || opts.category,
      last: self.ancestor || opts.category,
      top: self.ancestor || opts.category
+   }
+   self.pills = {
+     mode: (self.ancestor && self.ancestor.type == 'post')
    }
    self.showActions = self.ancestor && self.ancestor.type == 'post' || self.sorting.first
    self.query = initQuery({
