@@ -62,44 +62,9 @@
         <a href={ url.entry(entry.ref) }>{ entry.ref }</a> was not found or deleted.
       </p>
 
-      <aside class="entity-footer coect-meta">
-
-        <span if={ hasCounters } class={ active-tab: showLikes }>
-          <coect-like-button entity={ entry } />
-        </span>
-
-        <span if={ hasCounters } >
-          <a href={ url.entry(entry) } title="Comments"><i class="comments fa fa-comments"></i>
-            { entry.child_count || "" }</a>
-        </span>
-
-        <span if={ replyToUrl }>
-          <a href={ replyToUrl } class="u-in-reply-to"
-             title="In reply to"><i class="fa fa-external-link-square"></i></a>
-        </span>
-
-        <span>
-          <a if={ meta.facebook_url } class="u-syndication" rel="syndication"
-             href={ meta.facebook_url }><i class="fa fa-facebook"></i></a>
-          <a if={ meta.twitter_url } class="u-syndication" rel="syndication" 
-             href={ meta.twitter_url }><i class="fa fa-twitter"></i></a>
-          <a if={ source } class="u-syndication" rel="syndication" title="Source url"
-             href={ source }><i class="fa fa-{ sourceIcon(source) }"></i></a>
-        </span>
-
-       <span if={ canChange }>
-         <a href={ url.entry(entry.id, 'edit') }>Edit</a>
-       </span>
-
-       <span if={ canBroadcast }>
-         <a onclick={ broadcast }>Broadcast</a>
-       </span>
-
-       <span if={ hasCounters } class="pull-right">
-         <coect-save-button entity={ entry } />
-       </span>
-
-      </aside>
+      <entity-footer if={ entry } entity={ entry } change={ canChange } comments={ hasCounters }
+                     reply-to-url={ replyToUrl } broadcast={ canBroadcast }
+                     meta={ meta } />
 
       <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
 
@@ -230,16 +195,6 @@
        }
      ))
    }
-
-
-   self.broadcast = function(e) {
-     self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
-       debug('broadcasted', data)
-       self.entry.meta = self.coect.object.assign({}, self.entry.meta || {}, data.meta)
-       Site.flash(JSON.stringify(data.results))
-     }))
-   }
-
 
    if (entry && typeof window !== 'undefined') {
      self.canChange = Site.umedia.canChangeEntry(self.entry)
