@@ -58,7 +58,8 @@ function checkNewEntry(req, done) {
   debug('checkNE', req.body)
   var flow = tflow([
     function() {
-      (req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, flow)
+      if (!req.body.parent) return flow.fail('Parent is required.')
+      ;(req.body.parent === req.body.list ? Channel : Entry).get(req.body.parent, {select: '*'}, flow)
     },
     function(parent) {
       debug('checkNE parent=', (typeof parent), parent.type)
@@ -147,7 +148,7 @@ function update(req, res) {
       else Entry.get(entry.parent, this.join(entry, channel))
     },
     (entry, channel, parent) => {
-      if (parent.owner) config.User.get(parent.owner, flow.join)(entry, channel, parent)
+      if (parent.owner) config.User.get(parent.owner, flow.join(entry, channel, parent))
       else flow.next(entry, channel, parent, null)
     }, 
     function(entry, channel, parent, recipient) {

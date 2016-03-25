@@ -10,7 +10,10 @@ function entryWhere(req) {
 
 exports.getEntryAndChannel = function(req, done) {
   var flow = tflow([
-    () => Entry.get(entryWhere(req), {select: '*'}, flow),
+    () => {
+      if (!req.params.id) flow.fail('Entry id is required.')
+      else Entry.get(entryWhere(req), {select: '*'}, flow)
+    },
     (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry)),
     (entry, channel) => {
       if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
@@ -23,7 +26,10 @@ exports.getEntryAndChannel = function(req, done) {
 
 exports.getEntity = function(req, done) {
   var flow = tflow([
-    () => Entity.get(req.params.id, {select: '*'}, flow),
+    () => {
+      if (!req.params.id) flow.fail('Entity id is required.')
+      else Entity.get(req.params.id, {select: '*'}, flow)
+    },
     (entity) => {
       if (entity.list) Channel.get(entity.list, {select: '*'}, flow.join(entity))
       else flow.next(entity, entity)
