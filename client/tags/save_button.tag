@@ -8,10 +8,9 @@
   <script>
    var self = this
    self.mixin('umedia-context')
+
    self.toggle = function() {
      var method = (opts.entity['user_saved'] ? 'del' : 'post')
-     debug('save toggle', method)
-
      self.store.entry[method](self.url.entry(opts.entity.id, 'save'), Site.callback(
        function(data) {
          $.extend(opts.entity, data)

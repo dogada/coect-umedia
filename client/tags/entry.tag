@@ -65,9 +65,7 @@
       <aside class="entry-footer coect-meta">
 
         <span if={ hasCounters } class={ active-tab: showLikes }>
-          <a href="#" onclick={ like } title="Like it!"><i
-            class={"like fa fa-heart": 1, "liked": entry.user_liked }></i></a>
-          <a if={ entry.like_count } href="#" onclick={ toggleLikes } >{ entry.like_count }</a>
+          <coect-like-button entity={ entry } />
         </span>
 
         <span if={ hasCounters } >
