@@ -11,17 +11,18 @@
    
    self.toggle = function() {
      var method = (opts.entity['user_liked'] ? 'del' : 'post')
+     debug('toggle', method, opts.entity.id)
      self.store.entry[method](self.url.entry(opts.entity.id, 'like'), Site.callback(
        function(data) {
          $.extend(opts.entity, data)
-         self.parent.update()
+         self.parent.update({showLikes: false})
        }
      ))
    }
 
    self.toggleLikes = function(e) {
      self.parent.update({showLikes: !self.parent.showLikes})
-     if (self.parent.likes) return
+     debug('toogleLikes', self.parent.showLikes, self.parent)
      self.store.entry.get(self.url.entry(opts.entity.id, 'likes'), Site.callback(
        function(data) {
          self.parent.update({likes: data.items})

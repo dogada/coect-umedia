@@ -14,7 +14,7 @@
      self.store.entry[method](self.url.entry(opts.entity.id, 'save'), Site.callback(
        function(data) {
          $.extend(opts.entity, data)
-         self.parent.update()
+         self.parent.update({showLikes: false})
        }
      ))
    }

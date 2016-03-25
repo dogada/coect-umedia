@@ -101,18 +101,6 @@
 
       </aside>
 
-      <div if={ showLikes } class="like-list">
-        <ul class="list-inline">
-          <li each={ like in likes }>
-            <a href={ url.user(like.owner) }>
-              <img class="media-object" width="32" height="32" 
-                   alt={ like.owner.name } title={ like.owner.name }
-              src={ url.avatar(like.owner, 32) }>
-            </a>
-          </li>
-        </ul>
-      </div>
-
       <coect-bridgy-config if={ coect.bool(meta.bridgy) } meta={ meta } />
 
     </div>

@@ -48,7 +48,7 @@
 .umedia-channel .entity-footer, .umedia-entry .entity-footer {
     margin-top: 6px;
     
-    & > span {
+    & aside > span {
         padding: 10px;
         display: inline-block;
     }
@@ -56,6 +56,18 @@
     a {
         color: @meta_color;
     }
+
+    .like-list, .active-tab {
+        background-color: @header_bg_color;
+    }
+    
+    .like-list {
+        padding: 10px;
+        ul {
+            margin-bottom: 0;            
+        }
+    }
+
 }
 
 
@@ -147,16 +159,5 @@ ol.breadcrumb {
         margin-bottom: 15px;
     }
 
-    .like-list, .active-tab {
-        background-color: @bg_color;
-    }
-    
-    .like-list ul {
-        margin-bottom: 0;
-    }
-
-    .like-list {
-        padding: 10px;
-    }
 
 }

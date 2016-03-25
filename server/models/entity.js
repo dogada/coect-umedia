@@ -35,6 +35,26 @@ class Entity extends Model {
     }
   }
 
+  hasAdmin(user) {
+    return user.id === this.owner || this.getAdmins().indexOf(user.id) > -1
+  }
+
+  getAdmins() {
+    return this.data.admins || []
+  }
+
+  getModerators() {
+    return this.data.moderators || []
+  }
+
+  hasModerator(user) {
+    return this.getModerators().indexOf(user.id) > -1
+  }
+
+  hasMember(user) {
+    return false
+  }
+
 }
 
 Entity.LIST = 'list'
