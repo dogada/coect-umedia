@@ -1,8 +1,6 @@
 <umedia-channel-details>
   <div class="umedia-channel-detail">
     <coect-breadcrumbs items={ breadcrumbs } />
-    <h1 class="top-header">{ channel.name }</h1>
-
     <umedia-channel channel={ channel }></umedia-channel>
     <umedia-entry-editor if={ permissions.post } ancestor={ channel } items={ items } />
     <umedia-entry-list ancestor={ channel } items={ items } sorting={ sorting } />

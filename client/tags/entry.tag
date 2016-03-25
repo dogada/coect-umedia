@@ -62,7 +62,7 @@
         <a href={ url.entry(entry.ref) }>{ entry.ref }</a> was not found or deleted.
       </p>
 
-      <aside class="entry-footer coect-meta">
+      <aside class="entity-footer coect-meta">
 
         <span if={ hasCounters } class={ active-tab: showLikes }>
           <coect-like-button entity={ entry } />

@@ -11,7 +11,7 @@ function entryWhere(req) {
 exports.getEntryAndChannel = function(req, done) {
   var flow = tflow([
     () => {
-      if (!req.params.id) flow.fail('Entry id is required.')
+      if (!req.params.id && !req.params.username) flow.fail('Entry id or url is required.')
       else Entry.get(entryWhere(req), {select: '*'}, flow)
     },
     (entry) => Channel.get(entry.list, {select: '*'}, flow.join(entry)),

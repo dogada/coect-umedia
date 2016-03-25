@@ -36,7 +36,7 @@ class Channel extends Entity {
 Channel.MODEL = 'channel'
 Channel.TYPE = 'channel'
 Channel.NOTIFICATIONS = 'notifications'
-Channel.listFields = ['id', 'type', 'name', 'owner', 'url', 'access', 'version', 'meta']
+Channel.listFields = ['id', 'type', 'name', 'owner', 'url', 'access', 'version', 'meta', 'like_count']
 Channel.detailFields = Channel.listFields.concat(['model', 'text', 'child_count'])
 
 

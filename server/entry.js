@@ -176,6 +176,10 @@ function update(req, res) {
       Entry.get(id, this)
     },
     (entry) => store.entry.updateCounters(entry, flow),
+    (entry) => {
+      if (entry.tags) store.category.addVotes(entry, entry.tags, flow.send(entry))
+      else flow.next(entry)
+    },
     (entry) => Entity.fillUsers([entry], req.app.userCache, flow.send(entry)),
   ], coect.json.response(res))
 }

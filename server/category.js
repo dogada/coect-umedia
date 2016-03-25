@@ -27,10 +27,10 @@ exports.detail = function (req, res, next) {
     },
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts, channel)),
-    (opts, channel, entries) => Entity.postprocess(req, (channel ? entries.concat(channel) : entries),
-                                                   flow.join(opts, channel)),
     (opts, channel, entries) => store.category.getChannel(opts.tag, flow.join(opts, channel, entries)),
-    (opts, channel, entries, category) => flow.next({
+    (opts, channel, entries, category) => Entity.postprocess(
+      req, entries.concat(channel, category).filter(e => e), flow.join(opts, channel, category)),
+    (opts, channel, category, entries) => flow.next({
       content: {
         tag: 'coect-category-detail', opts: {
           items: entries.filter(e => e.model !== Channel.MODEL),

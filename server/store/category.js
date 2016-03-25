@@ -22,9 +22,10 @@ class CategoryStore extends Store {
     debug('addVote', object, tag)
     var flow = tflow([
       () => Channel.getOrCreate({name: tag, type: Entity.CATEGORY, owner: null},
-                                {model: Channel.MODEL}, {key: tag}, flow),
+                                {model: Channel.MODEL, access: Access.EVERYONE}, {key: tag}, flow),
       (category) => Entry.getOrCreate({list: category.id, ref: object.id},
-                                      {model: Entity.REF, type: object.type, name: ''}, category, flow),
+                                      {model: Entity.REF, type: object.type, name: '',
+                                       access: object.access}, category, flow),
       (entry) => Entry.table().update({
         like_count: Entry.raw('like_count + 1')
       }).where('id', entry.id).asCallback(flow)

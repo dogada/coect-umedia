@@ -41,13 +41,12 @@ describe(TAG, function() {
 
   it('should show root category and load recent entries by category name', function(done) {
     var tag = env.mount(TAG, {
-      category: {name: 'A category'}
+      category: {name: 'A category', type: 'category'}
     })
 
     function checkHtml() {
       $('.coect-breadcrumbs', tag.root).should.have.length(0)
       $('h1', tag.root).should.have.text('#A category')
-      $('h1 i', tag.root).should.have.text('#')
 
       expect($('ul.entries li', tag.root)).to.have.length(2)
       $('#ee1 .wpml p', tag.root).should.have.text('First entry')
@@ -61,7 +60,7 @@ describe(TAG, function() {
 
   it('should show channel category and load recent entries by category name and channel', function(done) {
     var tag = env.mount(TAG, {
-      category: {name: 'Channel category'},
+      category: {name: 'Channel category', type: 'category'},
       channel: FAKE_CHANNEL
     })
 
