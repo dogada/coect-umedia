@@ -88,28 +88,28 @@ var remove = function(user, entity, done) {
 }
 
 
-exports.likeEntry = function(req, res) {
-  debug('likeEntry', req.params)
+exports.like = function(req, res) {
+  debug('like', req.params)
   var flow = tflow([
-    () => misc.getEntryAndChannel(req, flow),
-    (entry, channel) => upsert(req.params.action === 'like', req.user, entry, flow)
+    () => misc.getEntity(req, flow),
+    (entity) => upsert(req.params.action === 'like', req.user, entity, flow)
   ], coect.json.response(res))
 }
 
-exports.unlikeEntry = function(req, res) {
-  debug('unlikeEntry', req.params)
+exports.unlike = function(req, res) {
+  debug('unlike', req.params)
   var flow = tflow([
-    () => misc.getEntryAndChannel(req, flow),
-    (entry, channel) => remove(req.user, entry, flow)
+    () => misc.getEntity(req, flow),
+    (entity) => remove(req.user, entity, flow)
   ], coect.json.response(res))
 }
 
 exports.list = function(req, res) {
   debug('list', req.params)
   var flow = tflow([
-    () => misc.getEntryAndChannel(req, flow),
-    (entry, channel) => Entry.table().select('owner', 'link', 'source')
-      .where({model: Entity.LIKE, ref: entry.id})
+    () => misc.getEntity(req, flow),
+    (entity) => Entity.table().select('owner', 'link', 'source')
+      .where({model: Entity.LIKE, ref: entity.id})
       .andWhere('access', '>', Access.HIDDEN)
       .orderBy('id', 'desc').limit(PAGE_SIZE)
       .asCallback(flow),

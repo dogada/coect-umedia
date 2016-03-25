@@ -1,5 +1,6 @@
 var Channel = require('./models').Channel
 var Entry = require('./models').Entry
+var Entity = require('./models').Entity
 var tflow = require('tflow')
 
 function entryWhere(req) {
@@ -15,6 +16,22 @@ exports.getEntryAndChannel = function(req, done) {
       if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
       if (!req.security.canUserView(req.user, entry, channel)) return flow.fail(403, 'Access to the entry is forbidden')
       flow.next(entry, channel)
+    }
+  ], done)
+}
+
+
+exports.getEntity = function(req, done) {
+  var flow = tflow([
+    () => Entity.get(req.params.id, {select: '*'}, flow),
+    (entity) => {
+      if (entity.list) Channel.get(entity.list, {select: '*'}, flow.join(entity))
+      else flow.next(entity, entity)
+    },
+    (entity, channel) => {
+      if (!req.security.canUserViewChannel(req.user, channel)) return flow.fail(403, 'Access to the channel is forbidden')
+      if (!req.security.canUserView(req.user, entity, channel)) return flow.fail(403, 'Access to the entity is forbidden')
+      flow.next(entity)
     }
   ], done)
 }

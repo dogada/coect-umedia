@@ -53,9 +53,9 @@ module.exports = function(r) {
   r.route('/e/:id/:action(accept|reject)')
     .post(loginRequired, entry.moderate)
 
-  r.route('/e/:id/:action(like|save)')
-    .post(loginRequired, like.likeEntry)
-    .delete(loginRequired, like.unlikeEntry)
+  r.route('/:model(e|c)/:id/:action(like|save)')
+    .post(loginRequired, like.like)
+    .delete(loginRequired, like.unlike)
 
   r.get('/e/:id/likes', like.list)
 
