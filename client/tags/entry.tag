@@ -98,8 +98,7 @@
        </span>
 
        <span if={ hasCounters } class="pull-right">
-         <a href="#" onclick={ save } title="Bookmark it!"><i
-           class={"fa fa-bookmark": 1,  "saved": entry.user_saved}></i></a>
+         <coect-save-button entity={ entry } />
        </span>
 
       </aside>
@@ -245,33 +244,7 @@
        }
      ))
    }
-   
-   self.best = function(action, flag) {
-     var method = (self.entry[flag || 'user_' + action + 'd'] ? 'del' : 'post')
-     self.store.entry[method](self.url.entry(self.entry.id, action), Site.callback(
-       function(data) {
-         self.update({entry: $.extend(self.entry, data)})
-       }
-     ))
-   }
-   
-   self.like = function(e) {
-     self.best('like')
-   }
 
-   self.save = function(e) {
-     self.best('save')
-   }
-
-   self.toggleLikes = function(e) {
-     self.showLikes = !self.showLikes
-     if (self.likes) return
-     self.store.entry.get(self.url.entry(self.entry.id, 'likes'), Site.callback(
-       function(data) {
-         self.update({likes: data.items})
-       }
-     ))
-   }
 
    self.broadcast = function(e) {
      self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
