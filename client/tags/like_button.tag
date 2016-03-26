@@ -12,6 +12,7 @@
    self.toggle = function() {
      var method = (opts.entity['user_liked'] ? 'del' : 'post')
      debug('toggle', method, opts.entity.id)
+     if (!Site.user) return Site.account.loginRequired()
      self.store.entry[method](self.url.entry(opts.entity.id, 'like'), Site.callback(
        function(data) {
          $.extend(opts.entity, data)
