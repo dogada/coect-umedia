@@ -1,7 +1,7 @@
 <umedia-entry-list>
 
   <div class="umedia-entry-list">
-    <div if={ showTabs } class="clearfix">
+    <div if={ opts.filters || sorting.last && items.length } class="clearfix">
       <ul class="nav nav-tabs pull-left">
         <li if={ sorting.last } class="{ active(query.order == 'last') }">
           <a onclick={ last }>Last</a>
@@ -73,15 +73,13 @@
      top: self.ancestor || opts.category
    }
    self.listMode = (self.ancestor && self.ancestor.type == 'post')
-   self.showTabs = self.ancestor && self.ancestor.type == 'post' ||
-   self.sorting.last || opts.filters
    self.baseUrl = opts.baseUrl
    self.query = initQuery({
      order: 'last', 
      count: parseInt(opts.count || 10)
    })
    debug('initial query', self.query, 'items.length=', self.items.length)
-   debug('sorting', self.sorting, 'filters', opts.filters, 'showTabs', self.showTabs)
+   debug('sorting', self.sorting, 'filters', opts.filters)
 
    self.active = function(test) {
      return (test ? ' active' : '')
