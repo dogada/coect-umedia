@@ -17,13 +17,13 @@
            title="In reply to"><i class="fa fa-external-link-square"></i></a>
       </span>
 
-      <span>
-        <a if={ meta.facebook_url } class="u-syndication" rel="syndication"
-           href={ meta.facebook_url }><i class="fa fa-facebook"></i></a>
-        <a if={ meta.twitter_url } class="u-syndication" rel="syndication" 
-           href={ meta.twitter_url }><i class="fa fa-twitter"></i></a>
-        <a if={ source } class="u-syndication" rel="syndication" title="Source url"
-           href={ source }><i class="fa fa-{ sourceIcon(source) }"></i></a>
+      <span if={ entity.meta }>
+        <a if={ entity.meta.facebook_url } class="u-syndication" rel="syndication"
+           href={ entity.meta.facebook_url }><i class="fa fa-facebook"></i></a>
+        <a if={ entity.meta.twitter_url } class="u-syndication" rel="syndication" 
+           href={ entity.meta.twitter_url }><i class="fa fa-twitter"></i></a>
+        <a if={ entity.source } class="u-syndication" rel="syndication" title="Source url"
+           href={ entity.source }><i class="fa fa-{ sourceIcon(source) }"></i></a>
       </span>
 
       <span if={ opts.broadcast }>
@@ -58,9 +58,8 @@
    var self = this
    self.mixin('umedia-context')
    self.entity = opts.entity
-   self.meta = opts.meta || {}
-   if (self.entity)self.entityUrl = (self.entity.model == 'channel' ? self.url.channel : self.url.entry)
-
+   if (self.entity) self.entityUrl = (self.entity.model == 'channel' ? self.url.channel : self.url.entry)
+   debug('entity-footer', self.entity && self.entity.meta)
    self.broadcast = function(e) {
      self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
