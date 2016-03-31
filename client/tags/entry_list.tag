@@ -1,7 +1,7 @@
 <umedia-entry-list>
 
   <div class="umedia-entry-list">
-    <div if={ opts.filters || sorting.last && items.length } class="clearfix">
+    <div if={ tabs.length || sorting.last && items.length } class="clearfix">
       <ul class="nav nav-tabs pull-left">
         <li if={ sorting.last } class="{ active(query.order == 'last') }">
           <a onclick={ last }>Last</a>
@@ -15,16 +15,8 @@
           <a onclick={ top } >Top</a>
         </li>
 
-        <li if={ opts.filters } class="{ active(!query.model) }">
-          <a href={ baseUrl() }>All</a>
-        </li>
-
-        <li if={ opts.filters } class="{ active(query.model == 'like') }">
-          <a href={ baseUrl('like') }>Like</a>
-        </li>
-
-        <li if={ opts.filters } class="{ active(query.model == 'entry') }">
-          <a href={ baseUrl('entry') }>Entry</a>
+        <li each={ t in tabs } class="{ active(tab == t.id) }">
+          <a href={ baseUrl(t.id) } title={ t.title || '' }>{ t.name }</a>
         </li>
 
       </ul>
@@ -65,7 +57,8 @@
    self.items = opts.items || []
    self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
-
+   self.tab = opts.tab
+   self.tabs = opts.tabs || []
    self.debug('entry_list view', self.view, opts.view)
    self.sorting = opts.sorting || {
      first: self.ancestor,
@@ -79,7 +72,7 @@
      count: parseInt(opts.count || 10)
    })
    debug('initial query', self.query, 'items.length=', self.items.length)
-   debug('sorting', self.sorting, 'filters', opts.filters)
+   debug('sorting', self.sorting, 'tabs', opts.tabs)
 
    self.active = function(test) {
      return (test ? ' active' : '')
@@ -110,7 +103,7 @@
      debug('initQuery listType', listType, self.ancestor)
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
-     else if (opts.my) query.my = opts.my
+     else if (opts.my) self.coect.object.assign(query, {my: opts.my, filter: opts.tab})
      else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
      else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
      else if (listType === 'replies' || listType === 'channel') query.parent = self.ancestor.id

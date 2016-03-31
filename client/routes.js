@@ -20,8 +20,7 @@ function baseRoutes(route, url) {
   route(url.category(':category'), handlers.category.detail)
 
   route(url.my('notifications'), handlers.my.notifications)
-  route(url.my(':model'), handlers.my.index)
-  route(url.my(':model', ':type'), handlers.my.index)
+  route(url.my(':tab'), handlers.my.index)
   route(url.my(), handlers.my.index)
 }
 

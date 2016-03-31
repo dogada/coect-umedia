@@ -49,6 +49,11 @@ function listWhere(opts, done) {
       // !opts.my) where.topic = null
       if (opts.my && opts.owner) where.owner = opts.owner
       if (opts.model) where.model = opts.model
+
+      if (opts.filter === 'user') Object.assign(where, {model: Entity.LIKE, type: Entity.MAIN})
+      else if (opts.filter === 'category') Object.assign(where, {model: Entity.LIKE, type: Entity.CATEGORY})
+      else if (opts.filter === 'like') Object.assign(where, {model: Entity.LIKE})
+
       // FIX: switch to timeline
       if (!Object.keys(where).length && !opts.tag) return flow.fail(400, 'An entry filter is required.')
       this.next(where, opts.tag)
