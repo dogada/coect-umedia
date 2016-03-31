@@ -33,7 +33,7 @@
 
     <div if={ items.length} >
       <ul class="{'entries h-feed': 1, 'p-comments': opts.comment,
-          'list-unstyled': !categoryItem, 'list-inline category-list': categoryItem }">
+          'list-unstyled': entryItem, 'list-inline category-list': !entryItem }">
 
         <li each={ e in (entryItem ? items : []) }>
           <umedia-entry entry={ e }
@@ -44,6 +44,10 @@
 
         <li each={ e in (categoryItem ? items : []) }>
           <a href={ url.category(e.name) }>#{ e.name }</a>
+        </li>
+
+        <li each={ e in (userItem ? items : []) }>
+          <coect-user-channel user={ e.owner } />
         </li>
 
       </ul>
@@ -87,6 +91,7 @@
    }
 
    if (self.tab == 'category') self.categoryItem = true
+   else if (self.tab == 'user') self.userItem = true
    else  self.entryItem = true
 
    function getThreadId(entry) {

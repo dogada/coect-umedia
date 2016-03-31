@@ -1,11 +1,3 @@
-.umedia-entry {
-    display: block;
-    margin-top: 5px;
-    padding: 10px;
-    background-color: @content_bg_color;
-    color: @content_color;
-}
-
 .umedia-profile {
     background-color: @content_bg_color;
     padding: 10px;
@@ -45,7 +37,7 @@
 }
 
 
-.umedia-channel .entity-footer, .umedia-entry .entity-footer {
+.entity-footer {
     
     & aside > span {
         padding: 10px;
@@ -137,6 +129,10 @@ ol.breadcrumb {
 }
 
 .umedia-entry {
+    display: block;
+    margin-top: 5px;
+    padding: 10px;
+
     .restricted { color: grey }
     h2 { margin-top: 0 }
     
@@ -159,15 +155,36 @@ ol.breadcrumb {
         }
         margin-bottom: 15px;
     }
-
-
 }
 
 .umedia-entry-list {
+    .entries {
+        background-color: @content_bg_color;
+        color: @content_color;
+    }
+
     .nav-tabs {
         margin-left: -1px;
     }
     .category-list li {
         padding: 15px;
     }
+}
+
+.thumbnail.with-caption {
+    display: inline-block;
+    background: @bg_color;
+}
+
+.thumbnail.with-caption p {
+    margin: 0;
+    padding-top: 0.5em;
+    text-align: center;
+}
+
+.thumbnail.with-caption small {
+    width: 100%;
+    text-align: right;
+    display: inline-block;
+    color: #999;
 }

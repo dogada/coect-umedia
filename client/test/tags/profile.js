@@ -12,7 +12,7 @@ describe(TAG, function() {
     $(tag.root).should.have.class(TAG)
     $('.media-left img', tag.root).should.have.attr('alt', user.id)
     $('.media-left img', tag.root).should.have.attr('src', '/_static/img/avatar_128.png')
-    $('.media-body h1', tag.root).should.have.text('U1 ')
+    $('.media-body h1', tag.root).should.contain('U1')
   })
 
   it('should show complete profile and convert WPML text in about', function() {

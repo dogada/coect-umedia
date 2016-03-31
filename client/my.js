@@ -12,7 +12,7 @@ exports.index = function (ctx) {
   var tabs = [
     {id: 'like', name: 'Entries', title: 'Liked and saved entries', url: ''},
     {id: 'category', name: 'Tags', icon: 'hashtag'},
-    {id: 'user', name: 'Contacts'}
+    {id: 'user', name: 'People'}
   ]
   
   Site.mountTag('umedia-entry-list',

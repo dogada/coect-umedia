@@ -9,7 +9,10 @@
 
       <div class="media-body">
         <h1><span class="fn">{ user.name || user.id }</span>
-          <small if={ user.username }>@<span class="nickname">{ user.username }</span></small></h1>
+          <small if={ user.username }>@<span class="nickname">{ user.username }</span></small>
+        </h1>
+        <entity-footer entity={ user.blog } />
+
         <umedia-wpml class="p-note" text={ user.about }></umedia-wpml>
         <p if={ user.location } class="umedia-location locality">{ user.location }</p>
         

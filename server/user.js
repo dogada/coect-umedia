@@ -18,7 +18,13 @@ exports.detail = function(req, res, next) {
     (user) => store.channel.list(req, {owner: user.id}, flow.join(user)),
     (user, channels) => store.entry.list(req, req.security.getUserAccess(req.user, null, {min: coect.Access.REJECTED}),
                                          {owner: user.id, model: 'entry'}, flow.join(user, channels)),
-    (user, channels, entries) => Entity.postprocess(req, entries, flow.join(user, channels)),
+    (user, channels, entries) => Entity.postprocess(req, channels.concat(entries), flow.join(user, channels, entries)),
+    (user, channels, entries) => {
+      for (var c of channels) {
+        if (c.id === user.blog) user.blog = c
+      }
+      flow.next(user, channels, entries)
+    },
     (user, channels, entries) => flow.next({
       content: {tag: 'umedia-profile', opts: {user, entries}}, 
       sidebar: {tag: 'coect-channel-feed', opts: {items: channels}},
