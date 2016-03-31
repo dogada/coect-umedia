@@ -10,18 +10,18 @@ function requireLogin() {
 exports.index = function (ctx) {
   if (requireLogin()) return
   var tabs = [
+    {id: 'like', name: 'Entries', title: 'Liked and saved entries', url: ''},
     {id: 'category', name: 'Tags', icon: 'hashtag'},
-    {id: 'user', name: 'Contacts'},
-    {id: 'like', name: 'Liked', title: 'Liked and saved items'}
+    {id: 'user', name: 'Contacts'}
   ]
   
   Site.mountTag('umedia-entry-list',
                 {my: 'main',
                  tabs: tabs,
                  baseUrl: Site.urls.my,
-                 tab: ctx.params.tab || tabs[2].id,
+                 tab: ctx.params.tab || tabs[0].id,
                  type: ctx.params.type},
-                'Own and liked content.')
+                'My likes and saves.')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }
 

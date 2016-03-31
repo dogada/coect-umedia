@@ -1,6 +1,7 @@
 <umedia-entry-list>
 
   <div class="umedia-entry-list">
+
     <div if={ tabs.length || sorting.last && items.length } class="clearfix">
       <ul class="nav nav-tabs pull-left">
         <li if={ sorting.last } class="{ active(query.order == 'last') }">
@@ -16,7 +17,7 @@
         </li>
 
         <li each={ t in tabs } class="{ active(tab == t.id) }">
-          <a href={ baseUrl(t.id) } title={ t.title || '' }>{ t.name }</a>
+          <a href={ baseUrl(t.url != undefined ? t.url : t.id) } title={ t.title || '' }>{ t.name }</a>
         </li>
 
       </ul>
@@ -31,13 +32,20 @@
     </div>
 
     <div if={ items.length} >
-      <ul class="{'list-unstyled entries h-feed': 1, 'p-comments': opts.comment }">
-        <li each={ e in items }>
+      <ul class="{'entries h-feed': 1, 'p-comments': opts.comment,
+          'list-unstyled': !categoryItem, 'list-inline category-list': categoryItem }">
+
+        <li each={ e in (entryItem ? items : []) }>
           <umedia-entry entry={ e }
           ancestor={ parent.ancestor || parent.channel }
           comment={ parent.opts.comment } cite={ parent.opts.cite } 
           view={ parent.view } />
         </li>
+
+        <li each={ e in (categoryItem ? items : []) }>
+          <a href={ url.category(e.name) }>#{ e.name }</a>
+        </li>
+
       </ul>
 
       <div if={ hasMore }>
@@ -77,6 +85,9 @@
    self.active = function(test) {
      return (test ? ' active' : '')
    }
+
+   if (self.tab == 'category') self.categoryItem = true
+   else  self.entryItem = true
 
    function getThreadId(entry) {
      return (entry.thread && entry.thread.id !== entry.topic.id ? entry.thread.id : entry.id)

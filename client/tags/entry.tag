@@ -154,13 +154,6 @@
            'objectUrl', self.objectUrl, 'replyTo', self.replyToUrl)
    }
 
-   self.sourceIcon = function(url) {
-     if (/^https?:\/\/twitter.com/.test(url)) return 'twitter'
-     if (/^https?:\/\/(\w+\.)?facebook.com/.test(url)) return 'facebook'
-     return 'external-link'
-   }
-
-
    self.isRestricted = function(entry) {
      if ([Access.MODERATION, Access.REJECTED,
      Access.HIDDEN].indexOf(entry.access) !== -1) return false

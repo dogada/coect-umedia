@@ -60,6 +60,13 @@
    self.entity = opts.entity
    if (self.entity) self.entityUrl = (self.entity.model == 'channel' ? self.url.channel : self.url.entry)
    debug('entity-footer', self.entity && self.entity.meta)
+
+   self.sourceIcon = function(url) {
+     if (/^https?:\/\/twitter.com/.test(url)) return 'twitter'
+     if (/^https?:\/\/(\w+\.)?facebook.com/.test(url)) return 'facebook'
+     return 'external-link'
+   }
+
    self.broadcast = function(e) {
      self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
