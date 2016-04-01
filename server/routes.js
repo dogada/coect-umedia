@@ -86,6 +86,9 @@ module.exports = function(r) {
   r.route('/t/:tag')
     .get(category.detail)
 
+  r.route('/t/:tag/:tab(my)')
+    .get(category.detail)
+
 
   r.route('/u/:id')
     .get(user.detail)

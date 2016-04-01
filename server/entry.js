@@ -301,11 +301,9 @@ function list(req, res) {
       if (req.query.thread) flow.next({list: parent.list, thread: req.query.thread})
       else if (req.query.topic) flow.next({list: parent.list, topic: req.query.topic})
       else if (req.query.parent) flow.next({parent: parent.id})
-      else if (req.params.id) flow.next({list: req.params.id, tag: req.params.tag}) // c/:id/t/:tag && c/:id
-      else if (req.query.list) flow.next({list: req.query.list, tag: req.query.tag})
-      else if (req.query.list_url) flow.next({url: req.query.list_url, tag: req.query.tag})
-      else if (req.query.owner) flow.next({owner: req.query.owner, model: 'entry'})
-      else if (req.query.tag) flow.next({tag: req.query.tag})
+      else if (req.params.id) flow.next({list: req.params.id}) // c/:id/t/:tag && c/:id
+      else if (req.query.list) flow.next({list: req.query.list})
+      else if (req.query.list_url) flow.next({url: req.query.list_url})
       else if (req.query.my === Channel.NOTIFICATIONS) flow.next({
         recipient: req.user.id, my: req.query.my, model: req.query.model, type: req.query.type})
       else if (req.query.my) flow.next({
@@ -316,11 +314,12 @@ function list(req, res) {
         type: req.query.type,
         model: req.query.model
       })
+      else if (req.query.owner || req.query.tag) flow.next({})
       else flow.fail(400, 'Unknown query')
     },
     (opts) => {
       debug('store.channel', store.channel)
-      for (let param of ['cursor', 'offset', 'count', 'order', 'view']) opts[param] = req.query[param]
+      for (let param of ['cursor', 'offset', 'count', 'order', 'view', 'owner', 'tag']) opts[param] = req.query[param]
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },

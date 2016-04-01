@@ -4,7 +4,8 @@
     <umedia-channel channel={ category }></umedia-channel>
     <umedia-entry-list category={ category.name } 
     list={ opts.channel && opts.channel.id } items={ items }
-    sorting={ sorting } />
+    sorting={ sorting } tabs={ tabs } tab={ tab } owner={ owner } 
+    base-url={ baseUrl } />
   </div>
 
   <script>
@@ -16,11 +17,20 @@
    debug('category_detail', opts)
 
    self.items = self.opts.items || []
-
    if (channel) self.breadcrumbs = [
      {name: channel.owner.name, url: self.url.user(channel.owner)},
      {name: channel.name, url: self.url.channel(channel)}
    ]
+   self.baseUrl = self.url.category.bind(this, self.category.name)
+   if (typeof Site !== 'undefined' && Site.user) {
+     self.tabs = [
+       {id: 'my', name: 'My'}
+     ]
+     self.tab = opts.params.tab
+     if (self.tab == 'my') self.owner = Site.user.id
+   } else {
+     self.tabs = []
+   }
 
   </script>
 

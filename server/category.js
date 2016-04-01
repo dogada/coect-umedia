@@ -12,16 +12,15 @@ var store = require('./store')
 exports.detail = function (req, res, next) {
   var flow = tflow([
     () => {
-      var tag = req.params.tag && req.params.tag.toLowerCase()
-      if (req.params.id) flow.next({list: req.params.id, tag: tag}) // c/:id/t/:tag
+      if (req.params.id) flow.next({list: req.params.id}) // c/:id/t/:tag
       else if (req.params.username) flow.next({ // :username/:cslug/t/:tag
-        url: req.params.username + '/' + req.params.cslug,
-        tag: tag
+        url: req.params.username + '/' + req.params.cslug
       })
-      else if (req.params.tag) flow.next({tag: tag})
-      else flow.fail(400, 'Unknown query')
+      else flow.next({})
     },
     (opts) => {
+      opts.tag = req.params.tag && req.params.tag.toLowerCase() 
+      if (req.user && req.params.tab === 'my') opts.owner = req.user.id
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
@@ -32,10 +31,12 @@ exports.detail = function (req, res, next) {
       req, entries.concat(channel, category).filter(e => e), flow.join(opts, channel, category)),
     (opts, channel, category, entries) => flow.next({
       content: {
-        tag: 'coect-category-detail', opts: {
+        tag: 'coect-category-detail', 
+        opts: {
           items: entries.filter(e => e.model !== Channel.MODEL),
           category: category || {name: opts.tag},
-          channel: channel
+          channel: channel,
+          params: req.params
         }
       },
       title:  (channel ? channel.name + ' / ' + opts.tag : opts.tag),

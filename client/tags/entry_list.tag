@@ -4,15 +4,15 @@
 
     <div if={ tabs.length || sorting.last && items.length } class="clearfix">
       <ul class="nav nav-tabs pull-left">
-        <li if={ sorting.last } class="{ active(query.order == 'last') }">
-          <a onclick={ last }>Last</a>
+        <li if={ sorting.last } class="{ active(query.order == 'last' && !tab) }">
+          <a onclick={ fn.last }>Last</a>
         </li>
         
-        <li if={ sorting.first } class="{ active(query.order == 'first') }">
+        <li if={ sorting.first } class="{ active(query.order == 'first' && !tab) }">
           <a onclick={ first }>First</a>
         </li>
 
-        <li if={ sorting.top } class="{ active(query.order == 'top') }">
+        <li if={ sorting.top } class="{ active(query.order == 'top' && !tab) }">
           <a onclick={ top } >Top</a>
         </li>
 
@@ -61,6 +61,7 @@
 
   <script>
    var self = this
+
    self.mixin('umedia-context')
    self.debug('entry_list window=', typeof window, self.opts)
 
@@ -71,6 +72,7 @@
    self.view = opts.view || 'summary'
    self.tab = opts.tab
    self.tabs = opts.tabs || []
+   self.fn = {}
    self.debug('entry_list view', self.view, opts.view)
    self.sorting = opts.sorting || {
      first: self.ancestor,
@@ -119,7 +121,7 @@
      debug('initQuery listType', listType, self.ancestor)
      if (opts.type) query.type = opts.type
      else if (opts.owner) query.owner = opts.owner
-     else if (opts.my) self.coect.object.assign(query, {my: opts.my, filter: opts.tab})
+     else if (opts.my) self.coect.object.assign(query, {my: opts.my, filter: self.tab})
      else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
      else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
      else if (listType === 'replies' || listType === 'channel') query.parent = self.ancestor.id
@@ -151,18 +153,21 @@
      }))
    }
 
-   self.last = function() {
+   self.last = self.fn.last = function() {
      self.query.order = 'last'
+     self.tab = null
      load()
    }
 
    self.first = function() {
      self.query.order = 'first'
+     self.tab = null
      load()
    }
 
    self.top = function() {
      self.query.order = 'top'
+     self.tab = null
      load()
    }
 
