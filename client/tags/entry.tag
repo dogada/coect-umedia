@@ -2,7 +2,6 @@
   <div id="e{entry.id}" class={'h-entry': hentry, 'h-cite': opts.cite, 'p-comment': opts.comment, 'highlighted': entry.highlighted, 'media umedia-entry': 1}>
     
     <h1 if={ title && opts.detail } class="p-name">{ title }</h1>
-    <h2 if={ title && !opts.detail }><a class="p-name" href={ url.entry(entry) }>{ title }</a></h2>
 
     <div class="media-left">
       <a class="p-author h-card" href={ url.user(entry.owner) }>
@@ -13,7 +12,6 @@
     </div>
 
     <div class="media-body">
-
       <aside class="entry-header coect-meta">
         <a class="umedia-display-name" href="{ url.user(entry.owner) }"
            title="{ entry.owner.username || entry.owner.id }">{ displayName(entry.owner) }</a> 
@@ -41,6 +39,8 @@
               title="Access to the entry is restricted (level: { entry.access }).">restricted</span>
 
       </aside>
+
+      <h2 if={ title && !opts.detail }><a class="p-name" href={ url.entry(entry) }>{ title }</a></h2>
     
       <div class="entry-tags coect-meta">
         <ul if={ entry.tags } class="list-inline">
