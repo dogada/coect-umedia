@@ -86,7 +86,7 @@ module.exports = function(r) {
   r.route('/t/:tag')
     .get(category.detail)
 
-  r.route('/t/:tag/:tab(my)')
+  r.route('/t/:tag/:tab')
     .get(category.detail)
 
 

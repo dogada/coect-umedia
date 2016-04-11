@@ -44,3 +44,9 @@ exports.getEntity = function(req, done) {
     }
   ], done)
 }
+
+exports.getTabOrder = function(tab) {
+  if (tab === 'top') return 'top'
+  else if (tab === 'first') return 'first'
+  else return 'last'
+}

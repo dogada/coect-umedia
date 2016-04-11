@@ -22,6 +22,7 @@ function filterByAccess(q, user, access) {
 }
 
 function listOrder(order) {
+  debug('listOrder', order)
   if (order === 'top') return ['like_count', 'desc']
   else if (order === 'first') return ['id', 'asc']
   else return ['id', 'desc']
@@ -70,8 +71,7 @@ class EntryStore extends Store {
     var flow = tflow([
       () => listWhere(opts, flow),
       (where, tag) => {
-        debug(`list where=${where} access=${access}`)
-
+        debug(`list access=${access}, where=`, where)
         var q = Entry.table(where.list)
         q = q.select(Entry.listFields)
         q = q.where(where)
@@ -85,7 +85,7 @@ class EntryStore extends Store {
         q = q.orderBy.apply(q, listOrder(opts.order))
         if (opts.offset) q = q.offset(parseInt(opts.offset, 10))
         q = q.limit(this.pageSize(opts))
-        debug('list SQL', q.toString().slice(-130))
+        debug('list SQL', q.toString().slice(-100))
         q.asCallback(flow)
       }
     ], done)

@@ -8,6 +8,7 @@ var Entry = require('./models').Entry
 var Access = coect.Access
 
 var store = require('./store')
+var misc = require('./misc')
 
 exports.detail = function (req, res, next) {
   var flow = tflow([
@@ -19,8 +20,10 @@ exports.detail = function (req, res, next) {
       else flow.next({})
     },
     (opts) => {
+      opts.tab = req.params.tab || 'top'
       opts.tag = req.params.tag && req.params.tag.toLowerCase() 
-      if (req.user && req.params.tab === 'my') opts.owner = req.user.id
+      if (req.user && opts.tab === 'my') opts.owner = req.user.id
+      opts.order = misc.getTabOrder(opts.tab)
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },
@@ -36,7 +39,9 @@ exports.detail = function (req, res, next) {
           items: entries.filter(e => e.model !== Channel.MODEL),
           category: category || {name: opts.tag},
           channel: channel,
-          params: req.params
+          params: req.params,
+          tab: opts.tab,
+          order: opts.order
         }
       },
       title:  (channel ? channel.name + ' / ' + opts.tag : opts.tag),

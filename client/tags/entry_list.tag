@@ -2,24 +2,13 @@
 
   <div class="umedia-entry-list">
 
-    <div if={ tabs.length || sorting.last && items.length } class="clearfix">
+    <div if={ tabs.length } class="clearfix">
+
       <ul class="nav nav-tabs pull-left">
-        <li if={ sorting.last } class="{ active(query.order == 'last' && !tab) }">
-          <a onclick={ fn.last }>Last</a>
-        </li>
-        
-        <li if={ sorting.first } class="{ active(query.order == 'first' && !tab) }">
-          <a onclick={ first }>First</a>
-        </li>
-
-        <li if={ sorting.top } class="{ active(query.order == 'top' && !tab) }">
-          <a onclick={ top } >Top</a>
-        </li>
-
         <li each={ t in tabs } class="{ active(tab == t.id) }">
-          <a href={ baseUrl(t.url != undefined ? t.url : t.id) } title={ t.title || '' }>{ t.name }</a>
+          <a href={ baseUrl(t.url != undefined ? t.url : t.id) } 
+            title={ t.title || '' }>{ t.name || t.id}</a>
         </li>
-
       </ul>
 
       <div if={ listMode } class="btn-group pull-right" role="group" aria-label="View mode">
@@ -64,8 +53,8 @@
 
    self.mixin('umedia-context')
    self.debug('entry_list window=', typeof window, self.opts)
-
    var opts = self.opts
+
    self.ancestor = opts.ancestor
    self.items = opts.items || []
    self.hasMore = !opts.frozen
@@ -82,11 +71,15 @@
    self.listMode = (self.ancestor && self.ancestor.type == 'post')
    self.baseUrl = opts.baseUrl
    self.query = initQuery({
-     order: 'last', 
+     order: opts.order || 'last', 
      count: parseInt(opts.count || 10)
    })
+
+   self.coect.object.assign(self, opts.props || {}) 
+   self.query = self.coect.object.assign({}, {count: parseInt(opts.count || 10, 10)}, self.query) 
+
    debug('initial query', self.query, 'items.length=', self.items.length)
-   debug('sorting', self.sorting, 'tabs', opts.tabs)
+   debug('tabs', self.tabs)
 
    self.active = function(test) {
      return (test ? ' active' : '')
@@ -138,6 +131,11 @@
      return (append ? $.extend(getCursor(), self.query) : self.query)
    }
 
+   self.rebuild = function(data) {
+     self.hasMore = (data.length >= self.query.count)
+     debug('rebuild', data.length, self.hasMore)
+   }
+
    function load(append) {
      debug('load', append)
      var url = self.url.entry('') + '?' + $.param(getQuery(append))
@@ -148,27 +146,9 @@
        // update self.items in-place because it may be shared with parent tag like entry_detail
        if (!append) self.items.splice(0, self.items.length)
        self.items.push.apply(self.items, data.items)
-       self.hasMore = (data.items.length >= self.query.count)
+       self.rebuild(data.items)
        self.update()
      }))
-   }
-
-   self.last = self.fn.last = function() {
-     self.query.order = 'last'
-     self.tab = null
-     load()
-   }
-
-   self.first = function() {
-     self.query.order = 'first'
-     self.tab = null
-     load()
-   }
-
-   self.top = function() {
-     self.query.order = 'top'
-     self.tab = null
-     load()
    }
 
    self.more = function() {
@@ -194,6 +174,8 @@
 
    if (typeof window !== 'undefined') self.on('mount', function() {
      if (!self.items.length) load()
+     else self.rebuild(self.items)
+     self.update()
    })
 
    //if (typeof window !== 'undefined' && !self.items.length) self.load()
