@@ -54,28 +54,14 @@
    
    var opts = self.opts
    self.ancestor = opts.ancestor
-   self.items = self.parent && self.parent.items || []
+   self.items = opts.items || self.parent && self.parent.items || []
    self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
    self.tabs = self.parent && self.parent.tabs || []
    self.tab = opts.tab || self.tabs.length && self.tabs[0].id
-   self.fn = {}
-   self.debug('entry_list view', self.view, opts.view)
    self.query = opts.query || self.parent && self.parent.query || {}
 
    if (!self.query.count) self.query.count = parseInt(opts.count || 10, 10)
-
-   function initQuery(query) {
-     if (opts.type) query.type = opts.type
-     else if (opts.owner) query.owner = opts.owner
-     else if (opts.list) query.list = opts.list
-     else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
-
-     if (opts.model) query.model = opts.model
-     if (opts.view) query.view = self.view
-     return query
-   }
-
 
    function setItem(tab) {
      self.categoryItem = self.userItem = self.entryItem = false
@@ -84,7 +70,6 @@
      else  self.entryItem = true
    }
 
-   initQuery(self.query)
    setItem(self.tab)
    debug('initial query', self.query, 'items.length=', self.items.length)
    debug('tabs', self.tabs)

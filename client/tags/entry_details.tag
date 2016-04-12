@@ -41,7 +41,7 @@
    else if (ancestor.thread) return 'replies'
  }
 
- var query = self.query = {order: 'last'}
+ var query = self.query = {order: 'last', view: 'full'}
  var listType = getListType(entry)
  if (listType === 'topic') query.topic = getTopicId(entry)
  else if (listType === 'thread') query.thread = getThreadId(entry)
