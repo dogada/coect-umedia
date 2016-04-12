@@ -9,17 +9,9 @@ function requireLogin() {
 
 exports.index = function (ctx) {
   if (requireLogin()) return
-  var tabs = [
-    {id: 'like', name: 'Entries', title: 'Liked and saved entries', url: ''},
-    {id: 'category', name: 'Tags', icon: 'hashtag'},
-    {id: 'user', name: 'People'}
-  ]
   
-  Site.mountTag('umedia-entry-list',
-                {my: 'main',
-                 tabs: tabs,
-                 baseUrl: Site.urls.my,
-                 tab: ctx.params.tab || tabs[0].id,
+  Site.mountTag('coect-user-likes',
+                {tab: ctx.params.tab,
                  type: ctx.params.type},
                 'My likes and saves.')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
@@ -28,7 +20,7 @@ exports.index = function (ctx) {
 exports.notifications = function () {
   if (requireLogin()) return
   Site.mountTag('umedia-entry-list',
-                {my: 'notifications'},
+                {query: {my: 'notifications'}},
                 'Notifications')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }

@@ -6,7 +6,7 @@ var TAG = 'umedia-entry-list'
 describe(TAG, function() {
 
   before(function() {
-    env.fakeGET('/e?count=10&order=last', {items: [
+    env.fakeGET('/e?count=10', {items: [
       {id: 'e1',
        text: 'h2: Hello world\nBye.',
        head: 'Hello world',

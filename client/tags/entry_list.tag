@@ -6,16 +6,14 @@
 
       <ul class="nav nav-tabs pull-left">
         <li each={ t in tabs } class="{ active(tab == t.id) }">
-          <a href={ baseUrl(t.url != undefined ? t.url : t.id) } 
-            title={ t.title || '' }>{ t.name || t.id}</a>
+          <a onclick={ changeTab } href="#" title={ t.title || '' }>{ t.name || t.id}</a>
         </li>
       </ul>
 
-      <div if={ listMode } class="btn-group pull-right" role="group" aria-label="View mode">
-        <button type="button" class="btn btn-default { active(!query.thread) }" 
-                onclick={ flatMode } title="Flat view"><i class="fa fa-align-justify"></i></button>
-        <button type="button" class="btn btn-default { active(query.thread) }"
-                onclick={ threadedMode } title="Threaded view"><i class="fa fa-indent"></i></button>
+      <div if={ parent && parent.modes } class="btn-group pull-right" role="group" aria-label="View mode">
+        <button each={ m in parent.modes } type="button" 
+                class="btn btn-default { active(m.id == parent.parent.mode) }" 
+                onclick={ m.handler } title={ m.name }><i class={ m.icon }></i></button>
       </div>
 
     </div>
@@ -53,79 +51,62 @@
 
    self.mixin('umedia-context')
    self.debug('entry_list window=', typeof window, self.opts)
+   
    var opts = self.opts
-
    self.ancestor = opts.ancestor
-   self.items = opts.items || []
+   self.items = self.parent && self.parent.items || []
    self.hasMore = !opts.frozen
    self.view = opts.view || 'summary'
-   self.tab = opts.tab
-   self.tabs = opts.tabs || []
+   self.tabs = self.parent && self.parent.tabs || []
+   self.tab = opts.tab || self.tabs.length && self.tabs[0].id
    self.fn = {}
    self.debug('entry_list view', self.view, opts.view)
-   self.sorting = opts.sorting || {
-     first: self.ancestor,
-     last: self.ancestor || opts.category,
-     top: self.ancestor || opts.category
+   self.query = opts.query || self.parent && self.parent.query || {}
+
+   if (!self.query.count) self.query.count = parseInt(opts.count || 10, 10)
+
+   function initQuery(query) {
+     if (opts.type) query.type = opts.type
+     else if (opts.owner) query.owner = opts.owner
+     else if (opts.list) query.list = opts.list
+     else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
+
+     if (opts.model) query.model = opts.model
+     if (opts.view) query.view = self.view
+     return query
    }
-   self.listMode = (self.ancestor && self.ancestor.type == 'post')
-   self.baseUrl = opts.baseUrl
-   self.query = initQuery({
-     order: opts.order || 'last', 
-     count: parseInt(opts.count || 10)
-   })
 
-   self.coect.object.assign(self, opts.props || {}) 
-   self.query = self.coect.object.assign({}, {count: parseInt(opts.count || 10, 10)}, self.query) 
 
+   function setItem(tab) {
+     self.categoryItem = self.userItem = self.entryItem = false
+     if (self.tab == 'category') self.categoryItem = true
+     else if (self.tab == 'user') self.userItem = true
+     else  self.entryItem = true
+   }
+
+   initQuery(self.query)
+   setItem(self.tab)
    debug('initial query', self.query, 'items.length=', self.items.length)
    debug('tabs', self.tabs)
+   debug('parent', self.parent)
+   debug('modes', self.parent && self.parent.modes)
+
+   self.changeTab = function(e) {
+     self.tab = e.item.t.id
+     setItem(self.tab)
+     self.parent.trigger('tab:changed', self.tab, e)
+   }
 
    self.active = function(test) {
      return (test ? ' active' : '')
    }
 
-   if (self.tab == 'category') self.categoryItem = true
-   else if (self.tab == 'user') self.userItem = true
-   else  self.entryItem = true
-
-   function getThreadId(entry) {
-     return (entry.thread && entry.thread.id !== entry.topic.id ? entry.thread.id : entry.id)
-   }
-
-   function getTopicId(entry) {
-     return entry.topic && entry.topic.id || entry.id
-   }
 
    function getCursor() {
      if (self.query.order === 'top') return {offset: self.items.length}
      else return {cursor: self.items[self.items.length - 1].id}
    }
 
-   function getListType(ancestor) {
-     if (ancestor.model === 'channel') return 'channel'
-     else if (!ancestor.thread) return 'topic'
-     else if (ancestor.thread && ancestor.thread.id === ancestor.topic.id) return 'thread'
-     else if (ancestor.thread) return 'replies'
-   }
-
-   function initQuery(query) {
-     var listType = self.ancestor && getListType(self.ancestor)
-     debug('initQuery listType', listType, self.ancestor)
-     if (opts.type) query.type = opts.type
-     else if (opts.owner) query.owner = opts.owner
-     else if (opts.my) self.coect.object.assign(query, {my: opts.my, filter: self.tab})
-     else if (listType === 'topic') query.topic = getTopicId(self.ancestor)
-     else if (listType === 'thread') query.thread = getThreadId(self.ancestor)
-     else if (listType === 'replies' || listType === 'channel') query.parent = self.ancestor.id
-     else if (opts.list) query.list = opts.list
-     else if (opts.username && opts.cslug) query.list_url = opts.username + '/' + opts.cslug
-
-     if (opts.model) query.model = opts.model
-     if (opts.category) query.tag = opts.category
-     if (opts.view) query.view = opts.view
-     return query
-   }
 
    function getQuery(append) {
      return (append ? $.extend(getCursor(), self.query) : self.query)
@@ -156,21 +137,9 @@
      load(true)
    }
 
-   self.flatMode = function() {
-     debug('flatMode', self.query)
-     if (!self.query.thread) return
-     delete self.query.thread
-     self.query.topic = getTopicId(self.ancestor)
+   if (self.parent) self.parent.on('query:changed', function() {
      load()
-   }
-
-   self.threadedMode = function() {
-     debug('threadedMode', self.query)
-     if (!self.query.topic) return
-     delete self.query.topic
-     self.query.thread = getThreadId(self.ancestor)
-     load()
-   }
+   })
 
    if (typeof window !== 'undefined') self.on('mount', function() {
      if (!self.items.length) load()

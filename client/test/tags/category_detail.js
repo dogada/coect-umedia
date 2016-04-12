@@ -13,7 +13,7 @@ var FAKE_CHANNEL = {
 describe(TAG, function() {
   before(function() {
     // will be loaded by entry-list
-    env.fakeGET('/e?count=10&tag=A+category', {items: [
+    env.fakeGET('/e?tag=A+category&count=10', {items: [
       {id: 'e1',
        text: '!tags: Test, demo\nFirst entry',
        head: 'First entry',
@@ -25,7 +25,7 @@ describe(TAG, function() {
        owner: FAKE_CHANNEL.owner}
     ]})
 
-    env.fakeGET('/e?count=10&tag=Channel+category&list=listId', {items: [
+    env.fakeGET('/e?tag=Channel+category&list=listId&count=10', {items: [
       {id: 'e1',
        text: '!tags: Test, demo\nFirst entry',
        head: 'First entry',

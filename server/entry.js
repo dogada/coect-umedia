@@ -320,6 +320,7 @@ function list(req, res) {
     (opts) => {
       debug('store.channel', store.channel)
       for (let param of ['cursor', 'offset', 'count', 'order', 'view', 'owner', 'tag']) opts[param] = req.query[param]
+      if (!opts.order) opts.order = 'last'
       if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
       else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
     },

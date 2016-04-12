@@ -11,7 +11,7 @@ var FAKE_CHANNEL = {
 describe('umedia-channel-detail', function() {
   before(function() {
     env.fakeGET('/c/listId', FAKE_CHANNEL)
-    env.fakeGET('/e?count=10&order=last&parent=listId', {items: [
+    env.fakeGET('/e?parent=listId&count=10', {items: [
       {id: 'e1', 
        text: 'First entry',
        head: 'First entry',

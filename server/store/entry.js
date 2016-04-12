@@ -80,7 +80,7 @@ class EntryStore extends Store {
         if (access > Access.ROOT) q = filterByAccess(q, user, access)
         if (opts.cursor) {
           if (opts.order === 'first') q = q.andWhere('id', '>', opts.cursor)
-          else if (opts.order === 'last') q = q.andWhere('id', '<', opts.cursor)
+          else if (opts.order === 'last' || !opts.order) q = q.andWhere('id', '<', opts.cursor)
         }
         q = q.orderBy.apply(q, listOrder(opts.order))
         if (opts.offset) q = q.offset(parseInt(opts.offset, 10))
