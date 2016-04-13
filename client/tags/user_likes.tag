@@ -1,6 +1,6 @@
 <coect-user-likes>
   <div class="coect-user-likes">
-    <umedia-entry-list tab={ tab }/>
+    <umedia-entry-list tab={ tab } filters="1" />
   </div>
 
   <script>

@@ -1,8 +1,7 @@
 <umedia-entry-list>
 
   <div class="umedia-entry-list">
-
-    <div if={ tabs.length } class="clearfix">
+    <div if={ tabs.length && (items.length || opts.filters) } class="clearfix">
 
       <ul class="nav nav-tabs pull-left">
         <li each={ t in tabs } class="{ active(tab == t.id) }">
@@ -62,7 +61,7 @@
    self.query = opts.query || self.parent && self.parent.query || {}
 
    if (!self.query.count) self.query.count = parseInt(opts.count || 10, 10)
-
+   
    function setItem(tab) {
      self.categoryItem = self.userItem = self.entryItem = false
      if (self.tab == 'category') self.categoryItem = true
