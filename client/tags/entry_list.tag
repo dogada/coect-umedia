@@ -76,7 +76,12 @@
    debug('parent', self.parent)
    debug('modes', self.parent && self.parent.modes)
 
+   function clearItems() {
+     self.items.splice(0, self.items.length)
+   }
+
    self.changeTab = function(e) {
+     clearItems()
      self.tab = e.item.t.id
      setItem(self.tab)
      self.parent.trigger('tab:changed', self.tab, e)
@@ -102,6 +107,7 @@
      debug('rebuild', data.length, self.hasMore)
    }
 
+
    function load(append) {
      debug('load', append)
      var url = self.url.entry('') + '?' + $.param(getQuery(append))
@@ -110,7 +116,7 @@
      self.store.entry.get(url, Site.callback(function(data) {
        debug('loaded data', data.items && data.items.length + ', requested ', self.query.count)
        // update self.items in-place because it may be shared with parent tag like entry_detail
-       if (!append) self.items.splice(0, self.items.length)
+       if (!append) clearItems()
        self.items.push.apply(self.items, data.items)
        self.rebuild(data.items)
        self.update()
