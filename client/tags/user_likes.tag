@@ -6,8 +6,9 @@
   <script>
    var self = this
    self.mixin('umedia-context')
-   debug('category_detail', opts)
    var opts = self.opts, channel = opts.channel
+   debug('user_likes', opts)
+
    self.items = opts.items || []
    self.tabs = [
      {id: 'like', name: 'Entries', title: 'Liked and saved entries'},

@@ -33,6 +33,7 @@ exports.mount = function(tagName, opts) {
 }
 
 exports.fakeGET = function(url, response) {
+  url += (url.indexOf('?') != -1 ? '&' : '?') + '_format=json'
   return exports.server.respondWith('GET', url, [
     200, 
     {'Content-Type': 'application/json'},

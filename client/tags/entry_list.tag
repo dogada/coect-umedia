@@ -110,10 +110,7 @@
 
    function load(append) {
      debug('load', append)
-     var url = self.url.entry('') + '?' + $.param(getQuery(append))
-     debug('url', url)
-
-     self.store.entry.get(url, Site.callback(function(data) {
+     self.store.entry.get(self.url.entry(''), getQuery(append), Site.callback(function(data) {
        debug('loaded data', data.items && data.items.length + ', requested ', self.query.count)
        // update self.items in-place because it may be shared with parent tag like entry_detail
        if (!append) clearItems()

@@ -27,8 +27,7 @@
    this.mixin('umedia-context')
 
    self.reload = function() {
-     var url = self.url.channel() + '?owner=' + encodeURIComponent(Site.user.id)
-     self.store.channel.get(url, Site.callback(function(data) {
+     self.store.channel.get(self.url.channel(), {owner: Site.user.id}, Site.callback(function(data) {
        self.items = data.items
        self.update()
      }))
