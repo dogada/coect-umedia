@@ -53,7 +53,7 @@ function listWhere(opts, done) {
 
       if (opts.filter === 'user') Object.assign(where, {model: Entity.LIKE, type: Entity.MAIN})
       else if (opts.filter === 'category') Object.assign(where, {model: Entity.LIKE, type: Entity.CATEGORY})
-      else if (opts.filter === 'like') Object.assign(where, {model: Entity.LIKE})
+      else if (opts.filter === 'entry') Object.assign(where, {model: Entity.LIKE, ref_model: Entity.ENTRY})
       
       //if (opts.owner && !opts.tag) opts.model = Entity.ENTRY
 

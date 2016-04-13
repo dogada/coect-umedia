@@ -11,7 +11,7 @@
 
    self.items = opts.items || []
    self.tabs = [
-     {id: 'like', name: 'Entries', title: 'Liked and saved entries'},
+     {id: 'entry', name: 'Entries', title: 'Liked and saved entries'},
      {id: 'category', name: 'Tags', icon: 'hashtag'},
      {id: 'user', name: 'People'}
    ]

@@ -44,6 +44,7 @@ var upsert = function(visible, user, entity, done) {
         list: list.id,
         owner: user.id,
         ref: entity.id,
+        ref_model: entity.model,
         model: Entity.LIKE,
         type: entity.type,
         name: entity.name,
