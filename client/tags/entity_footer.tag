@@ -68,7 +68,7 @@
    }
 
    self.broadcast = function(e) {
-     self.store.entry.post(self.url.entry(self.entry.id, 'broadcast'), Site.callback(function(data) {
+     self.store.entry.post(self.url.entry(self.entity.id, 'broadcast'), Site.callback(function(data) {
        debug('broadcasted', data)
        self.entity.meta = self.coect.object.assign({}, self.entity.meta || {}, data.meta)
        Site.flash(JSON.stringify(data.meta || 'Broadcasted'))
