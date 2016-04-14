@@ -304,7 +304,7 @@ function list(req, res) {
       else if (req.params.id) flow.next({list: req.params.id}) // c/:id/t/:tag && c/:id
       else if (req.query.list) flow.next({list: req.query.list})
       else if (req.query.list_url) flow.next({url: req.query.list_url})
-      else if (req.query.my === Channel.NOTIFICATIONS) flow.next({
+      else if (req.query.my === Channel.INBOX) flow.next({
         recipient: req.user.id, my: req.query.my, model: req.query.model, type: req.query.type})
       else if (req.query.my) flow.next({
         list: req.user.getListId(req.query.my), owner: req.user.id,
@@ -327,7 +327,7 @@ function list(req, res) {
     (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
     (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts)),
     (opts, entries) => Entity.postprocess(req, entries, {
-      refs: (opts.my === 'notifications' || opts.model || opts.type)}, flow),
+      refs: (opts.my === Channel.INBOX || opts.model || opts.type)}, flow),
     (entries) => flow.next({items: entries})
   ], coect.json.response(res))
 }

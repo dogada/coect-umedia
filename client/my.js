@@ -17,10 +17,10 @@ exports.index = function (ctx) {
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }
 
-exports.notifications = function () {
+exports.inbox = function () {
   if (requireLogin()) return
   Site.mountTag('umedia-entry-list',
-                {query: {my: 'notifications'}},
+                {query: {my: 'inbox'}},
                 'Notifications')
   Site.checkMount('umedia-raw', {}, {target: 'sidebar'})
 }

@@ -21,7 +21,7 @@ function baseRoutes(route, url) {
   route(url.category(':category', ':tab'), handlers.category.detail)
 
 
-  route(url.my('notifications'), handlers.my.notifications)
+  route(url.my('inbox'), handlers.my.inbox)
   route(url.my(':tab'), handlers.my.index)
   route(url.my(), handlers.my.index)
 }
