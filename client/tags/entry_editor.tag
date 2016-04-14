@@ -53,11 +53,11 @@
 
 
    self.entryType = function() {
-     switch((entry || ancestor).type) {
+     switch((entry || ancestor).model) {
        case 'channel': 
          return 'post'
        default:
-         return 'reply'
+         return 'text'
      }
    }
 

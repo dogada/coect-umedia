@@ -11,7 +11,6 @@
    debug('category_detail', opts)
    var opts = self.opts, channel = opts.channel, category = opts.category
    self.query = {}
-   if (channel) self.query.list = channel.id
    self.items = opts.items || []
    self.tabs = [
      {id: 'top', name: 'Top', url: ''},
@@ -28,19 +27,22 @@
        self.coect.object.assign(self.query, {
          order: 'last',
          owner: opts.owner || Site.user && Site.user.id,
-         tag: category.name
+         tag: category.name,
+         list: channel && channel.id
        })
      } else if (channel) { // entries inside channel filtered by a tag 
        self.coect.object.assign(self.query, {
          order: tab,
          owner: undefined,
+         list: channel.id,
          tag: category.name
        })
      } else {//root category
        self.coect.object.assign(self.query, {
          order: tab,
+         list: category.id,
          owner: undefined,
-         list: category.id
+         tag: undefined
        })
      }
    }

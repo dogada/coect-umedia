@@ -27,7 +27,7 @@ describe(TAG, function() {
 
     env.fakeGET('/e?order=top&list=category1&count=10', entries)
     env.fakeGET('/e?order=last&owner=user1&tag=category_my&count=10', entries)
-    env.fakeGET('/e?list=listId&order=top&tag=category3&count=10', entries)
+    env.fakeGET('/e?order=top&list=listId&tag=category3&count=10', entries)
 
   })
 

@@ -15,6 +15,7 @@ class UmediaAccessPolicy extends Access {
     super()
     this.opts = Object.assign({
       postmoderate: false,
+      mode: 'blog',
       // entries available for everyone including search bots
       defaultAccess: Access.EVERYONE,
       // guest entries available for all logged in users but not available for
@@ -92,7 +93,12 @@ class UmediaAccessPolicy extends Access {
 
   canCreateEntry(user, parent, channel) {
     if (!user) return false
-    debug('parent', (typeof parent), parent.type, parent.id, 'channel', channel)
+    debug('mode', this.opts.mode, 'parent', (typeof parent), parent.type, parent.id, 'channel', channel)
+    debug('opts', this.opts)
+    if (parent.type === 'channel' && this.opts.mode === 'blog') {
+      // only site admins and moderators can write post in blog mode
+      return this.getUserAccess(user) <= Access.MODERATOR
+    }
     var userAccess = this.getUserAccess(user, channel)
     var accessType = this.getEntryAccessType({type: Entity.getChildType(parent)}) 
     var writeAccess = channel.getAccess(`write_${accessType}`, 'write')

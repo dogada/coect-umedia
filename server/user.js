@@ -20,9 +20,12 @@ exports.detail = function(req, res, next) {
                                          {owner: user.id, model: 'entry'}, flow.join(user, channels)),
     (user, channels, entries) => Entity.postprocess(req, channels.concat(entries), flow.join(user, channels, entries)),
     (user, channels, entries) => {
+      var mainId = user.getListId('main')
+      debug('mainId', mainId)
       for (var c of channels) {
-        if (c.id === user.blog) user.blog = c
+        if (c.id === user.blog || c.id === mainId) user.blog = c
       }
+      if (user.blog && !user.blog.id) user.blog = {id: user.blog}
       flow.next(user, channels, entries)
     },
     (user, channels, entries) => flow.next({

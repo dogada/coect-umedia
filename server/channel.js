@@ -144,7 +144,7 @@ function permissions(req, res) {
       debug('permissions', channel)
       if (!req.security.canUserViewChannel(req.user, channel)) return this.fail(403, 'Can\'t view')
       this.next({
-        post: req.security.canCreateEntry(req.user, {type: channel.type}, channel),
+        post: req.security.canCreateEntry(req.user, {type: 'channel'}, channel),
         comment: req.security.canCreateEntry(req.user, {type: 'post'}, channel),
         access: Access.valueName(req.security.getUserAccess(req.user, channel))
       })
