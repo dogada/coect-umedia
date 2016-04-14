@@ -10,42 +10,46 @@ var Access = coect.Access
 var store = require('./store')
 var misc = require('./misc')
 
+function channelWithAccess(req, done) {
+  // channel is optional for /t/:tag and will be present for /c/:id/t/:tag
+  if (req.params.id) store.channel.withAccess(req, {id: req.params.id}, done)
+  else if (req.params.username) store.channel.withAccess(req, {url: req.params.username + '/' + req.params.cslug}, done)
+  else done(null, null, req.security.getUserAccess(req.user))
+}
+
 exports.detail = function (req, res, next) {
+  var tag = req.params.tag && req.params.tag.toLowerCase()
+  var tab = req.params.tab || 'top'
+  var order = misc.getTabOrder(tab)
   var flow = tflow([
-    () => {
-      if (req.params.id) flow.next({list: req.params.id}) // c/:id/t/:tag
-      else if (req.params.username) flow.next({ // :username/:cslug/t/:tag
-        url: req.params.username + '/' + req.params.cslug
-      })
-      else flow.next({})
+    () => store.category.getChannel(tag, flow),
+    (category) => channelWithAccess(req, flow.join(category || {name: tag})),
+    (category, channel, access) => {
+      var query = {order}
+      if (channel) Object.assign(query, {list: channel.id, tag: tag})
+      else if (category.id) query.list = category.id 
+
+      // for both /t/:tag and /c/:id/t/:tag
+      if (req.user && tab === 'my') query.owner = req.user.id
+
+      if (query.list) store.entry.list(req.user, access, query, flow.join(category, channel))
+      else flow.next(category, channel, [])
     },
-    (opts) => {
-      opts.tab = req.params.tab || 'top'
-      opts.tag = req.params.tag && req.params.tag.toLowerCase() 
-      if (req.user && opts.tab === 'my') opts.owner = req.user.id
-      opts.order = misc.getTabOrder(opts.tab)
-      if (opts.list || opts.url) store.channel.withAccess(req, opts, flow.join(opts))
-      else flow.next(opts, null, req.security.getUserAccess(req.user)) // t/:tag or ?owner=:id
-    },
-    (opts, channel, access) => flow.next(Object.assign(opts, {url: null, list: channel && channel.id}), channel, access),
-    (opts, channel, access) => store.entry.list(req.user, access, opts, flow.join(opts, channel)),
-    (opts, channel, entries) => store.category.getChannel(opts.tag, flow.join(opts, channel, entries)),
-    (opts, channel, entries, category) => Entity.postprocess(
-      req, entries.concat(channel, category).filter(e => e), flow.join(opts, channel, category)),
-    (opts, channel, category, entries) => flow.next({
+    (category, channel, entries) => Entity.postprocess(
+      req, entries.concat(channel, category).filter(e => e), flow.join(category, channel)),
+    (category, channel, entries) => flow.next({
       content: {
         tag: 'coect-category-detail', 
         opts: {
-          items: entries.filter(e => e.model !== Channel.MODEL),
-          category: category || {name: opts.tag},
+          items: entries.filter(e => e.id && e.model !== Channel.MODEL),
+          category: category,
           channel: channel,
           params: req.params,
-          tab: opts.tab,
-          order: opts.order
+          tab: tab,
+          order: order
         }
       },
-      title:  (channel ? channel.name + ' / ' + opts.tag : opts.tag),
-      //canonicalUrl: req.coect.urls.user(user)
+      title:  (channel ? channel.name + ' / ' + tag : tag),
     })
   ], coect.janus(req, res, next))
 }
