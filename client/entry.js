@@ -36,13 +36,31 @@ exports.edit = function(ctx) {
   ], (err) => Site.error(err))
 }
 
+
+
+function bookmarklet(handler) {
+  return `javascript: void function (){
+var w=window, d=document, enc=encodeURIComponent, l=d.location,
+sel=(w||d).getSelection || function(){return d.selection.createRange().text },
+u='${handler}/e/new?url='+enc(l.href)+'&text='+enc(sel() || d.title);
+w.open(u) || (l.href=u)
+}()`
+}
+
 exports.editor = function(ctx) {
+  if (!Site.user) return Site.account.loginRequired()
+
+  var bmName = location.host, bmUrl = bookmarklet(
+    location.protocol + '//' + location.host)
+
   var query = coect.routes.parseQuery(ctx.querystring) 
   var flow = tflow([
     () => store.channel.get(Site.umedia.url.channel(), {owner: Site.user.id}, flow),
     (data) => {
       debug('editor', ctx)
-      Site.mountTag('umedia-entry-editor', {query, channels: data.items}, {title: 'Entry editor'})
+      Site.mountTag('umedia-entry-editor', 
+                    {query, bmName,  bmUrl, channels: data.items}, 
+                    {title: 'Entry editor'})
     }
   ], (err) => Site.error(err))
 }

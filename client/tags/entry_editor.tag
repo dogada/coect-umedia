@@ -31,6 +31,21 @@
       </div>
 
     </form>
+
+    <div if={ opts.bmName }>
+      <p>Bellow link is bookmarklet.</p>
+
+      <h3><a title="Drag and drop me to bookmarks toolbar" href={ opts.bmUrl }>{ opts.bmName }</a></h3>
+
+      <p>Drag and drop it to the bookmarks toolbar for fast access to this page.</p>
+
+      <p>When you select text on any web-page and click bookmarlet, your browser
+      will be redirected back to this page and selected text will be
+      prepopulated in the above textarea.
+        <small><a href="https://en.wikipedia.org/wiki/Bookmarklet">More info</a></small>
+      </p>
+
+    </div>
   </div>
 
 
@@ -111,7 +126,7 @@
         parent, list},
        Site.callback(published))
    }
-
+   
    var initialText = entry && entry.text || opts.query && getQueryText(opts.query)
    if (initialText) {
      setText(initialText)
