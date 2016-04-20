@@ -39,12 +39,15 @@ exports.edit = function(ctx) {
 
 
 function bookmarklet(handler) {
-  return `javascript: void function (){
+  return `javascript: (function (){
 var w=window, d=document, enc=encodeURIComponent, l=d.location,
-sel=(w||d).getSelection || function(){return d.selection.createRange().text },
-u='${handler}/e/new?url='+enc(l.href)+'&text='+enc(sel() || d.title);
+sel=function(d) {return d.selection ? d.selection.createRange().text : '' + d.getSelection()},
+u='${handler}/e/new?url='+enc(l.href)+'&text=',
+s = sel(d); 
+for (var i=0; i<frames.length && !s; i++) s = sel(frames[i].document);
+u+=enc(s || d.title);
 w.open(u) || (l.href=u)
-}()`
+})()`
 }
 
 exports.editor = function(ctx) {
