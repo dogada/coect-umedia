@@ -334,6 +334,12 @@ function list(req, res) {
   ], coect.json.response(res))
 }
 
+function editor(req, res) {
+  res.render('index', {
+    title: 'Create new entry'
+  })
+}
+
 module.exports = {
   create,
   data,
@@ -342,5 +348,6 @@ module.exports = {
   trash,
   purge,
   list,
-  moderate
+  moderate,
+  editor
 }

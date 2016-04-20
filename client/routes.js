@@ -4,6 +4,7 @@ var handlers = require('./handlers')
 var slug = require('coect').routes.slug
 
 function baseRoutes(route, url) {
+  route(url.entry('new'), handlers.entry.editor)
   route(url.entry(':id', 'edit'), handlers.entry.edit)
   route(url.entry(':parent', 'new'), handlers.entry.edit)
   route(url.entry(':id'), handlers.entry.details)

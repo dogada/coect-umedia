@@ -1,23 +1,34 @@
 <umedia-entry-editor>
   <div class="{umedia-entry-editor: 1, expanded: expanded}">
+    <h2 if={ opts.query }>Create new entry</h2>
+    <h2 if={ opts.entry }>Edit entry</h2>
+
     <form onsubmit={ publish } method="POST">
 
-    <div class="form-group">
-      <textarea rows="1" name="content" class="form-control"
-                placeholder="Type your { entryType() } here"
-                onfocus={ expand }
-        onkeyup={ edit }></textarea>
-    </div>
+      <div if={ opts.channels } class="form-group">
+        <label>Channel</label>
+        <select class="form-control" id="channel">
+          <option each={ c in opts.channels } value={ c.id } >{ c.name }</option>
+        </select>
+      </div>
 
-    <div if={ expanded } class="form-inline form-group clearfix">
+      <div class="form-group">
+        <label if={ opts.entry || opts.channels }>Text</label>
+        <textarea rows="1" name="content" class="form-control"
+                  placeholder="Type your { entryType() } here"
+                  onfocus={ expand }
+          onkeyup={ edit }></textarea>
+      </div>
       
-      <div class="form-group pull-right">
+      <div if={ expanded } class="form-inline form-group clearfix">
+      
+        <div class="form-group pull-right">
           <button type="submit" class="btn btn-success">Publish</button>
           <button if={ !opts.thread } type="button" class="btn btn-danger"
                   onclick={ cancel }>Cancel</button>
-      </div>
+        </div>
       
-    </div>
+      </div>
 
     </form>
   </div>
@@ -31,11 +42,16 @@
 
   <script type="es6">
 
-   var self = this
+   var self = this, opts = self.opts
    self.mixin('umedia-context')
-   var {entry, ancestor, items} = self.opts
+   var {entry, ancestor, items} = opts
 
-   debug(`editor ancestor=${ancestor} entry=${entry}, items=${items}`)
+   debug(`editor entry=${entry}, items=${items}`)
+   debug('editor ancestor', ancestor, 'channels', opts.channels, 'query', opts.query)
+
+   function getQueryText(q) {
+     return (q.text || '') + ' ' + (q.url || '') 
+   }
 
    function setText(text) {
      self.text = self.content.value = text
@@ -53,7 +69,7 @@
 
 
    self.entryType = function() {
-     switch((entry || ancestor).model) {
+     switch((entry || ancestor || {}).model) {
        case 'channel': 
          return 'post'
        default:
@@ -85,18 +101,20 @@
 
    self.publish = function(e) {
      e.preventDefault()
-     console.log('Publish', this.text, self.opts)
+     var parent = ancestor && ancestor.id || self.channel && self.channel.value
+     var list =  ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id) || parent
+     console.log('Publish', this.text, self.opts, self.channel)
      self.store.entry.save(
        self.url.entry(),
        {id: entry && entry.id,
         text: self.content.value,
-        parent: ancestor && ancestor.id,
-        list: ancestor && (ancestor.list && ancestor.list.id ||  ancestor.id)},
+        parent, list},
        Site.callback(published))
    }
 
-   if (entry) {
-     setText(entry.text)
+   var initialText = entry && entry.text || opts.query && getQueryText(opts.query)
+   if (initialText) {
+     setText(initialText)
      self.expand()
    }
 

@@ -42,6 +42,9 @@ module.exports = function(r) {
     .get(entry.list)
     .post(loginRequired, entry.create)
 
+  r.route('/e/new')
+    .get(entry.editor)
+
   r.route('/e/:id')
     .get(entry.detail)
     .put(loginRequired, entry.update)

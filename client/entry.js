@@ -3,13 +3,13 @@
 var debug = require('debug')('umedia:entry')
 var tflow = require('tflow')
 
-var {ui} = require('coect')
+var coect = require('coect')
 var store = require('./store')
 
 exports.details = function(ctx) {
   var flow = tflow([
     function() {
-      ui.getData(ctx, 'thread', next => store.entry.get(ctx.path, next), flow)
+      coect.ui.getData(ctx, 'thread', next => store.entry.get(ctx.path, next), flow)
     },
     function(entry) {
       Site.mountTag('umedia-entry-details', 
@@ -32,6 +32,17 @@ exports.edit = function(ctx) {
     (entry) => {
       if (!Site.umedia.canChangeEntry(entry)) return flow.fail('No permissions for editing the entry.')
       Site.mountTag('umedia-entry-editor', {entry: entry}, {title: 'Entry editor'})
+    }
+  ], (err) => Site.error(err))
+}
+
+exports.editor = function(ctx) {
+  var query = coect.routes.parseQuery(ctx.querystring) 
+  var flow = tflow([
+    () => store.channel.get(Site.umedia.url.channel(), {owner: Site.user.id}, flow),
+    (data) => {
+      debug('editor', ctx)
+      Site.mountTag('umedia-entry-editor', {query, channels: data.items}, {title: 'Entry editor'})
     }
   ], (err) => Site.error(err))
 }
