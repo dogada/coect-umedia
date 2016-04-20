@@ -53,7 +53,7 @@ exports.editor = function(ctx) {
   var bmName = location.host, bmUrl = bookmarklet(
     location.protocol + '//' + location.host)
 
-  var query = coect.routes.parseQuery(ctx.querystring) 
+  var query = coect.routes.parseQuery(location.search.slice(1)) 
   var flow = tflow([
     () => store.channel.get(Site.umedia.url.channel(), {owner: Site.user.id}, flow),
     (data) => {
