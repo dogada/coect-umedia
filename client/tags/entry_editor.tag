@@ -33,13 +33,11 @@
     </form>
 
     <div if={ opts.bmName }>
-      <p>Bellow link is bookmarklet.</p>
+      <p>Drag and drop bookmarklet link shown bellow to the bookmarks toolbar of your browser.</p>
 
-      <h3><a title="Drag and drop me to bookmarks toolbar" href={ opts.bmUrl }>{ opts.bmName }</a></h3>
+      <h3><a title="Drag and drop me to the bookmarks toolbar" href={ opts.bmUrl }>{ opts.bmName }</a></h3>
 
-      <p>Drag and drop it to the bookmarks toolbar for fast access to this page.</p>
-
-      <p>When you select text on any web-page and click bookmarlet, your browser
+      <p>When you select text on any web-page and click the bookmarklet, your browser
       will be redirected back to this page and selected text will be
       prepopulated in the above textarea.
         <small><a href="https://en.wikipedia.org/wiki/Bookmarklet">More info</a></small>
