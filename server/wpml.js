@@ -24,10 +24,11 @@ function summaryFromContent(content) {
   }
 }
 
-function parseTags(meta) {
-  if (!meta.tags) return
-  var tags = meta.tags.split(',').slice(0, MAX_ENTRY_TAG_COUNT).map(t => t.trim().toLowerCase())
-  return Array.from(new Set(tags))
+function parseTags(meta, text) {
+  var tags = (meta.tags && meta.tags.split(',') || []).concat(wpml.hashtags(text))
+  tags = Array.from(new Set(tags.map(t => t.trim().toLowerCase())))
+  debug('parseTags', tags)
+  return tags.slice(0, MAX_ENTRY_TAG_COUNT)
 }
 
 
@@ -43,7 +44,7 @@ exports.parse = function(text, opts, done) {
     meta: meta,
     name: name,
     head: summary,
-    tags: parseTags(meta),
+    tags: parseTags(meta, text),
     content: content,
     text: text
   })

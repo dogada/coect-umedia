@@ -42,17 +42,19 @@
 
       <h2 if={ title && !opts.detail }><a class="p-name" href={ url.entry(entry) }>{ title }</a></h2>
     
-      <div class="entry-tags coect-meta">
-        <ul if={ entry.tags } class="list-inline">
+      <article class="entry-content { (hentry || opts.detail) ? 'e-content': 'p-content' }">
+        <umedia-wpml doc={ doc }></umedia-wpml>
+      </article>
+
+      <div if={ title && entry.tags && !detail } class="entry-tags">
+        <ul class="list-inline">
           <li each={ t, i in entry.tags }>
-            <a href="{ url.category(t) }" class="p-category">{ t }</a>
+            <a href="{ url.category(t) }" class="p-category">#{ t }</a>
           </li>
         </ul>
       </div>
 
-      <article class="entry-content { (hentry || opts.detail) ? 'e-content': 'p-content' }">
-        <umedia-wpml doc={ doc }></umedia-wpml>
-      </article>
+
 
       <div if={ showReadMore } class="coect-meta read-more">
         <a href={ url.entry(entry) }>Read more…</a>
