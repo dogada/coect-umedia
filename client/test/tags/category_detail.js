@@ -28,7 +28,7 @@ describe(TAG, function() {
     env.fakeGET('/e?order=top&list=category1&count=10', entries)
     env.fakeGET('/e?order=last&owner=user1&tag=category_my&count=10', entries)
     env.fakeGET('/e?order=top&list=listId&tag=category3&count=10', entries)
-
+    env.fakeGET('/e?order=last&owner=user1&tag=category_my&list=listId&count=10', entries)
   })
 
   it('should show root category and load top entries from category channel', function(done) {
@@ -53,12 +53,13 @@ describe(TAG, function() {
   it('should show users\' entries tagged by a tag', function(done) {
     var tag = env.mount(TAG, {
       category: {name: 'category_my', type: 'category', id: 'category_my'},
+      channel: FAKE_CHANNEL,
       tab: 'my',
       owner: 'user1'
     })
 
     function checkHtml() {
-      $('.coect-breadcrumbs', tag.root).should.have.length(0)
+      $('.coect-breadcrumbs', tag.root).should.have.length(1)
       $('h1', tag.root).should.have.text('#category_my')
 
       expect($('ul.entries li', tag.root)).to.have.length(2)

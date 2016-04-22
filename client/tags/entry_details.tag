@@ -45,7 +45,7 @@
  var listType = getListType(entry)
  if (listType === 'topic') query.topic = getTopicId(entry)
  else if (listType === 'thread') query.thread = getThreadId(entry)
- else if (listType === 'replies' || listType === 'channel') query.parent = self.ancestor.id
+ else if (listType === 'replies' || listType === 'channel') query.parent = entry.id
 
  debug('initQuery listType', listType, entry, query)
  

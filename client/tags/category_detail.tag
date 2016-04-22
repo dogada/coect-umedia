@@ -2,7 +2,8 @@
   <div class="coect-category-detail">
     <coect-breadcrumbs if={ breadcrumbs } items={ breadcrumbs } />
     <umedia-channel channel={ opts.category }></umedia-channel>
-    <umedia-entry-list filters="1" />
+    <umedia-entry-list filters="1" if={ query.list }/>
+    <p if={ !query.list }>No entries are found for the tag.</p>
   </div>
 
   <script>
