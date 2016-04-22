@@ -44,7 +44,7 @@
     "linkify-it": "~1.2.0",
     "object-apply": "~1.0.1",
     "object-assign": "~4.0.1",
-    "request": "~2.69.0",
+    "request": "~2.72.0",
     "striptags": "~2.1.1",
     "tflow": "^0.4.1"
   },
@@ -65,19 +65,19 @@
     "test": "test"
   },
   "devDependencies": {
-    "babel-core": "^5.8.0",
+    "babel-core": "~5.8.34",
     "babelify": "~6.3.0",
-    "brfs": "~1.4.1",
-    "browserify-istanbul": "~0.2.1",
+    "brfs": "~1.4.3",
+    "browserify-istanbul": "~2.0.0",
     "browserify-shim": "latest",
     "browserify-versionify": "latest",
     "coect": "0.x",
-    "jquery": "~2.1.4",
-    "lodash": "~3.10.1",
-    "page": "~1.6.4",
+    "jquery": "~2.2.3",
+    "lodash": "~3.10.0",
+    "page": "~1.7.1",
     "precommit-hook": "latest",
     "riot": "2.x",
-    "riotify": "~0.1.2",
+    "riotify": "~1.0.0",
     "wpml": "0.x"
   },
   "pre-commit": [
