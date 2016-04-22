@@ -71,6 +71,7 @@
     "browserify-istanbul": "~2.0.0",
     "browserify-shim": "latest",
     "browserify-versionify": "latest",
+    "istanbul": "~0.4.3",
     "coect": "0.x",
     "jquery": "~2.2.3",
     "lodash": "~3.10.0",
