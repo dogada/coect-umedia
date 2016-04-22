@@ -15,7 +15,7 @@ describe('umedia-channel', function() {
     $('.umedia-channel .wpml h4', tag.root).should.have.text('Subheader')
     $('.umedia-channel .wpml p', tag.root).should.contain('See more:')
     $('.umedia-channel .wpml a', tag.root).should.have.attr('href', 'http://www.coect.net')
-    $('.umedia-channel .wpml a', tag.root).should.have.text('http://www.coect.net')
+    $('.umedia-channel .wpml a', tag.root).should.have.text('coect.net')
   })
 
 })

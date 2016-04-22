@@ -32,7 +32,7 @@ describe(TAG, function() {
     $('.vcard .media-body h1 span.fn', tag.root).should.have.html('User Two')
     $('.vcard .media-body h1 span.nickname', tag.root).should.have.html('user2')
 
-    $('.media-body .wpml', tag.root).should.have.html('<h3>See more: <a href=\"http://dogada.org\">http://dogada.org</a></h3>')
+    $('.media-body .wpml', tag.root).should.have.html('<h3>See more: <a href=\"http://dogada.org\" rel=\"nofollow\" target=\"_blank\">dogada.org</a></h3>')
     $('.media-body p.umedia-location.locality', tag.root).should.have.html('Universe')
   })
 

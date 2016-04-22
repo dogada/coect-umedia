@@ -29,7 +29,7 @@ describe(TAG, function() {
     $('a.u-url time', tag.root).should.have.attr('datetime', created)
     $('.e-content p', tag.root).should.contain('Look here')
     $('.wpml a', tag.root).should.have.attr('href', link)
-    $('.wpml a', tag.root).should.have.text(link)
+    $('.wpml a', tag.root).should.have.text('dogada.org')
   })
 
   it('should render entry with custom title, header and link.', function() {
@@ -45,7 +45,7 @@ describe(TAG, function() {
     $('.wpml h2', tag.root).should.have.text('Hello world!')
     $('.wpml p', tag.root).should.contain('Look at:')
     $('.wpml a', tag.root).should.have.attr('href', 'http://www.coect.net')
-    $('.wpml a', tag.root).should.have.text('http://www.coect.net')
+    $('.wpml a', tag.root).should.have.text('coect.net')
   })
 
   it('should render single link tag', function() {

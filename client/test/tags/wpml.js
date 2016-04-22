@@ -46,11 +46,17 @@ describe(TAG, function() {
       text: `p.p-name: Look at ${link}\np.p-summary: It\'s all about it.`
     })
 
-
-    console.log('a', $('div.coect-reply-to a.u-in-reply-to', tag.root))
-
-    $('p.p-name', tag.root).should.contain(link)
+    $('p.p-name', tag.root).should.contain('host.com/slug')
     $('p.p-summary', tag.root).should.have.text('It\'s all about it.')
+  })
+
+  it('should linkify hashtags', function() {
+    var tag = env.mount('umedia-wpml', {
+      text: `See also #coect.`
+    })
+
+    $('p a', tag.root).should.have.text('#coect')
+    $('p a', tag.root).should.have.attr('href', '/t/coect')
   })
 
 
