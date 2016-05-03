@@ -20,7 +20,7 @@ class ChannelStore extends Store {
           .where('model', 'channel')
         if (opts.owner) q = q.where({owner: opts.owner})
         if (opts.type) {
-          if (!req.user || !req.user.isAdmin()) return flow.fail(400, 'Admin required')
+          if (opts.type !== Channel.CATEGORY && (!req.user || !req.user.isAdmin())) return flow.fail(400, 'Admin required')
           q = q.where({type: opts.type})
         }
         var access = req.security.getUserAccess(req.user)
