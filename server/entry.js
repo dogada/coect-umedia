@@ -85,7 +85,7 @@ function getTags(form, type) {
 
 function saveNewEntry(req, parent, list, form, done) {
   var type = 'post'
-  if (parent.type !== 'channel') {
+  if (parent.model !== 'channel') {
     type = (parent.thread ? 'reply' : 'comment')
   }
   // Fix made a transaction
@@ -156,7 +156,7 @@ function update(req, res) {
       validate(req, parent, channel, entry.type, Entry.recipientMeta(parent, recipient), flow.join(entry, channel))
     },
     function(entry, list, doc, form) {
-      debug('update form', form)
+      debug('update form', form, 'type', entry.type, 'tags', getTags(form, entry.type))
       var entryData = entry.data
       if (entryData.access || _.size(form.accessData)) entryData.access = form.accessData
       Entry.update(entry.id, _.omit({
