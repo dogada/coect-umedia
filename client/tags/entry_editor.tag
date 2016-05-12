@@ -5,7 +5,7 @@
 
     <form onsubmit={ publish } method="POST">
 
-      <div if={ opts.channels } class="form-group">
+      <div show={ opts.channels && opts.channels.length > 1 } class="form-group">
         <label>Channel</label>
         <select class="form-control" id="channel">
           <option each={ c in opts.channels } value={ c.id } >{ c.name }</option>
