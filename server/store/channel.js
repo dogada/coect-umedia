@@ -28,7 +28,7 @@ class ChannelStore extends Store {
         if (!opts.all) access = Math.max(access, Access.TRASH + 1)
         debug('access', access)
         q = q.where('access', '>=', access)
-        q = q.limit(this.pageSize(req.query))
+        q = q.limit(this.pageSize(opts))
         q.asCallback(flow)
       }
     ], done)
