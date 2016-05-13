@@ -46,7 +46,7 @@ u='${handler}/e/new?url='+enc(l.href)+'&text=',
 s = sel(d);
 for (var i=0; i<frames.length && !s; i++) s = sel(frames[i].document);
 u+=enc(s || d.title || '');
-w.open(u) || (l.href=u)
+w.open(u, '${location.host}') || (l.href=u)
 })()`
 }
 
