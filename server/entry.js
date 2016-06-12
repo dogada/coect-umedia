@@ -14,7 +14,6 @@ var Entry = require('./models').Entry
 var Access = coect.Access
 var config = require('./config')
 var store = require('./store')
-var riot = require('riot')
 var misc = require('./misc')
 
 /**
@@ -251,18 +250,18 @@ function detail(req, res, next) {
       entry.list = channel
       if (entry.parent && entry.parent.id === channel.id) entry.parent = channel
       flow.next(entry)
-    }
-  ], coect.janus(req, res, next, function(entry) {
-    debug('entry', (typeof entry.created), entry.created)
-    res.render('index', {
-      title: entry.name,
-      canonicalUrl: entry.url,
-      content: riot.render('umedia-entry-details', {
-        entry: entry,
-        breadcrumbs: (req.query.breadcrumbs === 'off' ? [] : undefined)})
-    })
-    
-  }))
+    },
+    function(entry) {
+      flow.next({
+        title: entry.name,
+        canonicalUrl: entry.url,
+        content: {
+          tag: 'umedia-entry-details',
+          opts: {entry}
+        }
+      })
+    },
+  ], coect.janus(req, res, next))
 }
 
 /**

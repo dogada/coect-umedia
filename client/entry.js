@@ -11,7 +11,8 @@ exports.details = function(ctx) {
     function() {
       coect.ui.getData(ctx, 'thread', next => store.entry.get(ctx.path, next), flow)
     },
-    function(entry) {
+    function(data) {
+      var entry = data.content.opts.entry
       Site.mountTag('umedia-entry-details', 
                     {entry, store},
                     {title: entry.name})

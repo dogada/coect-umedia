@@ -11,8 +11,6 @@ var Channel = require('./models').Channel
 
 var Access = coect.Access
 
-var riot = require('riot')
-
 function data(req, res, done) {
   debug('data xhr=', req.xhr, req.params)
   var flow = tflow([
