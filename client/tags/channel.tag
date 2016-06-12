@@ -15,6 +15,6 @@
    self.channel = self.opts.channel
    self.name = self.channel.name
    if (self.channel.type == 'category') self.name = '#' + self.name
-   if (typeof Site !== 'undefined') self.canChange = Site.umedia.canChangeEntry(self.channel)
+   if (typeof Site !== 'undefined' && Site.umedia) self.canChange = Site.umedia.canChangeEntry(self.channel)
   </script>
 </umedia-channel>

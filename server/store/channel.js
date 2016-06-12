@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('umedia:store')
+var debug = require('debug')('umedia:store:channel')
 var tflow = require('tflow')
 
 var Channel = require('../models').Channel
@@ -35,6 +35,7 @@ class ChannelStore extends Store {
   }
 
   withAccess(req, opts, done) {
+    debug('withAccess', opts)
     var flow = tflow([
       () => {
         if (opts.id || opts.list) flow.next({id: opts.id || opts.list})
