@@ -1,6 +1,6 @@
 <coect-index>
   <div class="coect-index">
-    <h1>Index of major entities</h1>
+    <h1><yield from="head" /></h1>
 
     <ul if={ opts.tags } class="list-inline h-feed category-list">
       <li each={ c in opts.tags }>

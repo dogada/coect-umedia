@@ -334,7 +334,7 @@ function list(req, res) {
 }
 
 function editor(req, res) {
-  res.render('index', {
+  coect.misc.renderTags(res, {
     title: 'Create new entry'
   })
 }
