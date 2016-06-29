@@ -71,7 +71,7 @@ function checkNewEntry(req, done) {
     },
     function(parent, channel, recipient) {
       if (!req.security.canCreateEntry(req.user, parent, channel)) return flow.fail(403, 'Not enough permissions to create')
-      validate(req, parent, channel, parent.type === 'channel' ? 'post' : 'comment',
+      validate(req, parent, channel, parent.model === 'channel' ? 'post' : 'comment',
                (recipient ? Entry.recipientMeta(parent, recipient) : {}),
                flow.join(parent, channel))
     },
